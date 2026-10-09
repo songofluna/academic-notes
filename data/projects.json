@@ -1,0 +1,16 @@
+[
+  {
+    "title": "수학·머신러닝 개념 시각화",
+    "description": "확률분포와 최적화 과정을 화면에서 직접 확인하는 실험 모음. 실제 프로젝트를 작성하면 이 예시를 교체하세요.",
+    "stack": "JavaScript · Mathematics",
+    "url": "",
+    "sample": true
+  },
+  {
+    "title": "Graph Learning Experiments",
+    "description": "그래프 표현 학습과 메시지 전달을 직접 구현하고 비교하는 실험 기록을 위한 자리입니다.",
+    "stack": "Python · Graph Neural Networks",
+    "url": "",
+    "sample": true
+  }
+]

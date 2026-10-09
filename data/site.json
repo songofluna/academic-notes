@@ -1,0 +1,14 @@
+{
+  "siteName": "notes.",
+  "introLabel": "Personal Notes / Statistics & Machine Learning",
+  "introTitle": "통계학과 머신러닝을 공부하며\n기록을 남깁니다.",
+  "introDescription": "읽을 때는 이해한 것 같다가도, 막상 설명하려면 막히는 개념들이 있습니다. 이곳에는 그런 내용을 다시 풀어 쓴 글과 직접 해 본 작은 실험을 모아 둡니다.",
+  "interests": "Probability & Statistics, Bayesian Inference, Generative Models, Deep Learning",
+  "heroImage": "/assets/hero-photo.webp",
+  "heroAlt": "책과 공책, 식물이 놓인 창가의 조용한 공부 공간",
+  "about": "통계학과 머신러닝을 공부하며 남기는 개인 학습 기록입니다. 관심 분야의 개념을 다시 이해하고 직접 확인하는 과정을 정리합니다. 여기에 있는 글과 프로젝트는 점진적으로 발전시킬 예정입니다.",
+  "currentlyStudying": "Generative Models, Probability Theory, Statistical Machine Learning",
+  "sidebarNote": "Notes are written primarily in Korean. This site is a work in progress.",
+  "contactEmail": "",
+  "githubUrl": ""
+}
