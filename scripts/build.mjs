@@ -55,7 +55,12 @@ function parseNote(text, filename) {
 }
 
 const notesDir = join(root,'content','notes');
-const names = (await readdir(notesDir)).filter(name => name.endsWith('.md')).sort();
+// Git does not retain empty directories; a new or cleared collection is valid.
+const entries = await readdir(notesDir).catch(error => {
+  if (error.code === 'ENOENT') return [];
+  throw error;
+});
+const names = entries.filter(name => name.endsWith('.md')).sort();
 const notes = await Promise.all(names.map(async(name)=> parseNote(await readFile(join(notesDir,name),'utf8'),name)));
 const slugs = notes.map(note=>note.slug);
 if (new Set(slugs).size !== slugs.length) throw new Error('Duplicate slugs in content/notes');
