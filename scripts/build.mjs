@@ -70,6 +70,7 @@ await rm(out,{recursive:true,force:true});
 await mkdir(out,{recursive:true});
 for(const name of ['index.html','styles.css','app.js']) await cp(join(root,name),join(out,name));
 await cp(join(root,'assets'),join(out,'assets'),{recursive:true});
+await cp(join(root,'demos'),join(out,'demos'),{recursive:true});
 // Draft contents must not be embedded in the public site's JavaScript payload.
 const publishedNotes = notes.filter(n => !n.draft);
 const payload = JSON.stringify({site,projects,notes:publishedNotes});
