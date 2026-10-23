@@ -3,8 +3,6 @@ slug: newnote1
 title: GM chapter1 1.1~1.2
 date: 2026-10-24
 course: generative-models
-section: "1.1~1.2 "
-chapter: 1. Introduction to deep generative models.
 category: generative
 draft: false
 sample: false
@@ -73,12 +71,11 @@ $$
 
 $$
 
-\mathcal P=\{p_\theta:\theta\in\Theta\}
+\mathcal P=p_\theta:\theta\in\Theta
 
 $$
 
 - $\Theta$: 가능한 모수들의 집합
-
 - $p_\theta$: 모수 $\theta$가 결정하는 확률분포
 
 특히 Deep Generative Modeling에서는 신경망(Neural Network)을 이용해 이러한 분포를 표현한다. 신경망의 가중치와 편향 등이 모수 $\theta$에 포함되며, 학습 과정에서 이 값들을 조정한다.
@@ -122,9 +119,7 @@ $\arg\min$은 함수의 값을 가장 작게 만드는 입력값을 찾는 연�
 대표적으로 다음 세 가지를 살펴볼 수 있다.
 
 1. **Density Evaluation:** 주어진 데이터 $x$에 대해 $p_\theta(x)$를 계산할 수 있는가?
-
 2. **Sampling:** 모델이 학습한 분포에서 새로운 데이터 $x$를 생성할 수 있는가?
-
 3. **Learning:** 관측된 데이터를 이용해 모수 $\theta$를 효율적으로 학습할 수 있는가?
 
 어떤 생성모델은 새로운 데이터를 생성하기 쉽지만 확률밀도를 계산하기 어렵고, 다른 모델은 확률밀도를 계산할 수 있지만 샘플을 생성하는 과정이 복잡할 수도 있다.
@@ -145,7 +140,7 @@ $$
 
 \begin{aligned}
 
-p_{\mathrm{data}} &: \text{실제 데이터가 따르는 분포}\\
+p_{\mathrm{data}} &: \text{실제 데이터가 따르는 분포}
 
 p_\theta &: \text{모델이 표현하는 분포}
 
@@ -183,7 +178,7 @@ x=
 
 \begin{pmatrix}
 
-\text{키}\\
+\text{키}
 
 \text{몸무게}
 
@@ -203,9 +198,9 @@ $$
 
 \begin{aligned}
 
-p_\theta(x)&\geq 0\\[4pt]
+p_\theta(x)&\geq 0[4pt]
 
-\int_{\mathbb R^d}p_\theta(x)\,dx&=1
+\int_{\mathbb R^d}p_\theta(x)dx&=1
 
 \end{aligned}
 
@@ -225,7 +220,7 @@ $$
 
 P(a\leq X\leq b)
 
-=\int_a^b p_\theta(x)\,dx
+=\int_a^b p_\theta(x)dx
 
 $$
 
@@ -281,7 +276,7 @@ $$
 
 $$
 
-\mathcal D=\{x^{(i)}\}_{i=1}^{N}
+\mathcal D=x^{(i)}_{i=1}^{N}
 
 $$
 
@@ -307,7 +302,7 @@ $$
 
 \mathbb E_{x\sim p}[g(x)]
 
-=\int g(x)p(x)\,dx
+=\int g(x)p(x)dx
 
 }
 
@@ -321,7 +316,7 @@ $$
 
 \mathbb E_{x\sim p}[x]
 
-=\int xp(x)\,dx
+=\int xp(x)dx
 
 $$
 
@@ -339,11 +334,9 @@ $$
 
 대표적인 척도로는 다음이 있다.
 
-- $D_{\mathrm{KL}}(P\|Q)$: KL Divergence
-
-- $D_F(P\|Q)$: Fisher Divergence
-
-- $D_f(P\|Q)$: $f$-Divergence
+- $D_{\mathrm{KL}}(PQ)$: KL Divergence
+- $D_F(PQ)$: Fisher Divergence
+- $D_f(PQ)$: $f$-Divergence
 
 이들은 모두 두 확률분포를 비교하는 데 사용되지만, 비교하는 방식과 수학적 성질은 서로 다를 수 있다.
 
