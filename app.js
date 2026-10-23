@@ -7,6 +7,7 @@
   const app = document.getElementById('app');
   if (!DATA || !app) { if(app) app.textContent='Site data is missing. Run: npm run build'; return; }
   const STORAGE_KEY = 'academic-notes-studio-local-v1';
+  const CMS_NOTES_URL = 'https://app.pagescms.org/songofluna/academic-notes/main/collection/notes';
   const CATEGORIES = [
     { id: 'all', label: 'All' },
     { id: 'probability', label: 'Probability & Statistics' },
@@ -71,9 +72,9 @@
   function go(path){ if(location.hash==='#'+path) render(); else location.hash='#'+path; }
   function brand(name){return esc(name.replace(/\.$/,'').trim() || 'notes')+'<span class="dot">.</span>';}
   function renderNav(path) {
-    const menus=[['Home','/'],['Notes','/notes'],['Experiments','/experiments'],['Projects','/projects'],['About','/about'],['Write','/studio']];
+    const menus=[['Home','/'],['Notes','/notes'],['Experiments','/experiments'],['Projects','/projects'],['About','/about']];
     $('site-brand').innerHTML=brand(site().siteName || 'notes.');
-    $('primary-nav').innerHTML=menus.map(([name,url])=>`<a href="#${url}" ${path===url || path.startsWith(url+'/') && url!=='/' ? 'aria-current="page"':''} class="${url==='/studio'?'nav-write':''}">${esc(name)}${name==='Write'?' ↗':''}</a>`).join('');
+    $('primary-nav').innerHTML=menus.map(([name,url])=>`<a href="#${url}" ${path===url || path.startsWith(url+'/') && url!=='/' ? 'aria-current="page"':''}>${esc(name)}</a>`).join('') + `<a href="${CMS_NOTES_URL}" class="nav-write" target="_blank" rel="noopener noreferrer">Write ↗</a>`;
     document.title=`${site().siteName || 'notes.'} — ${path==='/'?'Study Notes':path.includes('editor')?'Editor':(path.split('/')[1]||'Notes')}`;
     $('footer-note').textContent='Personal academic notes · '+(localCount() ? 'Local editing preview (not yet published)' : 'Work in progress');
   }
