@@ -345,3 +345,10 @@ button {touch-action:manipulation}
   .studio-item .action-row {width:100%}
   .demo-footer {flex-wrap:wrap}
 }
+
+/* Embedded MH interactive note — isolated iframe keeps math demos independent. */
+.mh-embed-wrap{width:100%;margin:27px 0 31px;overflow:visible}
+.mh-embed{display:block;width:100%;height:1050px;border:0;background:white}
+.mh-listing{border-top:1px solid var(--line);margin-top:58px;padding-top:35px}
+.mh-listing .mh-embed-wrap{margin-top:15px}
+@media(max-width:650px){.mh-embed{height:1300px}.mh-embed-wrap{margin-inline:0}}
