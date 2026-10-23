@@ -55,7 +55,12 @@ function parseNote(text, filename) {
 }
 
 const notesDir = join(root,'content','notes');
-const names = (await readdir(notesDir)).filter(name => name.endsWith('.md')).sort();
+// Git does not retain empty directories; a new or cleared collection is valid.
+const entries = await readdir(notesDir).catch(error => {
+  if (error.code === 'ENOENT') return [];
+  throw error;
+});
+const names = entries.filter(name => name.endsWith('.md')).sort();
 const notes = await Promise.all(names.map(async(name)=> parseNote(await readFile(join(notesDir,name),'utf8'),name)));
 const slugs = notes.map(note=>note.slug);
 if (new Set(slugs).size !== slugs.length) throw new Error('Duplicate slugs in content/notes');
@@ -65,6 +70,7 @@ await rm(out,{recursive:true,force:true});
 await mkdir(out,{recursive:true});
 for(const name of ['index.html','styles.css','app.js']) await cp(join(root,name),join(out,name));
 await cp(join(root,'assets'),join(out,'assets'),{recursive:true});
+await cp(join(root,'demos'),join(out,'demos'),{recursive:true});
 // Draft contents must not be embedded in the public site's JavaScript payload.
 const publishedNotes = notes.filter(n => !n.draft);
 const payload = JSON.stringify({site,projects,notes:publishedNotes});
