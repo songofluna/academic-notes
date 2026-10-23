@@ -1,6 +1,6 @@
 # Academic Notes Studio — 운영 가능한 개인 학술 사이트 초안
 
-v3의 흰색 + 연두색 디자인을 유지하면서 **Notes / Experiments / Projects / About / Writing Studio** 기능을 붙인 프로젝트입니다. 실제 게시글 제목과 본문은 한국어, 메뉴·분야명·섹션명은 영어입니다.
+v3의 흰색 + 연두색 디자인을 유지하면서 **Notes / Articles / Projects / About / Writing Studio** 기능을 붙인 프로젝트입니다. 실제 게시글 제목과 본문은 한국어, 메뉴·분야명·섹션명은 영어입니다.
 
 **현재 상태:** [GitHub Pages 사이트](https://songofluna.github.io/academic-notes/)가 공개되어 있습니다. 상단 **Write ↗**는 이 저장소의 [Pages CMS 글쓰기 화면](https://app.pagescms.org/songofluna/academic-notes/main/collection/notes)을 새 탭으로 엽니다. GitHub 로그인과 저장소 접근 권한이 필요합니다. 별도의 로컬 스튜디오에서 사용하는 Publish locally 버튼은 내 브라우저에서 보이게 하는 기능이며 **인터넷에 글을 발행하지 않습니다.**
 
@@ -46,7 +46,7 @@ npm run dev
 1. **Pages CMS**에 GitHub로 로그인합니다.
 2. 안내에 따라 GitHub App을 설치합니다. **이 사이트를 담은 저장소만** 접근 허용해도 됩니다.
 3. 저장소를 선택하면 루트의 `.pages.yml` 파일을 자동으로 읽습니다.
-4. **Study Notes** → 새 글 작성, Markdown/수식/이미지 삽입, draft 여부 지정 → 저장합니다.
+4. **Study Notes** 또는 **Articles** → 새 글 작성, Markdown/수식/이미지 삽입, draft 여부 지정 → 저장합니다.
 5. **Home / About settings** → 홈페이지 제목·소개·사진 등 수정합니다.
 6. **Projects** → 프로젝트 추가/수정합니다.
 7. 변경 내용이 GitHub 저장소에 commit되고, 위 Actions 배포가 완료되면 공개 사이트가 갱신됩니다.
@@ -61,7 +61,9 @@ npm run dev
 |---|---|
 | `data/site.json` | 홈페이지 이름·소개·관심 분야·사진 경로·About 등 |
 | `data/projects.json` | 프로젝트 목록 |
-| `content/notes/*.md` | 글별 Markdown 파일 (YAML frontmatter 포함) |
+| `content/notes/*.md` | 강의 학습 노트 (기존 파일·주소 유지) |
+| `content/articles/*.md` | 독립 Articles (YAML frontmatter 포함) |
+| `content/courses/*.json` | Course → Section → Chapter 목차와 정렬 순서 |
 | `assets/hero-photo.webp` | 홈페이지 오른쪽 사진 (현재는 생성한 임시 사진) |
 | `styles.css` | 흰색·연두색 색상과 글꼴·간격·반응형 디자인 |
 | `app.js` | 페이지, 에디터, 인터랙티브 그래프, 검색 |
@@ -78,7 +80,7 @@ npm run dev
 node scripts/build.mjs
 ```
 
-`content/notes/`가 비어 있거나 폴더 자체가 없어도 글 0개로 빌드됩니다. 설정·사진·프로젝트는 그대로 포함됩니다. 잘못된 글 형식, 중복 slug, 기타 파일 접근 오류는 계속 빌드를 실패시킵니다.
+`content/notes/`, `content/articles/`, `content/courses/`는 비어 있거나 폴더 자체가 없어도 빌드됩니다. 설정·사진·프로젝트는 그대로 포함됩니다. 잘못된 글 형식, 중복 slug, 기타 파일 접근 오류는 계속 빌드를 실패시킵니다.
 
 현재 구축한 사이트는 **프레임워크 없는 정적 구조**입니다. 향후 Astro/MDX 등으로 옮기더라도 게시글 `.md`와 사이트 데이터 `.json`을 별도로 보관하므로 콘텐츠 이전이 쉽습니다.
 
@@ -224,3 +226,93 @@ proposal 크기를 바꾸면서 mixing을 관찰해 봅시다.
 - **판단에 필요한 정보는 유지합니다.** Samples, Acceptance rate, Current state, Last proposal, 채택확률 α와 난수 u 같은 핵심 수치, 짧은 실행 상태·오류 메시지, 접근성 이름은 생략하지 않습니다. 보조 문장을 없애더라도 범례·단위·파라미터 범위를 모호하게 만들지 않습니다.
 - **기존 시각 언어와 반응형 동작을 유지합니다.** 흰색 배경과 은은한 연두색, 일관된 간격을 사용하고, 문구 삭제 후 빈 공간을 정리합니다. 모바일에서 조작부가 줄바꿈되고 iframe 높이가 콘텐츠에 맞게 조절되어야 합니다.
 - **표현 변경과 알고리즘 변경을 구분해 검증합니다.** 문구·레이아웃 정리로 목표분포, proposal, acceptance 계산, 거절 시 상태 유지, seed 재현성이나 체인 재사용 동작이 달라지면 안 됩니다. `npm run check` 후 독립 페이지·Experiments·게시글 임베드를 데스크톱과 모바일에서 확인합니다.
+
+## 12. Notes / Articles / Projects 운영
+
+상단 메뉴는 **Home / Notes / Articles / Projects / About**입니다. `#/experiments`와 기존 데모 파일·삽입 명령어는 유지되며 Projects의 **Experiments ↗**로 접근할 수 있습니다. 기존 Notes를 Articles로 옮기지 않습니다.
+
+### Notes: 강의 목차
+
+1. Pages CMS의 **Courses**에서 Course를 만들거나 수정합니다. CS229, Deep Learning, Generative Models의 빈 목차를 기본으로 제공합니다.
+2. Course 아래 **Sections**, 각 Section 아래 **Chapters**를 추가합니다. 각각 고유한 영문 ID, 표시 제목, 0 이상의 정수 순서를 입력합니다. 제목은 나중에 자유롭게 바꿀 수 있습니다.
+3. **Study Notes**에서 Course를 선택하고, 그 목차의 **Section ID**, **Chapter ID**, **Note order**를 입력합니다. Section·Chapter는 선택 사항이며, 분류 없는 기존 글은 Notes 목록에 남습니다.
+4. 기존처럼 **Unpublished draft**를 끄고 저장하면 게시됩니다.
+
+Course는 CMS의 [Reference 필드](https://pagescms.org/docs/configuration/fields/reference/)로 선택합니다. Section·Chapter는 선택한 Course 안의 ID를 입력합니다. 잘못된 참조는 글이 목차에서 조용히 누락되지 않도록 빌드 오류로 알려 줍니다. 이미 사용 중인 ID를 변경하거나 삭제할 때에는 해당 Notes의 참조도 함께 수정해야 합니다. 미완성 분류를 저장하려면 Draft로 둡니다.
+
+Course 예시 (`content/courses/cs229.json`):
+
+```json
+{
+  "slug": "cs229",
+  "title": "CS229",
+  "order": 1,
+  "sections": [
+    {
+      "id": "supervised-learning",
+      "title": "Supervised Learning",
+      "order": 1,
+      "chapters": [
+        { "id": "linear-regression", "title": "Linear Regression", "order": 1 }
+      ]
+    }
+  ]
+}
+```
+
+Note frontmatter에 추가할 필드:
+
+```yaml
+course: cs229
+section: supervised-learning
+chapter: linear-regression
+order: 2
+```
+
+Course·Section·Chapter·Note의 `order`는 숫자 오름차순입니다. 순서가 비어 있으면 마지막, 같으면 제목과 ID/slug 순으로 정렬합니다. Course/Section에 직접 속한 글은 그 아래 하위 목차보다 먼저 나옵니다. 날짜는 강의 순서에 영향을 주지 않으며 홈의 Recent Notes에서만 최신순으로 사용합니다.
+
+`#/notes`에는 강의별 계층 목차와 검색·Course·Category 필터가 표시됩니다. `#/courses/cs229`에서는 해당 강의 목차를 볼 수 있습니다. 개별 글 주소는 계속 `#/notes/<slug>`이며, 분류된 글에는 경로·목차·이전/다음 글이 표시됩니다. 공개 글이 없는 Course·Section·Chapter는 목록에서 생략합니다. 로컬 Studio에서 기존 Note를 편집하거나 Markdown으로 내보내도 분류 필드를 보존합니다.
+
+### Articles: 독립 글
+
+Pages CMS의 **Articles**에서 제목·날짜·요약·태그·본문을 작성합니다. **Published**를 켜야 공개되며 기본값은 꺼짐입니다. **Featured on home**은 홈 노출 여부이며, 공개되지 않은 글을 공개시키지는 않습니다. Articles 화면의 **Write ↗**도 이 컬렉션으로 연결됩니다.
+
+````markdown
+---
+slug: sampling-and-estimation
+title: 샘플링과 추정에 관한 기록
+date: 2026-10-24
+summary: 표본으로 기대값을 근사하는 방법
+tags: MCMC, Bayesian
+published: false
+featured: false
+---
+
+문장 속 수식 $x_t$와 독립 수식을 함께 사용할 수 있다.
+
+$$
+\alpha = \min(1, \pi(x')/\pi(x))
+$$
+
+[demo:metropolis-hastings]
+````
+
+주소는 `#/articles/<slug>`입니다. Notes와 같은 slug를 사용해도 서로 다른 글입니다. Notes와 동일한 Markdown·LaTeX·코드·이미지 렌더러와 `[demo:normal-kl]`, `[demo:metropolis-hastings]`를 사용합니다. 본문은 기존처럼 CMS의 **Source** 모드로 편집할 수 있습니다. Articles의 로컬 Studio 편집은 제공하지 않으며 Pages CMS에서 관리합니다.
+
+`published: true`인 Articles만 배포 데이터에 포함합니다. `draft: true`도 함께 있으면 비공개로 처리합니다. 공개 GitHub 저장소의 원본 파일까지 비공개로 만드는 설정은 아닙니다.
+
+### Projects와 Home
+
+기존 `data/projects.json`의 항목과 `url`은 유지합니다. CMS와 로컬 프로젝트 편집기에 다음 필드를 추가했습니다.
+
+| 필드 | 용도 |
+|---|---|
+| `githubUrl` | GitHub 링크 |
+| `demoUrl` | 데모 링크 (예: `demos/metropolis-hastings.html` 또는 외부 HTTPS 주소) |
+| `selected` | 홈의 Selected Projects에 표시 |
+
+Home은 **Featured Articles → Recent Notes → Selected Projects** 순서입니다. Featured와 Selected는 명시적으로 선택한 항목만 표시하고, 해당 콘텐츠가 없으면 제목·빈 목록·안내 문구를 모두 생략합니다. 기존 프로젝트를 임의로 Selected로 지정하지 않습니다. 소개와 사진, 흰색·연두색 디자인은 유지합니다.
+
+### 변경 검증
+
+`npm run check`에서 빈 컬렉션, Notes/Articles 본문 보존, 비공개 내용 제외, 컬렉션 간 동일 slug, 숫자 순서, 잘못된 목차 참조와 중복 ID를 확인합니다. 기존 MH 통계 검증과 배포 워크플로는 그대로 유지합니다. 브라우저에서는 현재 콘텐츠와 별도의 임시 데이터로 세 홈 목록, 강의 순서·이전/다음 이동, Article 렌더링, 프로젝트 링크, 빈 화면과 모바일을 점검합니다. 검증용 글을 실제 컬렉션에 게시하지 않습니다.
