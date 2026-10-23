@@ -13,7 +13,6 @@ Metropolis–Hastings(MH)는 목표분포(target distribution)를 따르는 표�
 이 노트에서는 두 가지 질문을 실험으로 살펴본다.
 
 - 여러 봉우리가 있는 분포에서 체인이 봉우리 사이를 충분히 오가는가?
-
 - 휘어진 2차원 분포에서 proposal의 크기가 체인의 이동에 어떤 영향을 주는가?
 
 목표 확률밀도를 $\pi(z)$라고 하자. 실제 문제에서는 다음처럼 정규화되지 않은 함수 $\widetilde{\pi}(z)$만 계산할 수 있는 경우가 많다.
@@ -24,7 +23,7 @@ $$
 
 \qquad
 
-Z=\int \widetilde{\pi}(z)\,dz.
+Z=\int \widetilde{\pi}(z)dz.
 
 $$
 
@@ -78,7 +77,7 @@ z_{t+1}=
 
 \begin{cases}
 
-z', & u<\alpha(z_t,z'),\\
+z', & u<\alpha(z_t,z'),
 
 z_t, & u\geq\alpha(z_t,z').
 
@@ -126,7 +125,7 @@ $$
 
 $$
 
-이 노트의 분포식과 조작 설명은 [배포된 MH 샘플러]([https://github.com/songofluna/academic-notes/blob/5b223dfa892da2fe4ca649358b9404ca204b5a2d/demos/mh-kernel.mjs)와](https://github.com/songofluna/academic-notes/blob/5b223dfa892da2fe4ca649358b9404ca204b5a2d/demos/mh-kernel.mjs)와) [시뮬레이터 화면 코드]([https://github.com/songofluna/academic-notes/blob/5b223dfa892da2fe4ca649358b9404ca204b5a2d/demos/metropolis-hastings.html)를](https://github.com/songofluna/academic-notes/blob/5b223dfa892da2fe4ca649358b9404ca204b5a2d/demos/metropolis-hastings.html)를) 기준으로 한다.
+이 노트의 분포식과 조작 설명은 [배포된 MH 샘플러]([https://github.com/songofluna/academic-notes/blob/5b223dfa892da2fe4ca649358b9404ca204b5a2d/demos/mh-kernel.mjs)와]([https://github.com/songofluna/academic-notes/blob/5b223dfa892da2fe4ca649358b9404ca204b5a2d/demos/mh-kernel.mjs)와](https://github.com/songofluna/academic-notes/blob/5b223dfa892da2fe4ca649358b9404ca204b5a2d/demos/mh-kernel.mjs)와)) [시뮬레이터 화면 코드]([https://github.com/songofluna/academic-notes/blob/5b223dfa892da2fe4ca649358b9404ca204b5a2d/demos/metropolis-hastings.html)를]([https://github.com/songofluna/academic-notes/blob/5b223dfa892da2fe4ca649358b9404ca204b5a2d/demos/metropolis-hastings.html)를](https://github.com/songofluna/academic-notes/blob/5b223dfa892da2fe4ca649358b9404ca204b5a2d/demos/metropolis-hastings.html)를)) 기준으로 한다.
 
 ## 4. 시뮬레이터와 조작 방법
 
@@ -178,11 +177,11 @@ $$
 
 \pi(x)
 
-=0.38\,\mathcal{N}(x;-3,0.6^2)
+=0.38\mathcal{N}(x;-3,0.6^2)
 
-+0.38\,\mathcal{N}(x;0,0.85^2)
++0.38\mathcal{N}(x;0,0.85^2)
 
-+0.24\,\mathcal{N}(x;2.5,0.42^2).
++0.24\mathcal{N}(x;2.5,0.42^2).
 
 $$
 
@@ -194,7 +193,7 @@ $$
 
 =\frac{1}{N\Delta}
 
-\sum_{t=1}^{N}\mathbf{1}\{x_t\in B\}.
+\sum_{t=1}^{N}\mathbf{1}x_t\in B.
 
 $$
 
@@ -205,11 +204,8 @@ $$
 ### 실험 A: 표본 수 늘리기
 
 1. **01 / Multimodal 1D**를 선택하고 Proposal σ를 **1.40**으로 맞춘다.
-
 2. **Reset**을 누른 뒤 **Next step**을 몇 번 눌러 현재 위치와 마지막 후보를 비교한다.
-
 3. **10 → 100 → 1,000 → 10,000** 순서로 표본 수를 늘린다.
-
 4. 각 단계에서 세 봉우리가 얼마나 드러나는지, 어느 영역이 과도하거나 부족하게 채워지는지 관찰한다.
 
 작은 표본에서는 우연과 초기 위치의 영향이 크게 보인다. 충분히 탐색한 체인에서는 표본 수가 늘면서 전체 모양과 구간별 비율이 목표분포에 가까워지는 모습을 기대할 수 있다. 다만 오차가 매 단계 줄어드는 것은 아니다.
@@ -221,9 +217,7 @@ $$
 Iterations를 **10,000**으로 고정하고 $\sigma=0.15,1.40,3.50$을 비교한다.
 
 - **0.15:** 한 번의 이동이 작다. 채택률이 높아도 봉우리 사이를 이동하는 데 많은 단계가 필요할 수 있다.
-
 - **1.40:** 작은 이동과 봉우리 사이 이동이 어떻게 함께 나타나는지 살펴본다.
-
 - **3.50:** 먼 곳을 제안하는 빈도가 늘어난다. 거절이 늘어날 수 있지만 다른 봉우리로 직접 이동할 기회도 생긴다.
 
 이 분포에서는 proposal을 크게 했다고 표본의 품질이 반드시 나빠지는 것은 아니다. **채택률과 봉우리 사이의 왕복을 함께 비교하자.**
@@ -275,11 +269,8 @@ $$
 ### 그림 읽기
 
 - **Target contours:** 같은 목표밀도를 갖는 위치를 연결한 등고선이다. 표본이 없어도 표시된다.
-
 - **Sample positions:** 지금까지 기록된 체인의 상태다. 거절로 반복된 상태는 같은 위치에 겹쳐 그려진다.
-
 - **현재 상태와 마지막 후보:** 현재 위치와 제안된 위치를 구별해서 본다. 거절되면 현재 위치가 유지된다.
-
 - **최근 이동 경로:** 최근 60단계의 상태를 연결한다. 전체 표본의 분포와 최근의 이동 양상을 함께 읽는다.
 
 등고선은 밀도 수준을 표시한다. 선마다 같은 확률질량을 포함한다는 뜻은 아니다. 또한 점들이 겹치므로 화면의 서로 다른 점 개수와 Samples 값은 일치하지 않을 수 있다.
@@ -287,11 +278,8 @@ $$
 ### 실험 C: 곡률과 mixing 관찰하기
 
 1. **02 / Banana 2D**를 선택하고 Proposal σ를 **0.65**로 맞춘 뒤 **Reset**을 누른다.
-
 2. **10 → 100 → 1,000 → 10,000**으로 늘리면서 점들이 곡선 주변의 띠를 채우는지 관찰한다.
-
 3. **Play**로 진행하며 최근 경로가 한 부분에 머무르는지, 왼쪽과 오른쪽을 오가는지 살펴본다.
-
 4. 같은 표본 수에서 $\sigma=0.15,0.65,3.50$을 비교한다.
 
 작은 proposal은 가까운 위치로 자주 이동하지만, 곡선을 따라 멀리 이동하기까지 오래 걸릴 수 있다. 큰 proposal은 좁은 띠에서 벗어나 목표밀도가 낮은 곳을 제안하기 쉬워 거절이 많아질 수 있다.
@@ -337,9 +325,7 @@ Mixing은 체인이 목표분포의 여러 영역을 얼마나 잘 오가며 탐
 관찰할 때는 다음 세 가지를 함께 기록해 보자.
 
 1. 히스토그램이나 점들의 분포가 목표분포의 어느 영역을 충분히 채우지 못하는가?
-
 2. 최근 경로는 여러 영역을 오가는가, 좁은 영역에 오래 머무르는가?
-
 3. 표본 수와 seed를 바꾸어도 비슷한 경향이 나타나는가?
 
 ## 8. 보충: 거절 확률이 전이 커널에 들어가는 방식
@@ -352,7 +338,7 @@ $$
 
 \pi(z)q(z'\mid z)\alpha(z,z')
 
-&=\min\left\{\pi(z)q(z'\mid z),\pi(z')q(z\mid z')\right\}\\
+&=\min\left\pi(z)q(z'\mid z),\pi(z')q(z\mid z')\right
 
 &=\pi(z')q(z\mid z')\alpha(z',z).
 
@@ -366,15 +352,15 @@ $$
 
 T(z,dz')
 
-=q(z'\mid z)\alpha(z,z')\,dz'
+=q(z'\mid z)\alpha(z,z')dz'
 
-+r(z)\,\delta_z(dz').
-
-$$
++r(z)\delta_z(dz').
 
 $$
 
-r(z)=1-\int q(y\mid z)\alpha(z,y)\,dy.
+$$
+
+r(z)=1-\int q(y\mid z)\alpha(z,y)dy.
 
 $$
 
@@ -387,13 +373,9 @@ $r(z)$는 현재 위치에서 proposal을 거절할 확률이고, $\delta_z$는 
 ## 9. 관찰을 마친 뒤 설명해 볼 질문
 
 1. 이 두 데모에서 proposal 비율이 채택확률 식에서 사라지는 이유는 무엇인가?
-
 2. 후보를 거절했을 때 Samples가 증가하는 이유는 무엇인가?
-
 3. 채택률이 90% 이상인데도 multimodal 분포의 일부 봉우리를 충분히 탐색하지 못할 수 있는 이유는 무엇인가?
-
 4. Banana 2D에서 proposal을 크게 하면 좁은 띠를 벗어나는 후보가 많아지는 이유는 무엇인가?
-
 5. Reset과 New random run은 어떤 차이가 있는가?
 
 이 시뮬레이터는 초기 위치에서의 이동을 관찰하도록 초기 구간을 제거하지 않는다. $N$단계에서 $z_1,\ldots,z_N$을 집계하며 초기 상태 $z_0$는 별도다. 표본은 최대 12,000개까지 표시하고, 축 범위를 벗어난 값은 그림에서만 생략한다. 생략된 값도 Samples와 acceptance 집계에는 포함된다.
