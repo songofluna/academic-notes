@@ -13,9 +13,9 @@ content:
     format: yaml-frontmatter
     filename: "{fields.slug}.md"
     view:
-      fields: [title, date, category, draft]
+      fields: [title, course, section, chapter, order, date, draft]
       primary: title
-      sort: [date, title]
+      sort: [order, date, title]
       default:
         sort: date
         order: desc
@@ -33,6 +33,28 @@ content:
         label: Date
         type: date
         required: true
+      - name: course
+        label: Course
+        type: reference
+        options:
+          collection: courses
+          search: "title,slug"
+          value: "{fields.slug}"
+          label: "{fields.title}"
+      - name: section
+        label: Section ID
+        type: string
+        description: Optional. Use a section ID from the selected course in Courses.
+      - name: chapter
+        label: Chapter ID
+        type: string
+        description: Optional. Use a chapter ID from that section in Courses.
+      - name: order
+        label: Note order
+        type: number
+        description: Order within the chapter (or section/course when omitted). Lower numbers first; blank goes last.
+        options:
+          min: 0
       - name: category
         label: Category
         type: select
@@ -63,6 +85,79 @@ content:
         options:
           format: markdown
           switcher: true
+  - name: articles
+    label: Articles
+    type: collection
+    path: content/articles
+    format: yaml-frontmatter
+    filename: "{fields.slug}.md"
+    view:
+      fields: [title, date, published, featured]
+      primary: title
+      sort: [date, title]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: slug
+        label: URL identifier (English)
+        type: string
+        required: true
+        pattern: "^[a-z0-9-]+$"
+      - { name: title, label: Title, type: string, required: true }
+      - { name: date, label: Date, type: date, required: true }
+      - { name: summary, label: Summary, type: text }
+      - { name: tags, label: "Tags (comma-separated)", type: string }
+      - { name: published, label: Published, type: boolean, default: false }
+      - { name: featured, label: Featured on home, type: boolean, default: false }
+      - name: body
+        label: Article (Markdown, LaTeX)
+        type: rich-text
+        description: Use Source mode for LaTeX ($...$ or $$...$$) and demo shortcodes.
+        options:
+          format: markdown
+          switcher: true
+  - name: courses
+    label: Courses
+    type: collection
+    path: content/courses
+    format: json
+    filename: "{fields.slug}.json"
+    view:
+      fields: [title, order]
+      primary: title
+      sort: [order, title]
+      default:
+        sort: order
+        order: asc
+    fields:
+      - name: slug
+        label: Course ID
+        type: string
+        required: true
+        pattern: "^[a-z0-9-]+$"
+      - { name: title, label: Course title, type: string, required: true }
+      - { name: order, label: Course order, type: number, options: { min: 0 } }
+      - name: sections
+        label: Sections
+        type: object
+        list:
+          collapsible:
+            summary: "{fields.title}"
+        fields:
+          - { name: id, label: Section ID, type: string, required: true, pattern: "^[a-z0-9-]+$" }
+          - { name: title, label: Section title, type: string, required: true }
+          - { name: order, label: Section order, type: number, options: { min: 0 } }
+          - name: chapters
+            label: Chapters
+            type: object
+            list:
+              collapsible:
+                summary: "{fields.title}"
+            fields:
+              - { name: id, label: Chapter ID, type: string, required: true, pattern: "^[a-z0-9-]+$" }
+              - { name: title, label: Chapter title, type: string, required: true }
+              - { name: order, label: Chapter order, type: number, options: { min: 0 } }
   - name: site
     label: Home / About settings
     type: file
@@ -93,3 +188,6 @@ content:
       - { name: stack, label: Technology, type: string }
       - { name: url, label: Project URL, type: string }
       - { name: sample, label: Sample project, type: boolean }
+      - { name: githubUrl, label: GitHub URL, type: string }
+      - { name: demoUrl, label: Demo URL, type: string }
+      - { name: selected, label: Selected on home, type: boolean, default: false }
