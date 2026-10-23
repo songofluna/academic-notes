@@ -42,8 +42,6 @@ content:
               label: Probability & Statistics
             - name: generative
               label: Generative Models
-            - name: graphs
-              label: Graph Learning
             - name: deep-learning
               label: Deep Learning
       - name: summary
