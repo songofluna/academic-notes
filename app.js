@@ -27,6 +27,8 @@
   } catch (err) {persistent = false; console.warn('Local storage unavailable', err);}
   let notesFilter = 'all';
   let notesQuery = '';
+  let notesCourse = '';
+  let articlesQuery = '';
   let toastTimer = 0;
   let editorTimer = 0;
   let lastEditorSlug = null;
@@ -53,7 +55,7 @@
   const localCount=()=>Object.keys(local.notes).length + Object.keys(local.site).length + Object.keys(local.images).length + (local.projects?1:0);
   function safeUrl(url) {
     const s=String(url||'').trim();
-    if (/^(https?:\/\/|mailto:|#|\.\.?\/|assets\/|\/assets\/)/i.test(s)) return s;
+    if (/^(https?:\/\/|mailto:|#|\.\.?\/|assets\/|demos\/|\/assets\/)/i.test(s)) return s;
     if (/^data:image\/(png|webp|jpeg|gif);base64,/i.test(s)) return s;
     return '#';
   }
@@ -72,23 +74,52 @@
   function go(path){ if(location.hash==='#'+path) render(); else location.hash='#'+path; }
   function brand(name){return esc(name.replace(/\.$/,'').trim() || 'notes')+'<span class="dot">.</span>';}
   function renderNav(path) {
-    const menus=[['Home','/'],['Notes','/notes'],['Experiments','/experiments'],['Projects','/projects'],['About','/about']];
+    const menus=[['Home','/'],['Notes','/notes'],['Articles','/articles'],['Projects','/projects'],['About','/about']];
     $('site-brand').innerHTML=brand(site().siteName || 'notes.');
-    $('primary-nav').innerHTML=menus.map(([name,url])=>`<a href="#${url}" ${path===url || path.startsWith(url+'/') && url!=='/' ? 'aria-current="page"':''}>${esc(name)}</a>`).join('') + `<a href="${CMS_NOTES_URL}" class="nav-write" target="_blank" rel="noopener noreferrer">Write ↗</a>`;
+    $('primary-nav').innerHTML=menus.map(([name,url])=>`<a href="#${url}" ${path===url || path.startsWith(url+'/') && url!=='/' || url==='/notes' && path.startsWith('/courses/') ? 'aria-current="page"':''}>${esc(name)}</a>`).join('') + `<a href="${path.startsWith('/articles') ? CMS_NOTES_URL.replace('/notes','/articles') : CMS_NOTES_URL}" class="nav-write" target="_blank" rel="noopener noreferrer">Write ↗</a>`;
     document.title=`${site().siteName || 'notes.'} — ${path==='/'?'Study Notes':path.includes('editor')?'Editor':(path.split('/')[1]||'Notes')}`;
     $('footer-note').textContent='Personal academic notes · '+(localCount() ? 'Local editing preview (not yet published)' : 'Work in progress');
   }
   function pageLead(label,title,description,extra='') {
-    return `<div class="page-lead"><span class="overline">${esc(label)}</span><h1>${esc(title)}</h1>${description?`<p class="lead-text">${esc(description)}</p>`:''}${extra}</div>`;
+    return `<div class="page-lead">${label?`<span class="overline">${esc(label)}</span>`:''}<h1>${esc(title)}</h1>${description?`<p class="lead-text">${esc(description)}</p>`:''}${extra}</div>`;
   }
   function filtersHtml(active='all') {return `<div class="filters" id="note-filters" role="group" aria-label="Note categories">${CATEGORIES.map(x=>`<button type="button" class="filter" data-filter="${x.id}" aria-pressed="${x.id===active}">${x.label}</button>`).join('')}</div>`;}
-  function noteRows(notes) {
-    if(!notes.length) return '<p class="no-results">표시할 글이 없습니다. 검색어나 카테고리를 바꿔 보세요.</p>';
-    return notes.map(n=>`<article class="entry"><div class="entry-top"><a class="entry-title" href="#/notes/${encodeURIComponent(n.slug)}">${esc(n.title)}</a><span class="entry-meta">${esc(n.date||'')} · ${esc(labels[n.category]||n.category||'Note')}${sampleNote(n)}${n.localEdit?'<span class="local-mark">Local</span>':''}</span></div><p>${esc(n.summary)}</p></article>`).join('');
+  const byDate = (a,b) => String(b.date||'').localeCompare(String(a.date||'')) || a.title.localeCompare(b.title) || a.slug.localeCompare(b.slug);
+  const byOrder = (a,b) => (a.order ?? Infinity) - (b.order ?? Infinity) || a.title.localeCompare(b.title, 'en', {numeric:true}) || a.slug.localeCompare(b.slug);
+  const courses = () => [...(DATA.courses || [])].sort(byOrder);
+  const publicArticles = () => (DATA.articles || []).filter(a=>a.published && !a.draft).sort(byDate);
+  function noteContext(note) {
+    const course=courses().find(c=>c.slug===note.course);
+    const section=course?.sections.find(s=>s.slug===note.section);
+    const chapter=section?.chapters?.find(c=>c.slug===note.chapter);
+    return {course,section,chapter};
+  }
+  function postRows(posts, type='notes') {
+    return posts.map(n=>`<article class="entry"><div class="entry-top"><a class="entry-title" href="#/${type}/${encodeURIComponent(n.slug)}">${esc(n.title)}</a><span class="entry-meta">${esc(n.date||'')}${type==='notes'?` · ${esc(noteContext(n).course?.title||labels[n.category]||'Note')}`:''}${sampleNote(n)}${n.localEdit?'<span class="local-mark">Local</span>':''}</span></div>${n.summary?`<p>${esc(n.summary)}</p>`:''}${type==='articles' && normalizeTags(n.tags).length?`<p class="entry-tags">${normalizeTags(n.tags).map(t=>`<span>${esc(t)}</span>`).join('')}</p>`:''}</article>`).join('');
+  }
+  const noteRows = notes => postRows(notes);
+  function courseGroups(course, notes=publicNotes()) {
+    const own=notes.filter(n=>n.course===course.slug);
+    const direct=own.filter(n=>!n.section).sort(byOrder);
+    const sections=[...course.sections].sort(byOrder).map(section=>({
+      ...section, notes:own.filter(n=>n.section===section.slug && !n.chapter).sort(byOrder),
+      chapters:[...(section.chapters||[])].sort(byOrder).map(chapter=>({...chapter, notes:own.filter(n=>n.section===section.slug && n.chapter===chapter.slug).sort(byOrder)})).filter(c=>c.notes.length)
+    })).filter(s=>s.notes.length||s.chapters.length);
+    return {direct,sections};
+  }
+  function courseSequence(course) {
+    const {direct,sections}=courseGroups(course);
+    return [...direct,...sections.flatMap(s=>[...s.notes,...s.chapters.flatMap(c=>c.notes)])];
+  }
+  function courseTree(course, notes=publicNotes(), current='') {
+    const {direct,sections}=courseGroups(course,notes);
+    const links=items=>items.map(n=>`<li><a href="#/notes/${encodeURIComponent(n.slug)}" ${n.slug===current?'aria-current="page"':''}>${esc(n.title)}</a></li>`).join('');
+    return `<ul class="course-tree">${links(direct)}${sections.map(s=>`<li><span class="outline-section">${esc(s.title)}</span><ul>${links(s.notes)}${s.chapters.map(c=>`<li><span class="outline-chapter">${esc(c.title)}</span><ul>${links(c.notes)}</ul></li>`).join('')}</ul></li>`).join('')}</ul>`;
   }
   const currentProjects = () => Array.isArray(local.projects) ? local.projects : DATA.projects;
   function projectRows(short=false) {
-    return (short?currentProjects().slice(0,2):currentProjects()).map(p=>`<article class="${short?'project':'project-entry'}"><h3>${p.url?`<a href="${esc(safeUrl(p.url))}" target="_blank" rel="noopener noreferrer">${esc(p.title)} ↗</a>`:esc(p.title)}${p.sample?'<span class="sample-tag"> · Sample</span>':''}</h3><p>${esc(p.description)}</p><p class="meta">${esc(p.stack||'')}</p></article>`).join('');
+    const projects=short?currentProjects().filter(p=>p.selected===true):currentProjects();
+    return projects.map(p=>`<article class="${short?'project':'project-entry'}"><h3>${p.url?`<a href="${esc(safeUrl(p.url))}" target="_blank" rel="noopener noreferrer">${esc(p.title)} ↗</a>`:esc(p.title)}${p.sample?'<span class="sample-tag"> · Sample</span>':''}</h3>${p.description?`<p>${esc(p.description)}</p>`:''}${p.stack?`<p class="meta">${esc(p.stack)}</p>`:''}<div class="project-links">${[['GitHub',p.githubUrl],['Demo',p.demoUrl]].filter(([,url])=>url).map(([label,url])=>`<a href="${esc(safeUrl(url))}" class="small-link" target="_blank" rel="noopener noreferrer">${label} ↗</a>`).join('')}</div></article>`).join('');
   }
   // Metropolis–Hastings is packaged as a self-contained, dependency-free iframe.
   // Use [demo:metropolis-hastings] on its own line in a study note to embed it.
@@ -129,31 +160,50 @@
     });
   }
   function renderHome() {
-    const s=site();
+    const s=site(), recent=publicNotes().slice(0,4), featured=publicArticles().filter(a=>a.featured), selected=projectRows(true);
     app.innerHTML=`<section class="intro" aria-labelledby="intro-title">
         <div class="intro-copy"><p class="intro-label">${esc(s.introLabel)}</p><h1 id="intro-title">${esc(s.introTitle)}</h1><p class="intro-body">${esc(s.introDescription)}</p>
           <p class="interests"><span>Interests</span>${normalizeTags(s.interests).map((item,i)=>`${i?'<span class="divider">/</span>':''}<strong>${esc(item)}</strong>`).join('')}</p>
         </div><figure class="intro-photo"><img src="${esc(mediaUrl(local.site.heroImageData||s.heroImage))}" alt="${esc(s.heroAlt)}"><figcaption class="visually-hidden">Hero photograph</figcaption></figure>
       </section>
-      <div class="main-grid"><div class="column">
-        <section id="notes"><div class="section-heading"><h2>Recent Notes</h2><a class="small-link" href="#/notes">All notes ↗</a></div>${filtersHtml()}<div id="home-note-list">${noteRows(publicNotes().slice(0,4))}</div></section>
-        <section class="experiment" id="experiment"><span class="head-annotation">Interactive Note / 01</span><h2>정규분포를 움직여 보기</h2><p class="explain">평균과 표준편차를 바꾸며 두 정규분포 사이의 KL divergence를 확인합니다.</p>${experimentHtml('home')}</section>
-        <section id="projects"><div class="section-heading"><h2>Projects</h2><a href="#/projects" class="small-link">View all ↗</a></div><div class="project-list">${projectRows(true)}</div></section>
-        <section id="about"><div class="section-heading"><h2>About</h2><a href="#/about" class="small-link">More ↗</a></div><p class="about-copy">${esc(s.about)}</p></section>
-      </div><aside class="sidebar"><div class="side-group"><h3>Explore</h3><a href="#/notes">Study Notes ↗</a><a href="#/experiments">Interactive Notes ↗</a><a href="#/projects">Projects ↗</a><a href="#/studio">Writing Studio ↗</a></div>
-      <div class="side-group"><div class="side-line"></div><h3>Currently Studying</h3>${normalizeTags(s.currentlyStudying).map(t=>`<p class="sidebar-note">${esc(t)}</p>`).join('')}<p class="sidebar-note">${esc(s.sidebarNote)}</p></div></aside></div>`;
-    setupExperiments();
+      <div class="main-grid ${!recent.length&&!featured.length&&!selected?'home-empty':''}"><div class="column">
+        ${featured.length?`<section id="featured-articles"><div class="section-heading"><h2>Featured Articles</h2><a class="small-link" href="#/articles">All articles ↗</a></div>${postRows(featured,'articles')}</section>`:''}
+        ${recent.length?`<section id="notes"><div class="section-heading"><h2>Recent Notes</h2><a class="small-link" href="#/notes">All notes ↗</a></div><div id="home-note-list">${noteRows(recent)}</div></section>`:''}
+        ${selected?`<section id="projects"><div class="section-heading"><h2>Selected Projects</h2><a href="#/projects" class="small-link">View all ↗</a></div><div class="project-list">${selected}</div></section>`:''}
+      </div><aside class="sidebar"><div class="side-group"><h3>Explore</h3><a href="#/notes">Notes ↗</a><a href="#/articles">Articles ↗</a><a href="#/projects">Projects ↗</a><a href="#/studio">Writing Studio ↗</a></div>
+      ${s.currentlyStudying||s.sidebarNote?`<div class="side-group"><div class="side-line"></div>${s.currentlyStudying?`<h3>Currently Studying</h3>${normalizeTags(s.currentlyStudying).map(t=>`<p class="sidebar-note">${esc(t)}</p>`).join('')}`:''}${s.sidebarNote?`<p class="sidebar-note">${esc(s.sidebarNote)}</p>`:''}</div>`:''}</aside></div>`;
   }
   function renderNotes() {
-    app.innerHTML=pageLead('Writing / Archive','Notes','읽고, 유도하고, 실험하며 정리한 학습 기록입니다. 실제 글의 제목과 본문은 한국어로 작성합니다.') + `<div class="page-main"><div class="notes-controls"><input id="notes-search" class="search" type="search" value="${esc(notesQuery)}" placeholder="Search notes / 제목, 태그, 본문 검색" aria-label="Search notes">${filtersHtml(notesFilter)}<p class="editor-status" id="notes-count"></p></div><div id="notes-results"></div></div>`;
+    const visibleCourses=courses().filter(c=>publicNotes().some(n=>n.course===c.slug));
+    app.innerHTML=pageLead('','Notes','') + `<div class="page-main"><div class="notes-controls"><div class="archive-controls"><input id="notes-search" class="search" type="search" value="${esc(notesQuery)}" placeholder="Search notes" aria-label="Search notes"><select id="notes-course" class="archive-select" aria-label="Filter by course"><option value="">All courses</option>${visibleCourses.map(c=>`<option value="${esc(c.slug)}" ${notesCourse===c.slug?'selected':''}>${esc(c.title)}</option>`).join('')}</select></div>${filtersHtml(notesFilter)}<p class="editor-status" id="notes-count" role="status"></p></div><div id="notes-results"></div></div>`;
     updateNotesResults();
   }
   function updateNotesResults() {
     const box=$('notes-results'); if(!box) return;
     const q=notesQuery.trim().toLocaleLowerCase();
-    const found=publicNotes().filter(n=>(notesFilter==='all'||n.category===notesFilter)&&(!q||[n.title,n.summary,n.body,...normalizeTags(n.tags),labels[n.category]].join(' ').toLocaleLowerCase().includes(q)));
-    box.innerHTML=noteRows(found);
-    $('notes-count').textContent=`${found.length} note${found.length===1?'':'s'} · ${publicNotes().length} total`;
+    const found=publicNotes().filter(n=>{
+      const context=noteContext(n);
+      return (!notesCourse||n.course===notesCourse)&&(notesFilter==='all'||n.category===notesFilter)&&(!q||[n.title,n.summary,n.body,...normalizeTags(n.tags),labels[n.category],...Object.values(context).map(x=>x?.title||'')].join(' ').toLocaleLowerCase().includes(q));
+    });
+    const grouped=courses().filter(c=>found.some(n=>n.course===c.slug));
+    const other=found.filter(n=>!n.course);
+    box.innerHTML=grouped.map(c=>`<section class="course-group"><div class="section-heading"><h2><a href="#/courses/${encodeURIComponent(c.slug)}">${esc(c.title)}</a></h2><span class="faint">${found.filter(n=>n.course===c.slug).length}</span></div>${courseTree(c,found)}</section>`).join('')+(other.length?`<section class="other-notes">${grouped.length?'<h2>Other Notes</h2>':''}${noteRows(other)}</section>`:'')+(!found.length && (q||notesFilter!=='all'||notesCourse)?'<p class="no-results">No matching notes.</p>':'');
+    $('notes-count').textContent=publicNotes().length?`${found.length} / ${publicNotes().length} notes`:'';
+  }
+  function renderCourse(slug) {
+    const course=courses().find(c=>c.slug===slug);
+    if(!course){app.innerHTML=pageLead('','Course not found','');return;}
+    app.innerHTML=pageLead('',course.title,'', '<a class="small-link" href="#/notes">← Notes</a>')+`<div class="page-main"><nav aria-label="Course contents">${courseTree(course)}</nav></div>`;
+  }
+  function renderArticles() {
+    app.innerHTML=pageLead('','Articles','')+`<div class="page-main"><input id="articles-search" class="search" type="search" value="${esc(articlesQuery)}" placeholder="Search articles" aria-label="Search articles"><p class="editor-status" id="articles-count" role="status"></p><div id="articles-results"></div></div>`;
+    updateArticlesResults();
+  }
+  function updateArticlesResults() {
+    const q=articlesQuery.trim().toLocaleLowerCase(), all=publicArticles();
+    const found=all.filter(a=>!q||[a.title,a.summary,a.body,...normalizeTags(a.tags)].join(' ').toLocaleLowerCase().includes(q));
+    $('articles-results').innerHTML=postRows(found,'articles')+(!found.length&&q?'<p class="no-results">No matching articles.</p>':'');
+    $('articles-count').textContent=all.length?`${found.length} / ${all.length} articles`:'';
   }
   function inlineMd(raw) {
     const code=[];
@@ -224,17 +274,23 @@
     if(!window.MathJax?.typesetPromise) return;
     try { window.MathJax.typesetPromise([scope]).catch(()=>{}); } catch {}
   }
-  function renderArticle(slug) {
-    const n=noteBySlug(slug);
-    if(!n || (n.draft && !local.notes[slug])) { app.innerHTML=pageLead('404 / Note not found','글을 찾을 수 없습니다.','비공개 초안이거나 존재하지 않는 게시글입니다.')+'<div class="page-main"><a href="#/notes" class="small-link">← Notes</a></div>';return; }
-    const contents=markdown(n.body);const reading=Math.max(1,Math.ceil(String(n.body||'').length/750));
-    app.innerHTML=`<div class="article-header"><div class="breadcrumbs"><a href="#/">Home</a><span>/</span><a href="#/notes">Notes</a><span>/</span><span>${esc(labels[n.category]||n.category)}</span></div><h1 class="post-title">${esc(n.title)}</h1><p class="article-deck">${esc(n.summary)}</p><div class="article-meta"><span>${esc(n.date||'Undated')}</span><span>${esc(labels[n.category]||'Study Note')}</span><span>~${reading} min read</span>${n.localEdit?'<span class="local-mark">Local preview</span>':''}${n.draft?'<span class="draft-indicator">Draft</span>':''}${n.sample?'<span class="sample-label">Sample content</span>':''}</div></div>
-      <div class="article-shell"><article class="article-content" id="rendered-markdown">${n.sample?'<div class="notice"><strong>Sample note.</strong> 디자인과 동작 확인을 위한 예시 글입니다. 실제 작성한 글로 바꿔 주세요.</div>':''}${n.localEdit?'<div class="notice">이 글의 수정 내용은 현재 브라우저에만 저장되어 있습니다. GitHub에 게시되지 않았습니다.</div>':''}${contents.html}</article>
-      <aside class="article-aside"><h3>On this page</h3><nav>${contents.headings.filter(x=>x.level<=3).map(h=>`<a href="#${h.id}" data-anchor="${h.id}">${esc(h.title)}</a>`).join('')||'<span class="faint" style="font-size:12px">No headings</span>'}</nav><div class="article-side-actions"><a href="#/studio/edit/${encodeURIComponent(n.slug)}">Edit locally ↗</a><a href="#/notes">← All notes</a><button type="button" class="link-button quiet" data-action="copy-link">Copy note link</button></div></aside></div>`;
+  function renderArticle(slug, type='notes') {
+    const isNote=type==='notes', label=isNote?'Notes':'Articles';
+    const n=isNote?noteBySlug(slug):publicArticles().find(a=>a.slug===slug);
+    if(!n || (n.draft && !local.notes[slug])) { app.innerHTML=pageLead('404','글을 찾을 수 없습니다.','')+`<div class="page-main"><a href="#/${type}" class="small-link">← ${label}</a></div>`;return; }
+    const contents=markdown(n.body), reading=Math.max(1,Math.ceil(String(n.body||'').length/750));
+    const {course,section,chapter}=isNote?noteContext(n):{};
+    const sequence=course?courseSequence(course):[], index=sequence.findIndex(x=>x.slug===n.slug);
+    const previous=sequence[index-1], next=index>=0?sequence[index+1]:null;
+    const neighbor=(post,text)=>post?`<a href="#/notes/${encodeURIComponent(post.slug)}"><span>${text}</span>${esc(post.title)}</a>`:'<span></span>';
+    app.innerHTML=`<div class="article-header"><div class="breadcrumbs"><a href="#/">Home</a><span>/</span><a href="#/${type}">${label}</a>${course?`<span>/</span><a href="#/courses/${encodeURIComponent(course.slug)}">${esc(course.title)}</a>`:''}${section?`<span>/</span><span>${esc(section.title)}</span>`:''}${chapter?`<span>/</span><span>${esc(chapter.title)}</span>`:''}</div><h1 class="post-title">${esc(n.title)}</h1>${n.summary?`<p class="article-deck">${esc(n.summary)}</p>`:''}<div class="article-meta"><span>${esc(n.date||'Undated')}</span>${isNote?`<span>${esc(labels[n.category]||'Study Note')}</span>`:''}<span>~${reading} min read</span>${n.localEdit?'<span class="local-mark">Local preview</span>':''}${n.draft?'<span class="draft-indicator">Draft</span>':''}${n.sample?'<span class="sample-label">Sample content</span>':''}</div>${normalizeTags(n.tags).length?`<div class="entry-tags post-tags">${normalizeTags(n.tags).map(t=>`<span>${esc(t)}</span>`).join('')}</div>`:''}</div>
+      <div class="article-shell"><div class="post-main"><article class="article-content" id="rendered-markdown">${n.localEdit?'<div class="notice">이 글의 수정 내용은 현재 브라우저에만 저장되어 있습니다. GitHub에 게시되지 않았습니다.</div>':''}${contents.html}</article>${previous||next?`<nav class="note-pagination" aria-label="Course sequence">${neighbor(previous,'← Previous')}${neighbor(next,'Next →')}</nav>`:''}</div>
+      <aside class="article-aside">${course?`<h3><a href="#/courses/${encodeURIComponent(course.slug)}">${esc(course.title)}</a></h3><nav class="course-toc" aria-label="Course contents">${courseTree(course,publicNotes(),n.slug)}</nav>`:''}${contents.headings.length?`<h3>On this page</h3><nav>${contents.headings.filter(x=>x.level<=3).map(h=>`<a href="#${h.id}" data-anchor="${h.id}">${esc(h.title)}</a>`).join('')}</nav>`:''}<div class="article-side-actions">${isNote?`<a href="#/studio/edit/${encodeURIComponent(n.slug)}">Edit locally ↗</a>`:''}<a href="#/${type}">← All ${type}</a><button type="button" class="link-button quiet" data-action="copy-link">Copy link</button></div></aside></div>`;
     setupExperiments();latex($('rendered-markdown'));
   }
   function renderProjects() {
-    app.innerHTML=pageLead('Work / Portfolio','Projects','직접 구현한 모델, 실험, 시각화 프로젝트를 모아 두는 공간입니다. 처음 제공되는 항목은 예시이므로 나중에 교체할 수 있습니다.')+`<div class="page-main"><div class="project-list">${projectRows(false)}</div><p class="editor-guidance" style="margin-top:25px">Projects can be edited in Pages CMS → Projects, or <a href="#/studio/projects" class="small-link">locally in Studio ↗</a>.</p></div>`;
+    const rows=projectRows(false);
+    app.innerHTML=pageLead('','Projects','', '<a class="small-link" href="#/experiments">Experiments ↗</a>')+`<div class="page-main">${rows?`<div class="project-list">${rows}</div>`:''}</div>`;
   }
   function renderExperiments() {
     app.innerHTML=pageLead('Interactive Notes','Experiments','이론의 수식과 그래프를 직접 조작하면서 관찰하는 공간입니다. 시각화는 기존 공부 글에서도 불러올 수 있습니다.')+`<div class="page-main" style="max-width:750px"><span class="overline">01 / Probability</span><h2 style="margin-bottom:12px">Comparing Normal Distributions</h2><p class="explain">고정된 표준정규분포 p(x)와 움직이는 정규분포 q(x)를 비교해보세요.</p>${experimentHtml('experiments')}<div class="notice" style="margin-top:24px">글 본문에서 <code>[demo:normal-kl]</code>로 불러올 수 있습니다.</div><div class="mh-listing"><span class="overline">02 / Markov Chain Monte Carlo</span>${mhDemoHtml()}<p class="editor-guidance">글 본문에 <code>[demo:metropolis-hastings]</code>를 한 줄로 입력하면 같은 시뮬레이터가 표시됩니다.</p></div></div>`;
@@ -265,7 +321,7 @@
     return `<label class="editor-field"><span>${esc(label)}</span><input id="${id}" type="${opts.type||'text'}" ${opts.required?'required':''} value="${esc(value)}"></label>`;
   }
   function readEditor() {
-    return {slug:($('field-slug')?.value||'').trim(),title:($('field-title')?.value||'').trim(),date:($('field-date')?.value||'').trim(),category:($('field-category')?.value||'probability'),summary:($('field-summary')?.value||'').trim(),tags:normalizeTags($('field-tags')?.value||''),draft:true,sample:false,body:$('field-body')?.value||'',source:'local'};
+    return {...noteBySlug(lastEditorSlug),slug:($('field-slug')?.value||'').trim(),title:($('field-title')?.value||'').trim(),date:($('field-date')?.value||'').trim(),category:($('field-category')?.value||'probability'),summary:($('field-summary')?.value||'').trim(),tags:normalizeTags($('field-tags')?.value||''),draft:true,sample:false,body:$('field-body')?.value||'',source:'local'};
   }
   function renderEditor(slug) {
     const n=noteBySlug(slug);
@@ -322,11 +378,11 @@
   }
   function renderProjectSettings() {
     const projects=currentProjects();
-    const fields=projects.map((p,i)=>`<div class="project-form" data-project-form="${i}" style="border-top:1px solid var(--line);padding:25px 0 15px"><div class="section-heading"><h2 style="font-size:16px">Project ${i+1}</h2><button type="button" data-action="remove-project" data-index="${i}" class="link-button danger">Delete</button></div>${field(`project-${i}-title`,'Project title',p.title)}${field(`project-${i}-desc`,'Description',p.description,{textarea:true,rows:3})}<div class="form-grid">${field(`project-${i}-stack`,'Stack / tools',p.stack)}${field(`project-${i}-url`,'URL (optional)',p.url||'')}</div><label class="editor-field" style="display:flex;align-items:center;gap:9px"><input type="checkbox" id="project-${i}-sample" style="width:auto" ${p.sample?'checked':''}><span style="margin-bottom:0">Show Sample label</span></label></div>`).join('');
+    const fields=projects.map((p,i)=>`<div class="project-form" data-project-form="${i}" style="border-top:1px solid var(--line);padding:25px 0 15px"><div class="section-heading"><h2 style="font-size:16px">Project ${i+1}</h2><button type="button" data-action="remove-project" data-index="${i}" class="link-button danger">Delete</button></div>${field(`project-${i}-title`,'Project title',p.title)}${field(`project-${i}-desc`,'Description',p.description,{textarea:true,rows:3})}<div class="form-grid">${field(`project-${i}-stack`,'Stack / tools',p.stack)}${field(`project-${i}-url`,'URL (optional)',p.url||'')}${field(`project-${i}-github`,'GitHub URL',p.githubUrl||'')}${field(`project-${i}-demo`,'Demo URL',p.demoUrl||'')}</div><label class="editor-field project-selected"><input type="checkbox" id="project-${i}-selected" ${p.selected?'checked':''}> Selected on home</label><label class="editor-field" style="display:flex;align-items:center;gap:9px"><input type="checkbox" id="project-${i}-sample" style="width:auto" ${p.sample?'checked':''}><span style="margin-bottom:0">Show Sample label</span></label></div>`).join('');
     app.innerHTML=pageLead('Writing Studio / Portfolio','Edit projects','프로젝트 제목·설명·GitHub 링크를 추가하고 관리합니다. 로컬 수정이며 온라인 변경에는 CMS 연동이 필요합니다.')+`<div class="settings-layout">${studioBanner()}<div class="action-row" style="margin:21px 0 29px"><button class="link-button primary" data-action="save-projects">Save locally</button><button class="link-button" data-action="add-project">+ Add project</button><button class="link-button quiet" data-action="export-projects">Export projects.json</button><a href="#/studio" class="link-button quiet">← Studio</a></div><div id="project-settings-list">${fields}</div><div class="action-row" style="margin-top:17px"><button class="link-button primary" data-action="save-projects">Save locally</button></div></div>`;
   }
   function readProjectSettings() {
-    return [...document.querySelectorAll('[data-project-form]')].map((el,i)=>({title:el.querySelector(`#project-${i}-title`)?.value||'',description:el.querySelector(`#project-${i}-desc`)?.value||'',stack:el.querySelector(`#project-${i}-stack`)?.value||'',url:el.querySelector(`#project-${i}-url`)?.value||'',sample:!!el.querySelector(`#project-${i}-sample`)?.checked}));
+    return [...document.querySelectorAll('[data-project-form]')].map((el,i)=>({...currentProjects()[i],githubUrl:el.querySelector(`#project-${i}-github`)?.value||'',demoUrl:el.querySelector(`#project-${i}-demo`)?.value||'',selected:!!el.querySelector(`#project-${i}-selected`)?.checked,title:el.querySelector(`#project-${i}-title`)?.value||'',description:el.querySelector(`#project-${i}-desc`)?.value||'',stack:el.querySelector(`#project-${i}-stack`)?.value||'',url:el.querySelector(`#project-${i}-url`)?.value||'',sample:!!el.querySelector(`#project-${i}-sample`)?.checked}));
   }
   function readSettings() {
     return {siteName:$('setting-name').value, introLabel:$('setting-label').value, introTitle:$('setting-title').value, introDescription:$('setting-description').value, interests:$('setting-interests').value, about:$('setting-about').value, currentlyStudying:$('setting-studying').value, sidebarNote:$('setting-side').value, githubUrl:$('setting-github').value, contactEmail:$('setting-email').value, heroAlt:$('setting-hero-alt').value};
@@ -339,6 +395,7 @@
   function yamlString(x){return JSON.stringify(String(x ?? ''));}
   function noteMarkdown(n) {
     const fm=[['slug',n.slug],['title',n.title],['date',n.date],['category',n.category],['summary',n.summary],['tags',normalizeTags(n.tags).join(', ')]].map(([k,v])=>`${k}: ${yamlString(v)}`);
+    for(const key of ['course','section','chapter','order']) if(n[key] != null && n[key] !== '') fm.push(`${key}: ${key==='order'?Number(n[key]):yamlString(n[key])}`);
     return `---\n${fm.join('\n')}\ndraft: ${n.draft===true}\nsample: false\n---\n\n${n.body||''}\n`;
   }
   function downloadMD(slug){const n=noteBySlug(slug);if(!n){toast('글을 찾을 수 없습니다.');return;} downloadFile(`${n.slug}.md`,noteMarkdown(n),'text/markdown;charset=utf-8');toast('Markdown 파일을 내려받았습니다. 실제 게시하려면 CMS에 저장하세요.');}
@@ -369,6 +426,9 @@
     if(path==='/')renderHome();
     else if(path==='/notes')renderNotes();
     else if(path.startsWith('/notes/'))renderArticle(path.slice(7));
+    else if(path.startsWith('/courses/'))renderCourse(path.slice(9));
+    else if(path==='/articles')renderArticles();
+    else if(path.startsWith('/articles/'))renderArticle(path.slice(10),'articles');
     else if(path==='/projects')renderProjects();
     else if(path==='/experiments')renderExperiments();
     else if(path==='/about')renderAbout();
@@ -435,12 +495,14 @@
   });
   document.addEventListener('input',event=>{
     if(event.target.id==='notes-search'){notesQuery=event.target.value;updateNotesResults();}
+    if(event.target.id==='articles-search'){articlesQuery=event.target.value;updateArticlesResults();}
     if(event.target.closest('.editor-panel') && event.target.matches('input,textarea,select')){
       if(event.target.id==='field-body'){clearTimeout(window.previewTimer);window.previewTimer=setTimeout(updateEditorPreview,210);}
       autosave();
     }
   });
   document.addEventListener('change',async event=>{
+    if(event.target.id==='notes-course'){notesCourse=event.target.value;updateNotesResults();return;}
     if(event.target.id==='inline-image-file' && event.target.files?.length){
       try{
         const file=event.target.files[0];const data=await compressImage(file,900);
