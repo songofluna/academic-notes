@@ -1,0 +1,97 @@
+# Pages CMS — GitHub sign-in and repository permissions are handled by Pages CMS.
+# https://app.pagescms.org/
+media:
+  input: assets
+  output: assets
+  rename: safe
+
+content:
+  - name: notes
+    label: Study Notes
+    type: collection
+    path: content/notes
+    format: yaml-frontmatter
+    filename: "{fields.slug}.md"
+    view:
+      fields: [title, date, category, draft]
+      primary: title
+      sort: [date, title]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: slug
+        label: URL identifier (English, e.g. my-new-note)
+        type: string
+        required: true
+        pattern: "^[a-z0-9-]+$"
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: date
+        label: Date
+        type: date
+        required: true
+      - name: category
+        label: Category
+        type: select
+        options:
+          values:
+            - name: probability
+              label: Probability & Statistics
+            - name: generative
+              label: Generative Models
+            - name: graphs
+              label: Graph Learning
+            - name: deep-learning
+              label: Deep Learning
+      - name: summary
+        label: Summary
+        type: text
+      - name: tags
+        label: Tags (comma-separated)
+        type: string
+      - name: draft
+        label: Unpublished draft
+        type: boolean
+      - name: sample
+        label: Show "Sample" label
+        type: boolean
+      - name: body
+        label: Article (Markdown, LaTeX)
+        type: rich-text
+        description: Use Source mode for LaTeX ($...$ or $$...$$) so formatting is preserved.
+        options:
+          format: markdown
+          switcher: true
+  - name: site
+    label: Home / About settings
+    type: file
+    path: data/site.json
+    format: json
+    fields:
+      - { name: siteName, label: Site name, type: string }
+      - { name: introLabel, label: Intro label, type: string }
+      - { name: introTitle, label: Korean heading, type: text }
+      - { name: introDescription, label: Introduction, type: text }
+      - { name: interests, label: Interests (comma-separated), type: string }
+      - { name: heroImage, label: Home image, type: image }
+      - { name: heroAlt, label: Image description, type: string }
+      - { name: about, label: About, type: text }
+      - { name: currentlyStudying, label: Currently studying (comma-separated), type: string }
+      - { name: sidebarNote, label: Sidebar note, type: text }
+      - { name: contactEmail, label: Contact email, type: string }
+      - { name: githubUrl, label: GitHub URL, type: string }
+  - name: projects
+    label: Projects
+    type: file
+    path: data/projects.json
+    format: json
+    list: true
+    fields:
+      - { name: title, label: Title, type: string }
+      - { name: description, label: Description, type: text }
+      - { name: stack, label: Technology, type: string }
+      - { name: url, label: Project URL, type: string }
+      - { name: sample, label: Sample project, type: boolean }
