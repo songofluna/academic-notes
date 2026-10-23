@@ -2,7 +2,7 @@
 
 v3의 흰색 + 연두색 디자인을 유지하면서 **Notes / Experiments / Projects / About / Writing Studio** 기능을 붙인 프로젝트입니다. 실제 게시글 제목과 본문은 한국어, 메뉴·분야명·섹션명은 영어입니다.
 
-**현재 상태:** 홈페이지와 로컬 글쓰기 스튜디오는 작동합니다. GitHub Pages 자동 배포와 Pages CMS 설정 파일도 포함되어 있습니다. 다만 GitHub 계정 승인/레포지토리 연결이 아직 이루어지지 않았으므로 **온라인 발행은 아직 연결되지 않았습니다.** 로컬 Publish 버튼은 내 브라우저에서 보이게 하는 기능이며 **인터넷에 글을 발행하지 않습니다.**
+**현재 상태:** [GitHub Pages 사이트](https://songofluna.github.io/academic-notes/)가 공개되어 있습니다. 상단 **Write ↗**는 이 저장소의 [Pages CMS 글쓰기 화면](https://app.pagescms.org/songofluna/academic-notes/main/collection/notes)을 새 탭으로 엽니다. GitHub 로그인과 저장소 접근 권한이 필요합니다. 별도의 로컬 스튜디오에서 사용하는 Publish locally 버튼은 내 브라우저에서 보이게 하는 기능이며 **인터넷에 글을 발행하지 않습니다.**
 
 ## 1. 빠르게 열어 보기
 
@@ -18,7 +18,7 @@ npm run dev
 
 ### 사용해 보기
 
-1. 사이트 상단의 **Write ↗** 클릭.
+1. 로컬 편집을 체험하려면 홈의 **Explore → Writing Studio ↗** 클릭 (`#/studio`). 온라인 글쓰기는 상단 **Write ↗**를 사용합니다.
 2. **+ New note** → 한국어 제목, 영어 slug, Category, Summary, Markdown 본문 작성.
 3. 오른쪽 **Live Preview**에서 수식/표/코드/그림 확인.
 4. **Save draft**는 초안으로 저장; **Publish locally**는 이 브라우저의 목록에 글을 표시.
@@ -51,7 +51,7 @@ npm run dev
 6. **Projects** → 프로젝트 추가/수정합니다.
 7. 변경 내용이 GitHub 저장소에 commit되고, 위 Actions 배포가 완료되면 공개 사이트가 갱신됩니다.
 
-**중요:** GitHub 연동 후 온라인 글을 올릴 때는 Pages CMS를 사용하세요. 사이트 내 Write ↗는 그 전 단계에서 체험하는 **로컬 스튜디오**입니다. 실서비스에서 사이트 안에 로그인한 작성자만 접근하는 완전한 관리자 화면을 만들려면 추가적인 인증/서버 기능이 필요합니다. 현재 누구나 Write 화면을 열 수 있지만, 타인에게 공개된 GitHub 저장소를 수정할 권한은 제공하지 않습니다.
+**중요:** 사이트 내 **Write ↗**는 `songofluna/academic-notes`의 `main` 브랜치에 있는 **Study Notes** 컬렉션으로 연결됩니다. 로그인과 저장 권한은 Pages CMS와 GitHub에서 확인합니다. **Writing Studio**는 기존처럼 브라우저 안에서만 편집하는 로컬 미리보기입니다.
 
 **초안에 관한 주의:** `draft: true`인 글은 공개 사이트의 JS 번들에 **포함되지 않습니다.** 다만 **GitHub 저장소가 공개 저장소라면 소스 파일은 GitHub에서 읽을 수 있습니다.** 민감한 내용은 공개 저장소에 저장하지 마세요.
 
@@ -75,6 +75,8 @@ npm run dev
 ```bash
 node scripts/build.mjs
 ```
+
+`content/notes/`가 비어 있거나 폴더 자체가 없어도 글 0개로 빌드됩니다. 설정·사진·프로젝트는 그대로 포함됩니다. 잘못된 글 형식, 중복 slug, 기타 파일 접근 오류는 계속 빌드를 실패시킵니다.
 
 현재 구축한 사이트는 **프레임워크 없는 정적 구조**입니다. 향후 Astro/MDX 등으로 옮기더라도 게시글 `.md`와 사이트 데이터 `.json`을 별도로 보관하므로 콘텐츠 이전이 쉽습니다.
 
@@ -133,17 +135,15 @@ $$
 
 닫는 `$$` 뒤에 `는`이나 다른 글자를 붙이기보다 다음 줄에서 설명을 이어 쓰는 것을 권장합니다. v4.1에서는 닫는 `$$` 뒤 텍스트도 수식 내부로 들어가지 않도록 파서를 보완했습니다. 단, 게시글 소스가 잘못된 LaTeX 자체라면 MathJax도 올바르게 그리지 못할 수 있습니다.
 
-## 7. GitHub에 배포하기 — 이 계정용 실제 절차
+## 7. 이 저장소의 온라인 발행 절차
 
-확인된 GitHub 계정: `songofluna` · 추천 새 저장소명: `academic-notes` · 공개 주소(배포 완료 시): `https://songofluna.github.io/academic-notes/`
+저장소: [songofluna/academic-notes](https://github.com/songofluna/academic-notes) · 공개 주소: [GitHub Pages](https://songofluna.github.io/academic-notes/)
 
-1. GitHub의 [새 저장소 만들기](https://github.com/new)에서 **Repository name: academic-notes**, **Public**, **Add a README file** 체크 후 `Create repository`를 클릭합니다. 기존 통계·머신러닝 프로젝트 저장소를 덮어쓰지 마세요.
-2. 새 저장소 URL(`https://github.com/songofluna/academic-notes`)을 알려주면 연결된 GitHub 도구로 업로드 가능한지 확인할 수 있습니다. 도구가 쓰기를 허용하지 않으면 이 ZIP을 풀어 업로드하는 방법으로 진행합니다.
-3. 업로드할 것은 이 프로젝트 폴더의 소스 파일입니다. `.github/workflows/deploy.yml`과 `.pages.yml`을 반드시 포함하세요.
-4. 저장소 **Settings → Pages → Build and deployment → Source: GitHub Actions**를 선택하고 Actions에서 배포가 성공하는지 확인합니다.
-5. 실제 온라인 글쓰기: [Pages CMS](https://app.pagescms.org/)에 GitHub로 로그인 → 저장소 권한 부여 → `Study Notes`에서 새 글 작성·저장. CMS의 Markdown **Source** 모드에서 LaTeX를 입력하면 특수 구문을 유지하기 편합니다.
+1. 사이트 상단 **Write ↗** → Pages CMS에 GitHub로 로그인 → **Study Notes**에서 새 글 작성·저장. CMS의 Markdown **Source** 모드에서 LaTeX를 입력하면 특수 구문을 유지하기 편합니다.
+2. CMS 저장 또는 PR 병합으로 `main`에 변경 사항이 생기면 **Deploy website**가 `npm run check`를 실행하고 `dist/`를 배포합니다.
+3. [Actions](https://github.com/songofluna/academic-notes/actions)에서 해당 commit의 배포 성공을 확인하고 공개 사이트에서 글·사진을 확인합니다.
 
-**중요:** GitHub 연결은 실제 저장소를 생성하고 코드가 업로드된 이후에 완료됩니다. 현재 첨부한 ZIP은 배포 준비물이며, 아직 GitHub Pages에 올라간 상태가 아닙니다.
+PR의 **Check website**는 검증만 수행합니다. 공개 사이트는 `main` 변경 시 갱신되므로, PR 검증 성공과 실제 배포 성공을 구분해서 확인하세요.
 
 ## 8. 이미지와 LaTeX에 대한 주의
 
@@ -159,4 +159,6 @@ npm run check
 npm run preview
 ```
 
-브라우저 테스트 기준: 홈/검색/글 읽기/그래프 조작/초안/로컬 발행/홈페이지 설정/모바일 레이아웃을 확인했습니다. GitHub 계정 연동을 요구하는 Pages CMS 저장 및 외부 GitHub Pages 배포는 **연결 전 단계라 실제 원격 계정으로 테스트하지 않았습니다.**
+`npm run check`는 JavaScript 구문 검사, 임시 디렉터리에서 실행하는 빌드 회귀 테스트, 실제 콘텐츠 빌드를 수행합니다. 회귀 테스트는 빈/없는 글 폴더, 본문 보존, 초안 제외, 잘못된 글 형식, 중복 slug, 예상하지 못한 파일 오류를 확인합니다. 테스트 과정에서 기존 사용자 글을 수정하거나 삭제하지 않습니다.
+
+브라우저에서는 Write의 CMS 이동, 기존 글과 사진, Markdown 제목·목록·표·인용문, 인라인/블록 LaTeX, 코드, `assets/` 및 `/assets/` 이미지 경로를 확인하세요. MathJax는 인터넷 연결이 필요합니다. CMS 로그인 후 실제 저장은 기존 사용자 글에 영향을 줄 수 있으므로 표시 검사와 별도로 수행합니다.
