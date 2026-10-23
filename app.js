@@ -90,6 +90,12 @@
   function projectRows(short=false) {
     return (short?currentProjects().slice(0,2):currentProjects()).map(p=>`<article class="${short?'project':'project-entry'}"><h3>${p.url?`<a href="${esc(safeUrl(p.url))}" target="_blank" rel="noopener noreferrer">${esc(p.title)} ↗</a>`:esc(p.title)}${p.sample?'<span class="sample-tag"> · Sample</span>':''}</h3><p>${esc(p.description)}</p><p class="meta">${esc(p.stack||'')}</p></article>`).join('');
   }
+  // Metropolis–Hastings is packaged as a self-contained, dependency-free iframe.
+  // Use [demo:metropolis-hastings] on its own line in a study note to embed it.
+  function mhDemoHtml() {
+    const source=window.MH_DEMO_SRCDOC ? `srcdoc="${esc(window.MH_DEMO_SRCDOC)}"` : 'src="demos/metropolis-hastings.html"';
+    return `<div class="mh-embed-wrap"><iframe class="mh-embed" data-mh-demo ${source} loading="lazy" title="Interactive Metropolis–Hastings sampler" referrerpolicy="same-origin" scrolling="no"></iframe></div>`;
+  }
   function experimentHtml(id='home') {
     const pre=id.replace(/[^a-z0-9-]/gi,'');
     return `<div class="demo" data-normal-demo="${pre}" aria-label="Compare two normal distributions">
@@ -199,6 +205,7 @@
       if(heading){flushPara();flushList();const level=Math.max(2,heading[1].length);const id=`section-${headings.length+1}`;headings.push({level,title:heading[2],id});html+=`<h${level} id="${id}">${inlineMd(heading[2])}</h${level}>`;continue;}
       if(s==='---'||s==='***'){flushPara();flushList();html+='<hr>';continue;}
       if(/^\[demo:normal-kl\]$/i.test(s)){flushPara();flushList();html+=experimentHtml('article');continue;}
+      if(/^\[demo:metropolis-hastings\]$/i.test(s)){flushPara();flushList();html+=mhDemoHtml();continue;}
       const ul=s.match(/^[-*]\s+(.+)$/),ol=s.match(/^\d+\.\s+(.+)$/);
       if(ul||ol){flushPara();const type=ul?'ul':'ol';if(list.length&&type!==listType)flushList();listType=type;list.push((ul||ol)[1]);continue;}
       if(s.startsWith('>')){flushPara();flushList();const quote=[];while(i<lines.length&&lines[i].trim().startsWith('>')){quote.push(lines[i].trim().replace(/^>\s?/,''));i++;}i--;html+=`<blockquote><p>${inlineMd(quote.join(' '))}</p></blockquote>`;continue;}
@@ -230,7 +237,7 @@
     app.innerHTML=pageLead('Work / Portfolio','Projects','직접 구현한 모델, 실험, 시각화 프로젝트를 모아 두는 공간입니다. 처음 제공되는 항목은 예시이므로 나중에 교체할 수 있습니다.')+`<div class="page-main"><div class="project-list">${projectRows(false)}</div><p class="editor-guidance" style="margin-top:25px">Projects can be edited in Pages CMS → Projects, or <a href="#/studio/projects" class="small-link">locally in Studio ↗</a>.</p></div>`;
   }
   function renderExperiments() {
-    app.innerHTML=pageLead('Interactive Notes','Experiments','이론의 수식과 그래프를 직접 조작하면서 관찰하는 공간입니다. 시각화는 기존 공부 글에서도 불러올 수 있습니다.')+`<div class="page-main" style="max-width:750px"><span class="overline">01 / Probability</span><h2 style="margin-bottom:12px">Comparing Normal Distributions</h2><p class="explain">고정된 표준정규분포 p(x)와 움직이는 정규분포 q(x)를 비교해보세요.</p>${experimentHtml('experiments')}<div class="notice" style="margin-top:24px">글 본문에서 <code>[demo:normal-kl]</code>라고 작성하면 같은 인터랙티브 실험을 삽입할 수 있습니다. 다른 그래프는 이후에 추가할 수 있습니다.</div></div>`;
+    app.innerHTML=pageLead('Interactive Notes','Experiments','이론의 수식과 그래프를 직접 조작하면서 관찰하는 공간입니다. 시각화는 기존 공부 글에서도 불러올 수 있습니다.')+`<div class="page-main" style="max-width:750px"><span class="overline">01 / Probability</span><h2 style="margin-bottom:12px">Comparing Normal Distributions</h2><p class="explain">고정된 표준정규분포 p(x)와 움직이는 정규분포 q(x)를 비교해보세요.</p>${experimentHtml('experiments')}<div class="notice" style="margin-top:24px">글 본문에서 <code>[demo:normal-kl]</code>로 불러올 수 있습니다.</div><div class="mh-listing"><span class="overline">02 / Markov Chain Monte Carlo</span>${mhDemoHtml()}<p class="editor-guidance">글 본문에 <code>[demo:metropolis-hastings]</code>를 한 줄로 입력하면 같은 시뮬레이터가 표시됩니다.</p></div></div>`;
     setupExperiments();
   }
   function renderAbout() {
@@ -349,6 +356,13 @@
   }
   function dataUriToBlob(data){const [h,b64]=data.split(',');const mime=h.match(/data:(.*?);base64/)?.[1]||'image/webp';const raw=atob(b64);const arr=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)arr[i]=raw.charCodeAt(i);return new Blob([arr],{type:mime});}
   async function readFileAsText(file){return await file.text();}
+  window.addEventListener('message',event=>{
+    if(event.origin!==window.location.origin || event.data?.type!=='academic-notes:mh-resize')return;
+    const frame=Array.from(document.querySelectorAll('iframe[data-mh-demo]')).find(el=>el.contentWindow===event.source);
+    if(!frame)return;
+    const height=Number(event.data.height);
+    if(Number.isFinite(height) && height>0)frame.style.height=Math.min(10000,Math.ceil(height))+'px';
+  });
   function render() {
     clearTimeout(editorTimer);
     const path=route();renderNav(path);
