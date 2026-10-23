@@ -10,31 +10,29 @@
 :root{--ink:#243025;--muted:#6b766d;--line:#e0e8df;--soft:#f7faf5;--accent:#527c3f;--green:#7a9e5a;--green-fill:#d7e9c7;--warn:#a65c43;--paper:#fff;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;color:var(--ink);background:var(--paper);font-synthesis:none;}
 *{box-sizing:border-box}body{margin:0;padding:24px}.embedded body{padding:0}button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #c1dda8;outline-offset:2px}
 .mh{width:100%;max-width:960px;margin:auto;padding:2px 0 16px;}
-.eyebrow{text-transform:uppercase;color:var(--accent);letter-spacing:.14em;font-size:11px;font-weight:720;margin:0 0 12px}
-.head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:22px}.head h1{font-size:clamp(25px,4vw,34px);line-height:1.24;letter-spacing:-.045em;font-weight:740;margin:0 0 8px}.sub{font-size:14px;color:var(--muted);line-height:1.7;margin:0;max-width:640px}.head .tag{flex:none;border:1px solid var(--line);border-radius:4px;color:var(--muted);font:11px var(--mono);padding:7px 9px;margin-top:26px}
+.head{margin-bottom:16px}.head h1{font-size:clamp(25px,4vw,34px);line-height:1.24;letter-spacing:-.045em;font-weight:740;margin:0}
 .tabs{display:flex;border-bottom:1px solid var(--line);gap:29px;margin:0 0 18px}.tab{border:0;border-bottom:2px solid transparent;padding:11px 1px 12px;background:none;color:var(--muted);font-size:13px;font-weight:610;margin-bottom:-1px;transition:color .15s}.tab[aria-selected="true"]{border-bottom-color:var(--accent);color:var(--ink)}
-.panel-header{display:flex;justify-content:space-between;gap:18px;align-items:baseline;margin-bottom:14px}.panel-header h2{margin:0;font-size:16px;letter-spacing:-.025em;font-weight:700}.panel-desc{color:var(--muted);font-size:12px;line-height:1.5;text-align:right}
+.panel-header{margin-bottom:12px}.panel-header h2{margin:0;font-size:16px;letter-spacing:-.025em;font-weight:700}
 .legend{display:flex;flex-wrap:wrap;gap:15px;align-items:center;font-size:11.5px;color:var(--muted);margin-bottom:11px}.legend span{display:inline-flex;align-items:center;gap:6px}.swatch{width:15px;height:4px;display:inline-block;background:var(--green);border-radius:2px}.swatch.hist{height:10px;background:rgba(74,111,53,.35)}.swatch.dot{height:9px;width:9px;border-radius:50%;background:#335a35}.swatch.proposal{height:9px;width:9px;border-radius:50%;background:#b37450}
 .chart-frame{border:1px solid var(--line);border-radius:8px;background:linear-gradient(180deg,#fff 0%,#fdfffc 100%);padding:12px 12px 6px;overflow:hidden}.plot{display:block;width:100%;touch-action:pan-y}.plot-main{height:294px}.plot-trace{height:108px}.plot-two{height:374px}.trace-head{font-size:11px;text-transform:uppercase;letter-spacing:.11em;color:var(--muted);font-weight:600;margin:12px 2px 2px}.trace-frame{border-top:1px solid var(--line);margin-top:6px;padding-top:4px}
 .sidebar{margin-top:17px;display:grid;grid-template-columns:1fr 1fr;gap:14px 20px}.control{min-width:0}.control.full{grid-column:1/-1}.control-label{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:9px}.control-label label,.control-label .label{font-weight:670;font-size:12px}.val{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:700;font-variant-numeric:tabular-nums}input[type=range]{width:100%;height:5px;appearance:none;background:#e0e9d9;border-radius:10px;cursor:pointer;margin:8px 0 5px;accent-color:var(--accent)}input[type=range]::-webkit-slider-thumb{appearance:none;width:15px;height:15px;border:3px solid white;box-shadow:0 0 0 1px #779b64;border-radius:50%;background:var(--accent)}input[type=range]::-moz-range-thumb{width:11px;height:11px;border:2px solid white;box-shadow:0 0 0 1px #779b64;border-radius:50%;background:var(--accent)}
 .presets{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.preset{padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:white;font:11px var(--mono);color:var(--muted)}.preset[aria-pressed="true"]{background:#f0f7ea;border-color:#a8c997;color:var(--accent);font-weight:700}.minmax{display:flex;justify-content:space-between;color:#8a958c;font:10px var(--mono)}
 .toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:16px;margin-top:18px}.actions{display:flex;gap:7px;flex-wrap:wrap}.action{font-size:12px;font-weight:620;padding:9px 12px;border-radius:5px;border:1px solid var(--line);background:#fff;color:var(--ink);white-space:nowrap}.action.primary{background:var(--accent);color:#fff;border-color:var(--accent);padding-inline:18px}.action:hover{background:#f3f8ef}.action.primary:hover{background:#426a31}.select{font-size:12px;color:var(--ink);border:1px solid var(--line);background:white;border-radius:5px;padding:8px 25px 8px 10px}
 .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;border-top:1px solid var(--line);margin-top:21px;padding-top:18px}.metric{min-width:0}.metric .k{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:6px;white-space:nowrap}.metric .v{font:600 19px var(--mono);letter-spacing:-.045em;font-variant-numeric:tabular-nums;min-width:0;overflow-wrap:anywhere}.metric .v.muted{color:var(--muted)}.metric .v.yes{color:var(--accent)}.metric .v.no{color:var(--warn)}.metric .hint{font-size:10px;color:var(--muted);margin-top:4px}
-.foot{display:flex;gap:10px;align-items:flex-start;padding:12px 0 0;margin-top:15px;border-top:1px solid var(--line);font-size:11px;line-height:1.65;color:var(--muted)}.foot b{font-weight:730;color:var(--ink)}.note-symbol{flex:none;font:700 12px var(--mono);border:1px solid var(--line);height:20px;width:20px;display:grid;place-items:center;border-radius:4px;color:var(--accent)}
 [hidden]{display:none !important}
-@media(max-width:640px){body{padding:16px}.mh{padding:0 0 20px}.head{margin-bottom:12px}.head .tag{display:none}.head h1{font-size:26px}.tabs{gap:22px}.panel-header{display:block}.panel-desc{text-align:left;display:block;margin-top:4px}.chart-frame{padding:7px 6px 2px}.plot-main{height:230px}.plot-two{height:305px}.plot-trace{height:90px}.sidebar{grid-template-columns:1fr;gap:15px}.toolbar{align-items:stretch}.actions{width:100%}.action{flex:1;min-width:0}.toolbar>.speed{width:100%;display:flex;align-items:center;justify-content:space-between}.metrics{grid-template-columns:1fr 1fr;row-gap:18px}.metric .v{font-size:18px}.legend{gap:9px;font-size:10.5px}.sub{font-size:13px}}
+@media(max-width:640px){body{padding:16px}.mh{padding:0 0 20px}.head{margin-bottom:12px}.head h1{font-size:26px}.tabs{gap:22px}.chart-frame{padding:7px 6px 2px}.plot-main{height:230px}.plot-two{height:305px}.plot-trace{height:90px}.sidebar{grid-template-columns:1fr;gap:15px}.toolbar{align-items:stretch}.actions{width:100%}.action{flex:1;min-width:0}.toolbar>.speed{width:100%;display:flex;align-items:center;justify-content:space-between}.metrics{grid-template-columns:1fr 1fr;row-gap:18px}.metric .v{font-size:18px}.legend{gap:9px;font-size:10.5px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto !important;transition:none !important}}
 </style>
 </head>
 <body>
 <main class="mh" id="mh-widget">
-  <div class="head"><div><p class="eyebrow">Interactive note · MCMC</p><h1>Metropolis–Hastings</h1><p class="sub">목표분포는 고정되어 있습니다. 시행 횟수와 proposal 크기를 바꾸며 실제 Markov chain의 움직임을 관찰해 보세요.</p></div><span class="tag">Random-walk MH</span></div>
+  <div class="head"><h1>Metropolis–Hastings</h1></div>
   <div class="tabs" role="tablist" aria-label="Target distribution">
     <button class="tab" id="tab-density" role="tab" aria-controls="panel-density" aria-selected="true" data-tab="density">01 / Multimodal 1D</button>
     <button class="tab" id="tab-banana" role="tab" aria-controls="panel-banana" aria-selected="false" tabindex="-1" data-tab="banana">02 / Banana 2D</button>
   </div>
   <div id="panel-density" role="tabpanel" aria-labelledby="tab-density">
-    <div class="panel-header"><h2>Empirical distribution</h2><span class="panel-desc">목표밀도 π(x)와 Markov chain의 경험적 히스토그램 비교</span></div>
+    <div class="panel-header"><h2>Empirical distribution</h2></div>
     <div class="legend"><span><i class="swatch"></i> Target density</span><span><i class="swatch hist"></i> Sample histogram</span><span><i class="swatch dot"></i> Current state</span><span><i class="swatch proposal"></i> Last proposal</span></div>
     <div class="chart-frame">
       <canvas class="plot plot-main" id="density-canvas" role="img" aria-label="목표 확률밀도와 메트로폴리스 헤이스팅스 표본 히스토그램"></canvas>
@@ -42,7 +40,7 @@
     </div>
   </div>
   <div id="panel-banana" role="tabpanel" aria-labelledby="tab-banana" hidden>
-    <div class="panel-header"><h2>Banana-shaped target</h2><span class="panel-desc">비선형 2D 목표분포 위에 표본과 최근 이동 경로를 표시</span></div>
+    <div class="panel-header"><h2>Banana-shaped target</h2></div>
     <div class="legend"><span><i class="swatch hist"></i> Target contours</span><span><i class="swatch dot"></i> Sample positions</span><span><i class="swatch proposal"></i> Last proposal</span></div>
     <div class="chart-frame"><canvas class="plot plot-two" id="banana-canvas" role="img" aria-label="바나나 형태의 2차원 목표 확률밀도와 MH 표본들의 위치"></canvas></div>
   </div>
@@ -53,7 +51,7 @@
       <div class="presets" aria-label="Quick select iteration count"><button class="preset" data-n="10">10</button><button class="preset" data-n="100">100</button><button class="preset" data-n="1000">1,000</button><button class="preset" data-n="10000">10,000</button></div>
     </div>
     <div class="control"><div class="control-label"><label for="sigma">Proposal σ</label><output class="val" id="sigma-output">1.40</output></div>
-      <input id="sigma" type="range" min="0.15" max="3.5" value="1.4" step="0.05" aria-label="대칭 정규 제안분포의 표준편차"><div class="minmax"><span>small moves</span><span>large moves</span></div>
+      <input id="sigma" type="range" min="0.15" max="3.5" value="1.4" step="0.05" aria-label="대칭 정규 제안분포의 표준편차"><div class="minmax"><span>0.15</span><span>3.50</span></div>
     </div>
     <div class="control"><div class="control-label"><span class="label">Random seed</span><span id="seed-display" class="val">2405</span></div>
       <button class="action" id="new-run" style="width:100%;text-align:left">↻ New random run</button>
@@ -64,12 +62,11 @@
     <div class="speed"><label for="speed" style="font-size:11px;color:var(--muted);margin-right:7px">Speed</label><select class="select" id="speed"><option value="50">50 / s</option><option value="300">300 / s</option><option value="1200" selected>1,200 / s</option><option value="4000">4,000 / s</option></select></div>
   </div>
   <div class="metrics" aria-live="polite" aria-atomic="true">
-    <div class="metric"><div class="k">Samples</div><div class="v" id="m-samples">0</div><div class="hint">includes repeated states</div></div>
-    <div class="metric"><div class="k">Acceptance rate</div><div class="v" id="m-rate">—</div><div class="hint">accepted / proposals</div></div>
+    <div class="metric"><div class="k">Samples</div><div class="v" id="m-samples">0</div></div>
+    <div class="metric"><div class="k">Acceptance rate</div><div class="v" id="m-rate">—</div></div>
     <div class="metric"><div class="k">Current state</div><div class="v" id="m-current">—</div><div class="hint" id="m-location">xₜ</div></div>
     <div class="metric"><div class="k">Last proposal</div><div class="v muted" id="m-outcome">—</div><div class="hint" id="m-alpha">α = —</div></div>
   </div>
-  <div class="foot"><span class="note-symbol">i</span><span><b>Sampling, not optimization.</b> 히스토그램은 각 시점의 상태를 모두 집계하며, reject된 step도 이전 상태를 다시 기록합니다. 제안분포는 대칭 정규분포이므로 채택확률은 <b>α = min(1, π(x′)/π(x))</b> 입니다. 시행 횟수가 많아도 mixing이 나쁘면 수렴이 느릴 수 있어요.<br>같은 seed·σ에서는 Iterations를 바꿔도 같은 체인이 이어집니다. σ를 바꾸면 해당 설정으로 다시 계산합니다. 초기 구간도 포함하며, 축 범위 밖의 표본은 그림에서만 생략됩니다.</span></div>
 </main>
 <script type="module">
 import { generateChain, pdf1, log2, bananaContour } from './mh-kernel.mjs';
