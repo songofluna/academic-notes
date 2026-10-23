@@ -12,7 +12,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 async function fixture(t) {
   const dir = await mkdtemp(join(tmpdir(), 'academic-notes-build-'));
   t.after(() => rm(dir, { recursive: true, force: true }));
-  for (const path of ['scripts', 'index.html', 'styles.css', 'app.js', 'assets', 'data']) {
+  for (const path of ['scripts', 'index.html', 'styles.css', 'app.js', 'assets', 'data', 'demos']) {
     await cp(join(root, path), join(dir, path), { recursive: true });
   }
   return dir;
@@ -41,6 +41,9 @@ for (const state of ['empty', 'missing notes directory', 'missing content direct
     assert.deepEqual(data.projects, JSON.parse(await readFile(join(dir, 'data/projects.json'), 'utf8')));
     assert.deepEqual(await readFile(join(dir, 'dist/assets/hero-photo.webp')), await readFile(join(dir, 'assets/hero-photo.webp')));
     assert.equal(await readFile(join(dir, 'dist/.nojekyll'), 'utf8'), '');
+    for (const file of ['metropolis-hastings.html', 'mh-kernel.mjs']) {
+      assert.equal(await readFile(join(dir, 'dist/demos', file), 'utf8'), await readFile(join(dir, 'demos', file), 'utf8'));
+    }
   });
 }
 
