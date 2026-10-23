@@ -95,3 +95,104 @@ test('duplicate note slugs still fail the build', async t => {
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /Duplicate slugs/);
 });
+
+async function put(dir, path, text) {
+  await mkdir(dirname(join(dir,path)), {recursive:true});
+  await writeFile(join(dir,path), typeof text==='string'?text:JSON.stringify(text));
+}
+const course = {slug:'cs229',title:'CS229',order:2,sections:[
+  {id:'advanced',title:'Advanced',order:10,chapters:[]},
+  {id:'foundations',title:'Foundations',order:2,chapters:[
+    {id:'regression',title:'Regression',order:10}, {id:'basics',title:'Basics',order:2}
+  ]}
+]};
+
+test('articles publish explicitly, isolate slugs from notes and preserve Markdown bytes', async t => {
+  const dir=await fixture(t);
+  const body=String.raw`## 수식
+
+$\alpha$ and \(x\).
+
+$$
+\pi(x)=\frac{1}{Z} f(x)
+$$
+
+[demo:metropolis-hastings]
+
+\`\`\`python
+print("<tag>")
+\`\`\`
+
+![photo](/assets/hero-photo.webp)`;
+  await put(dir,'content/notes/shared.md','---\nslug: shared\ntitle: Existing note\n---\nOriginal note');
+  await put(dir,'content/articles/shared.md',`---\nslug: shared\ntitle: Article\npublished: true\nfeatured: true\ntags: [MCMC, Bayesian]\nsummary: >-\n  First line\n  Second line\n---\n${body}\n`);
+  await put(dir,'content/articles/private.md','---\nslug: private\ntitle: Hidden\npublished: false\nfeatured: true\n---\nPRIVATE_SENTINEL');
+  await put(dir,'content/articles/unset.md','---\nslug: unset\ntitle: Hidden too\n---\nUNSET_SENTINEL');
+  await put(dir,'content/articles/draft.md','---\nslug: draft\ntitle: Draft\npublished: true\ndraft: true\n---\nDRAFT_ARTICLE_SENTINEL');
+  const result=build(dir);assert.equal(result.status,0,result.stderr);
+  const data=await payload(dir);
+  assert.equal(data.notes[0].body,'Original note');
+  assert.equal(data.articles.length,1);
+  assert.equal(data.articles[0].body,body);
+  assert.equal(data.articles[0].featured,true);
+  assert.deepEqual(data.articles[0].tags,['MCMC','Bayesian']);
+  assert.equal(data.articles[0].summary,'First line Second line');
+  assert.doesNotMatch(await readFile(join(dir,'dist/site-data.js'),'utf8'), /PRIVATE_SENTINEL|UNSET_SENTINEL|DRAFT_ARTICLE_SENTINEL/);
+});
+
+test('course outlines use numeric order and optional note classification is backward compatible', async t => {
+  const dir=await fixture(t);
+  await put(dir,'content/courses/cs229.json',course);
+  await put(dir,'content/courses/first.json',{slug:'first',title:'First',order:1,sections:[]});
+  await put(dir,'content/notes/legacy.md','---\ntitle: Legacy\n---\nUntouched');
+  await put(dir,'content/notes/chapter.md','---\nslug: chapter\ntitle: Chapter note\ncourse: cs229\nsection: foundations\nchapter: basics\norder: 10\n---\nBody');
+  const result=build(dir);assert.equal(result.status,0,result.stderr);
+  const data=await payload(dir);
+  assert.deepEqual(data.courses.map(c=>c.slug),['first','cs229']);
+  assert.deepEqual(data.courses[1].sections.map(s=>s.slug),['foundations','advanced']);
+  assert.deepEqual(data.courses[1].sections[0].chapters.map(c=>c.slug),['basics','regression']);
+  assert.equal(data.notes.find(n=>n.slug==='legacy').course,'');
+  assert.equal(data.notes.find(n=>n.slug==='chapter').order,10);
+});
+
+for (const meta of ['course: absent', 'course: cs229\nsection: absent', 'course: cs229\nsection: foundations\nchapter: absent', 'section: foundations']) {
+  test(`unknown outline references fail with note context: ${meta.replaceAll('\n',' / ')}`, async t => {
+    const dir=await fixture(t);await put(dir,'content/courses/cs229.json',course);
+    await put(dir,'content/notes/broken.md',`---\nslug: broken\ntitle: Broken\n${meta}\n---\nBody`);
+    const result=build(dir);assert.notEqual(result.status,0);assert.match(result.stderr,/Unknown Course \/ Section \/ Chapter in note broken/);
+  });
+}
+
+test('incomplete draft classifications stay out of the public payload', async t => {
+  const dir=await fixture(t);
+  await put(dir,'content/notes/draft.md','---\ntitle: Draft\ndraft: true\ncourse: future\nsection: future\n---\nPRIVATE_DRAFT');
+  const result=build(dir);assert.equal(result.status,0,result.stderr);
+  assert.deepEqual((await payload(dir)).notes,[]);
+});
+
+for (const value of ['-1', '1.5', 'not-a-number', 'true']) {
+  test(`invalid lecture order is rejected: ${value}`, async t=>{
+    const dir=await fixture(t);
+    await put(dir,'content/notes/invalid.md',`---\ntitle: Invalid\norder: ${value}\n---\nBody`);
+    const result=build(dir);assert.notEqual(result.status,0);assert.match(result.stderr,/Invalid order/);
+  });
+}
+
+test('duplicate outline IDs and article slugs fail the build', async t=>{
+  const dir=await fixture(t);
+  await put(dir,'content/courses/cs229.json',{...course,sections:[course.sections[0],course.sections[0]]});
+  assert.match(build(dir).stderr,/Invalid or duplicate outline ID/);
+  await rm(join(dir,'content/courses'),{recursive:true});
+  for(const file of ['a','b'])await put(dir,`content/articles/${file}.md`,'---\nslug: duplicate\ntitle: Duplicate\n---\nBody');
+  assert.match(build(dir).stderr,/Duplicate slugs in content\/articles/);
+});
+
+test('empty article collection and missing course directory are valid; unexpected errors still fail', async t=>{
+  const dir=await fixture(t);
+  await mkdir(join(dir,'content/articles'),{recursive:true});
+  let result=build(dir);assert.equal(result.status,0,result.stderr);
+  assert.deepEqual((await payload(dir)).articles,[]);assert.deepEqual((await payload(dir)).courses,[]);
+  await rm(join(dir,'content/articles'),{recursive:true});
+  await put(dir,'content/articles','Not a directory');
+  result=build(dir);assert.notEqual(result.status,0);assert.match(result.stderr,/ENOTDIR/);
+});
