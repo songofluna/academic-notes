@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="description" content="Metropolis–Hastings interactive sampler: multimodal target density, proposal acceptance and banana-shaped distribution.">
+<title>Metropolis–Hastings · Interactive Note</title>
+<style>
+:root{--ink:#243025;--muted:#6b766d;--line:#e0e8df;--soft:#f7faf5;--accent:#527c3f;--green:#7a9e5a;--green-fill:#d7e9c7;--warn:#a65c43;--paper:#fff;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;color:var(--ink);background:var(--paper);font-synthesis:none;}
+*{box-sizing:border-box}body{margin:0;padding:24px}.embedded body{padding:0}button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #c1dda8;outline-offset:2px}
+.mh{width:100%;max-width:960px;margin:auto;padding:2px 0 16px;}
+.eyebrow{text-transform:uppercase;color:var(--accent);letter-spacing:.14em;font-size:11px;font-weight:720;margin:0 0 12px}
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:22px}.head h1{font-size:clamp(25px,4vw,34px);line-height:1.24;letter-spacing:-.045em;font-weight:740;margin:0 0 8px}.sub{font-size:14px;color:var(--muted);line-height:1.7;margin:0;max-width:640px}.head .tag{flex:none;border:1px solid var(--line);border-radius:4px;color:var(--muted);font:11px var(--mono);padding:7px 9px;margin-top:26px}
+.tabs{display:flex;border-bottom:1px solid var(--line);gap:29px;margin:0 0 18px}.tab{border:0;border-bottom:2px solid transparent;padding:11px 1px 12px;background:none;color:var(--muted);font-size:13px;font-weight:610;margin-bottom:-1px;transition:color .15s}.tab[aria-selected="true"]{border-bottom-color:var(--accent);color:var(--ink)}
+.panel-header{display:flex;justify-content:space-between;gap:18px;align-items:baseline;margin-bottom:14px}.panel-header h2{margin:0;font-size:16px;letter-spacing:-.025em;font-weight:700}.panel-desc{color:var(--muted);font-size:12px;line-height:1.5;text-align:right}
+.legend{display:flex;flex-wrap:wrap;gap:15px;align-items:center;font-size:11.5px;color:var(--muted);margin-bottom:11px}.legend span{display:inline-flex;align-items:center;gap:6px}.swatch{width:15px;height:4px;display:inline-block;background:var(--green);border-radius:2px}.swatch.hist{height:10px;background:rgba(74,111,53,.35)}.swatch.dot{height:9px;width:9px;border-radius:50%;background:#335a35}.swatch.proposal{height:9px;width:9px;border-radius:50%;background:#b37450}
+.chart-frame{border:1px solid var(--line);border-radius:8px;background:linear-gradient(180deg,#fff 0%,#fdfffc 100%);padding:12px 12px 6px;overflow:hidden}.plot{display:block;width:100%;touch-action:pan-y}.plot-main{height:294px}.plot-trace{height:108px}.plot-two{height:374px}.trace-head{font-size:11px;text-transform:uppercase;letter-spacing:.11em;color:var(--muted);font-weight:600;margin:12px 2px 2px}.trace-frame{border-top:1px solid var(--line);margin-top:6px;padding-top:4px}
+.sidebar{margin-top:17px;display:grid;grid-template-columns:1fr 1fr;gap:14px 20px}.control{min-width:0}.control.full{grid-column:1/-1}.control-label{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:9px}.control-label label,.control-label .label{font-weight:670;font-size:12px}.val{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:700;font-variant-numeric:tabular-nums}input[type=range]{width:100%;height:5px;appearance:none;background:#e0e9d9;border-radius:10px;cursor:pointer;margin:8px 0 5px;accent-color:var(--accent)}input[type=range]::-webkit-slider-thumb{appearance:none;width:15px;height:15px;border:3px solid white;box-shadow:0 0 0 1px #779b64;border-radius:50%;background:var(--accent)}input[type=range]::-moz-range-thumb{width:11px;height:11px;border:2px solid white;box-shadow:0 0 0 1px #779b64;border-radius:50%;background:var(--accent)}
+.presets{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.preset{padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:white;font:11px var(--mono);color:var(--muted)}.preset[aria-pressed="true"]{background:#f0f7ea;border-color:#a8c997;color:var(--accent);font-weight:700}.minmax{display:flex;justify-content:space-between;color:#8a958c;font:10px var(--mono)}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:16px;margin-top:18px}.actions{display:flex;gap:7px;flex-wrap:wrap}.action{font-size:12px;font-weight:620;padding:9px 12px;border-radius:5px;border:1px solid var(--line);background:#fff;color:var(--ink);white-space:nowrap}.action.primary{background:var(--accent);color:#fff;border-color:var(--accent);padding-inline:18px}.action:hover{background:#f3f8ef}.action.primary:hover{background:#426a31}.select{font-size:12px;color:var(--ink);border:1px solid var(--line);background:white;border-radius:5px;padding:8px 25px 8px 10px}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;border-top:1px solid var(--line);margin-top:21px;padding-top:18px}.metric{min-width:0}.metric .k{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:6px;white-space:nowrap}.metric .v{font:600 19px var(--mono);letter-spacing:-.045em;font-variant-numeric:tabular-nums;min-width:0;overflow-wrap:anywhere}.metric .v.muted{color:var(--muted)}.metric .v.yes{color:var(--accent)}.metric .v.no{color:var(--warn)}.metric .hint{font-size:10px;color:var(--muted);margin-top:4px}
+.foot{display:flex;gap:10px;align-items:flex-start;padding:12px 0 0;margin-top:15px;border-top:1px solid var(--line);font-size:11px;line-height:1.65;color:var(--muted)}.foot b{font-weight:730;color:var(--ink)}.note-symbol{flex:none;font:700 12px var(--mono);border:1px solid var(--line);height:20px;width:20px;display:grid;place-items:center;border-radius:4px;color:var(--accent)}
+[hidden]{display:none !important}
+@media(max-width:640px){body{padding:16px}.mh{padding:0 0 20px}.head{margin-bottom:12px}.head .tag{display:none}.head h1{font-size:26px}.tabs{gap:22px}.panel-header{display:block}.panel-desc{text-align:left;display:block;margin-top:4px}.chart-frame{padding:7px 6px 2px}.plot-main{height:230px}.plot-two{height:305px}.plot-trace{height:90px}.sidebar{grid-template-columns:1fr;gap:15px}.toolbar{align-items:stretch}.actions{width:100%}.action{flex:1;min-width:0}.toolbar>.speed{width:100%;display:flex;align-items:center;justify-content:space-between}.metrics{grid-template-columns:1fr 1fr;row-gap:18px}.metric .v{font-size:18px}.legend{gap:9px;font-size:10.5px}.sub{font-size:13px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto !important;transition:none !important}}
+</style>
+</head>
+<body>
+<main class="mh" id="mh-widget">
+  <div class="head"><div><p class="eyebrow">Interactive note · MCMC</p><h1>Metropolis–Hastings</h1><p class="sub">목표분포는 고정되어 있습니다. 시행 횟수와 proposal 크기를 바꾸며 실제 Markov chain의 움직임을 관찰해 보세요.</p></div><span class="tag">Random-walk MH</span></div>
+  <div class="tabs" role="tablist" aria-label="Target distribution">
+    <button class="tab" id="tab-density" role="tab" aria-controls="panel-density" aria-selected="true" data-tab="density">01 / Multimodal 1D</button>
+    <button class="tab" id="tab-banana" role="tab" aria-controls="panel-banana" aria-selected="false" tabindex="-1" data-tab="banana">02 / Banana 2D</button>
+  </div>
+  <div id="panel-density" role="tabpanel" aria-labelledby="tab-density">
+    <div class="panel-header"><h2>Empirical distribution</h2><span class="panel-desc">목표밀도 π(x)와 Markov chain의 경험적 히스토그램 비교</span></div>
+    <div class="legend"><span><i class="swatch"></i> Target density</span><span><i class="swatch hist"></i> Sample histogram</span><span><i class="swatch dot"></i> Current state</span><span><i class="swatch proposal"></i> Last proposal</span></div>
+    <div class="chart-frame">
+      <canvas class="plot plot-main" id="density-canvas" role="img" aria-label="목표 확률밀도와 메트로폴리스 헤이스팅스 표본 히스토그램"></canvas>
+      <div class="trace-frame"><p class="trace-head">Trace · last 240 steps</p><canvas class="plot plot-trace" id="trace-canvas" role="img" aria-label="최근 Markov chain 상태 값의 추적 그래프"></canvas></div>
+    </div>
+  </div>
+  <div id="panel-banana" role="tabpanel" aria-labelledby="tab-banana" hidden>
+    <div class="panel-header"><h2>Banana-shaped target</h2><span class="panel-desc">비선형 2D 목표분포 위에 표본과 최근 이동 경로를 표시</span></div>
+    <div class="legend"><span><i class="swatch hist"></i> Target contours</span><span><i class="swatch dot"></i> Sample positions</span><span><i class="swatch proposal"></i> Last proposal</span></div>
+    <div class="chart-frame"><canvas class="plot plot-two" id="banana-canvas" role="img" aria-label="바나나 형태의 2차원 목표 확률밀도와 MH 표본들의 위치"></canvas></div>
+  </div>
+
+  <section class="sidebar" aria-label="Sampler controls">
+    <div class="control full"><div class="control-label"><label for="iterations">Iterations</label><output class="val" id="iteration-output">0 / 12,000</output></div>
+      <input id="iterations" type="range" min="0" max="12000" value="0" step="1" aria-label="반복 횟수">
+      <div class="presets" aria-label="Quick select iteration count"><button class="preset" data-n="10">10</button><button class="preset" data-n="100">100</button><button class="preset" data-n="1000">1,000</button><button class="preset" data-n="10000">10,000</button></div>
+    </div>
+    <div class="control"><div class="control-label"><label for="sigma">Proposal σ</label><output class="val" id="sigma-output">1.40</output></div>
+      <input id="sigma" type="range" min="0.15" max="3.5" value="1.4" step="0.05" aria-label="대칭 정규 제안분포의 표준편차"><div class="minmax"><span>small moves</span><span>large moves</span></div>
+    </div>
+    <div class="control"><div class="control-label"><span class="label">Random seed</span><span id="seed-display" class="val">2405</span></div>
+      <button class="action" id="new-run" style="width:100%;text-align:left">↻ New random run</button>
+    </div>
+  </section>
+  <div class="toolbar">
+    <div class="actions"><button class="action primary" id="play">▶ Play</button><button class="action" id="step">Next step</button><button class="action" id="add100">+100</button><button class="action" id="reset">Reset</button></div>
+    <div class="speed"><label for="speed" style="font-size:11px;color:var(--muted);margin-right:7px">Speed</label><select class="select" id="speed"><option value="50">50 / s</option><option value="300">300 / s</option><option value="1200" selected>1,200 / s</option><option value="4000">4,000 / s</option></select></div>
+  </div>
+  <div class="metrics" aria-live="polite" aria-atomic="true">
+    <div class="metric"><div class="k">Samples</div><div class="v" id="m-samples">0</div><div class="hint">includes repeated states</div></div>
+    <div class="metric"><div class="k">Acceptance rate</div><div class="v" id="m-rate">—</div><div class="hint">accepted / proposals</div></div>
+    <div class="metric"><div class="k">Current state</div><div class="v" id="m-current">—</div><div class="hint" id="m-location">xₜ</div></div>
+    <div class="metric"><div class="k">Last proposal</div><div class="v muted" id="m-outcome">—</div><div class="hint" id="m-alpha">α = —</div></div>
+  </div>
+  <div class="foot"><span class="note-symbol">i</span><span><b>Sampling, not optimization.</b> 히스토그램은 각 시점의 상태를 모두 집계하며, reject된 step도 이전 상태를 다시 기록합니다. 제안분포는 대칭 정규분포이므로 채택확률은 <b>α = min(1, π(x′)/π(x))</b> 입니다. 시행 횟수가 많아도 mixing이 나쁘면 수렴이 느릴 수 있어요.<br>같은 seed·σ에서는 Iterations를 바꿔도 같은 체인이 이어집니다. σ를 바꾸면 해당 설정으로 다시 계산합니다. 초기 구간도 포함하며, 축 범위 밖의 표본은 그림에서만 생략됩니다.</span></div>
+</main>
+<script type="module">
+import { generateChain, pdf1, log2, bananaContour } from './mh-kernel.mjs';
+(()=>{'use strict';
+document.documentElement.classList.toggle('embedded',window.parent!==window);
+const MAX=12000;
+const LIMIT1=[-6,5.6];
+const LIMIT2={xmin:-5.5,xmax:5.5,ymin:-2.5,ymax:6};
+const $=id=>document.getElementById(id);
+const state={mode:'density',iteration:0,sigma:{density:1.4,banana:.65},seed:2405,playing:false,speed:1200};
+let runs={density:null,banana:null};
+let raf=0,elapsedBudget=0,lastTime=0,paintPending=false;
+const color={ink:'#243025',muted:'#78837a',grid:'#e9eee8',target:'#709850',hist:'rgba(88,131,62,0.3)',histLine:'rgba(76,114,51,0.8)',current:'#335a35',proposal:'#af7251'};
+function newChain(mode){return generateChain({mode,sigma:state.sigma[mode],seed:state.seed,iterations:MAX});}
+function chain(){return runs[state.mode]||(runs[state.mode]=newChain(state.mode));}
+const fmt=n=>n.toLocaleString('en-US');
+const round=n=>(Number.isFinite(n)?n.toFixed(2):'—');
+function stop(){state.playing=false;cancelAnimationFrame(raf);raf=0;lastTime=0;elapsedBudget=0;$('play').textContent='▶ Play';$('play').setAttribute('aria-pressed','false');}
+function setStep(n){state.iteration=Math.max(0,Math.min(MAX,Math.round(n)));$('iterations').value=String(state.iteration);updateLabels();requestPaint();if(state.iteration>=MAX)stop();}
+function updateLabels(){const n=state.iteration;const c=chain();$('iteration-output').textContent=`${fmt(n)} / ${fmt(MAX)}`;
+ $('m-samples').textContent=fmt(n);$('m-rate').textContent=n?((c.acceptCount[n]/n)*100).toFixed(1)+'%':'—';
+ if(state.mode==='density'){$('m-current').textContent=round(c.x[n]);$('m-location').textContent='xₜ';}
+ else{$('m-current').textContent=`${round(c.x[n])}, ${round(c.y[n])}`;$('m-location').textContent='(xₜ, yₜ)';}
+ $('m-outcome').textContent=n?(c.accepted[n]?'Accepted':'Rejected'):'—';$('m-outcome').className='v '+(!n?'muted':c.accepted[n]?'yes':'no');
+ $('m-alpha').textContent=n?`α = ${c.alpha[n].toFixed(3)} · u = ${c.uDraw[n].toFixed(3)}`:'α = —';
+ document.querySelectorAll('.preset').forEach(b=>b.setAttribute('aria-pressed',b.dataset.n===String(n)?'true':'false'));
+ $('sigma').value=state.sigma[state.mode];$('sigma-output').textContent=round(state.sigma[state.mode]);$('seed-display').textContent=String(state.seed);
+}
+function setMode(mode){if(mode===state.mode)return;stop();state.mode=mode;
+ document.querySelectorAll('[data-tab]').forEach(b=>{const selected=b.dataset.tab===mode;b.setAttribute('aria-selected',String(selected));b.tabIndex=selected?0:-1;});
+ $('panel-density').hidden=mode!=='density';$('panel-banana').hidden=mode!=='banana';
+ updateLabels();requestPaint();notifySize();}
+function playFrame(ts){if(!state.playing)return;if(!lastTime)lastTime=ts;
+ const dt=Math.min(0.10,(ts-lastTime)/1000);lastTime=ts;
+ elapsedBudget+=dt*state.speed;
+ const advance=Math.floor(elapsedBudget);if(advance>0){elapsedBudget-=advance;setStep(state.iteration+advance);}
+ if(state.playing)raf=requestAnimationFrame(playFrame);
+}
+function togglePlay(){if(state.playing){stop();return;}if(state.iteration>=MAX)setStep(0);state.playing=true;$('play').textContent='Ⅱ Pause';$('play').setAttribute('aria-pressed','true');lastTime=0;raf=requestAnimationFrame(playFrame);}
+function requestPaint(){if(paintPending)return;paintPending=true;requestAnimationFrame(()=>{paintPending=false;draw();});}
+function setupCanvas(id){const canvas=$(id);const cssw=Math.max(1,canvas.clientWidth),cssh=Math.max(1,canvas.clientHeight);const dpr=Math.min(2,devicePixelRatio||1);const w=Math.round(cssw*dpr),h=Math.round(cssh*dpr);
+ if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
+ const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,cssw,cssh);return{ctx,w:cssw,h:cssh};}
+function chartGrid(ctx,{left,top,right,bottom},xTicks,yTicks,fx,fy){ctx.font='11px ui-monospace,monospace';ctx.lineWidth=1;
+ for(const val of yTicks){const y=fy(val);ctx.strokeStyle=color.grid;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();ctx.fillStyle=color.muted;ctx.textAlign='right';ctx.fillText(val.toFixed(1),left-9,y+4);}
+ for(const val of xTicks){const x=fx(val);ctx.strokeStyle=color.grid;ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bottom);ctx.stroke();ctx.fillStyle=color.muted;ctx.textAlign='center';ctx.fillText(String(val),x,bottom+18);}
+}
+function drawDensity(){const {ctx,w,h}=setupCanvas('density-canvas');const margin={left:42,right:10,top:14,bottom:30},l=margin.left,r=w-margin.right,t=margin.top,b=h-margin.bottom;
+ if(r-l<50)return;
+ const c=chain(),n=state.iteration;const bins=n<20?14:n<200?25:n<1200?38:52,counts=new Uint32Array(bins),binw=(LIMIT1[1]-LIMIT1[0])/bins;
+ for(let i=1;i<=n;i++){const k=Math.floor((c.x[i]-LIMIT1[0])/binw);if(k>=0&&k<bins)counts[k]++;}
+ let highest=0;for(const cnt of counts)highest=Math.max(highest,n?cnt/n/binw:0);
+ const ymax=Math.max(.41,highest*1.18),tick=ymax<.6?.1:ymax<1.2?.2:.5;
+ const fx=x=>l+(x-LIMIT1[0])/(LIMIT1[1]-LIMIT1[0])*(r-l),fy=y=>b-(y/ymax)*(b-t);
+ chartGrid(ctx,{left:l,top:t,right:r,bottom:b},[-5,-3,-1,1,3,5],Array.from({length:Math.floor(ymax/tick)+1},(_,i)=>i*tick),fx,fy);
+ if(n){ctx.fillStyle=color.hist;ctx.strokeStyle=color.histLine;ctx.lineWidth=.8;
+   for(let i=0;i<bins;i++){const left=fx(LIMIT1[0]+i*binw),right=fx(LIMIT1[0]+(i+1)*binw);const height=Math.min(ymax,counts[i]/n/binw),y=fy(height);
+     ctx.fillRect(left+1,y,Math.max(.5,right-left-1),b-y);if(counts[i])ctx.strokeRect(left+1,y,Math.max(.5,right-left-1),b-y);
+   }
+ }
+ // Target curve: normalized mixture PDF, shown at the same y scale as the histogram.
+ ctx.beginPath();for(let i=0;i<=420;i++){const x=LIMIT1[0]+(LIMIT1[1]-LIMIT1[0])*i/420;const cx=fx(x),cy=fy(pdf1(x));if(!i)ctx.moveTo(cx,cy);else ctx.lineTo(cx,cy);}ctx.lineTo(r,b);ctx.lineTo(l,b);ctx.closePath();ctx.fillStyle='rgba(167,206,139,.085)';ctx.fill();
+ ctx.beginPath();for(let i=0;i<=420;i++){const x=LIMIT1[0]+(LIMIT1[1]-LIMIT1[0])*i/420;const cx=fx(x),cy=fy(pdf1(x));if(!i)ctx.moveTo(cx,cy);else ctx.lineTo(cx,cy);}ctx.lineWidth=2.4;ctx.strokeStyle=color.target;ctx.stroke();
+ // Rug plot includes all last chain states, including repeated ones after rejection.
+ if(n){ctx.save();ctx.globalAlpha=.17;ctx.strokeStyle='#305b31';ctx.lineWidth=1;for(let i=Math.max(1,n-250);i<=n;i++){const x=fx(c.x[i]);if(x>=l&&x<=r){ctx.beginPath();ctx.moveTo(x,b-4);ctx.lineTo(x,b);ctx.stroke();}}ctx.restore();}
+ const cur=c.x[n];if(cur>=LIMIT1[0]&&cur<=LIMIT1[1]){ctx.beginPath();ctx.setLineDash([4,5]);ctx.strokeStyle='#5e8760';ctx.lineWidth=1.2;ctx.moveTo(fx(cur),t);ctx.lineTo(fx(cur),b);ctx.stroke();ctx.setLineDash([]);ctx.beginPath();ctx.arc(fx(cur),fy(Math.min(ymax,pdf1(cur))),4,0,Math.PI*2);ctx.fillStyle=color.current;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.6;ctx.stroke();}
+ if(n){const xp=c.proposedX[n];if(xp>=LIMIT1[0]&&xp<=LIMIT1[1]){const px=fx(xp),py=fy(Math.min(ymax,pdf1(xp)));ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);ctx.strokeStyle=color.proposal;ctx.lineWidth=1.8;ctx.stroke();ctx.beginPath();ctx.moveTo(px-4,py-4);ctx.lineTo(px+4,py+4);ctx.moveTo(px+4,py-4);ctx.lineTo(px-4,py+4);ctx.strokeStyle='rgba(175,114,81,.8)';ctx.lineWidth=1;ctx.stroke();}}
+ ctx.textAlign='right';ctx.fillStyle=color.muted;ctx.font='10px ui-monospace,monospace';ctx.fillText('x',r,b+28);
+}
+function drawTrace(){const {ctx,w,h}=setupCanvas('trace-canvas');const left=41,right=w-9,top=8,bottom=h-23;
+ if(right-left<50)return;const n=state.iteration,c=chain(),start=Math.max(0,n-240);const xmap=t=>left+(t-start)/Math.max(1,n-start)*(right-left),ymap=x=>bottom-(x-LIMIT1[0])/(LIMIT1[1]-LIMIT1[0])*(bottom-top);
+ for(const y of [-4,0,4]){const py=ymap(y);ctx.strokeStyle=color.grid;ctx.beginPath();ctx.moveTo(left,py);ctx.lineTo(right,py);ctx.stroke();ctx.font='10px var(--mono),monospace';ctx.fillStyle=color.muted;ctx.textAlign='right';ctx.fillText(String(y),left-9,py+3);}
+ if(n){ctx.save();ctx.beginPath();ctx.rect(left,top,right-left,bottom-top);ctx.clip();ctx.beginPath();ctx.moveTo(xmap(start),ymap(c.x[start]));for(let i=start+1;i<=n;i++)ctx.lineTo(xmap(i),ymap(c.x[i]));ctx.strokeStyle='#50764b';ctx.lineWidth=1.45;ctx.stroke();const px=xmap(n),py=ymap(c.x[n]);ctx.beginPath();ctx.arc(px,py,3.4,0,Math.PI*2);ctx.fillStyle=color.current;ctx.fill();ctx.restore();}
+ ctx.font='10px ui-monospace,monospace';ctx.fillStyle=color.muted;ctx.textAlign='left';ctx.fillText(String(start),left,bottom+16);ctx.textAlign='right';ctx.fillText(String(n),right,bottom+16);
+}
+let densityRaster=null;
+function makeRaster(){const canvas=document.createElement('canvas');canvas.width=220;canvas.height=170;const ctx=canvas.getContext('2d');const img=ctx.createImageData(canvas.width,canvas.height);
+ for(let j=0;j<canvas.height;j++)for(let i=0;i<canvas.width;i++){
+  const x=LIMIT2.xmin+(i+.5)/canvas.width*(LIMIT2.xmax-LIMIT2.xmin);
+  const y=LIMIT2.ymax-(j+.5)/canvas.height*(LIMIT2.ymax-LIMIT2.ymin);
+  const heat=Math.pow(Math.exp(log2(x,y)),.65);
+  const off=(j*canvas.width+i)*4;
+  img.data[off]=Math.round(250-86*heat);img.data[off+1]=Math.round(252-41*heat);img.data[off+2]=Math.round(249-104*heat);img.data[off+3]=255;
+ }
+ ctx.putImageData(img,0,0);return canvas;
+}
+function drawBanana(){const {ctx,w,h}=setupCanvas('banana-canvas');const left=42,right=w-16,top=12,bottom=h-28;if(right-left<50)return;
+ const X=x=>left+(x-LIMIT2.xmin)/(LIMIT2.xmax-LIMIT2.xmin)*(right-left);
+ const Y=y=>bottom-(y-LIMIT2.ymin)/(LIMIT2.ymax-LIMIT2.ymin)*(bottom-top);
+ if(!densityRaster)densityRaster=makeRaster();ctx.imageSmoothingEnabled=true;ctx.drawImage(densityRaster,left,top,right-left,bottom-top);
+ const xTicks=[-4,-2,0,2,4],yTicks=[-2,0,2,4,6];ctx.font='10px ui-monospace,monospace';ctx.textAlign='center';ctx.strokeStyle='rgba(85,111,79,.13)';ctx.lineWidth=.8;
+ for(const v of xTicks){const x=X(v);ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bottom);ctx.stroke();ctx.fillStyle=color.muted;ctx.fillText(String(v),x,bottom+17);}
+ for(const v of yTicks){const y=Y(v);ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();ctx.fillStyle=color.muted;ctx.textAlign='right';ctx.fillText(String(v),left-9,y+3);}
+ ctx.save();ctx.beginPath();ctx.rect(left,top,right-left,bottom-top);ctx.clip();
+ // These contours come from the same target density as the MH kernel.
+ for(const radius of [.7,1.4,2.1,2.8]){
+   ctx.beginPath();for(let i=0;i<=240;i++){const [x,y]=bananaContour(radius,2*Math.PI*i/240);if(i===0)ctx.moveTo(X(x),Y(y));else ctx.lineTo(X(x),Y(y));}
+   ctx.closePath();ctx.strokeStyle='rgba(82,124,63,.50)';ctx.lineWidth=1;ctx.stroke();
+ }
+ const c=chain(),n=state.iteration;
+ // Every sampled state contributes one dot. Rejected proposals repeat the old position.
+ ctx.fillStyle=n>2500?'rgba(48,92,47,.15)':'rgba(48,92,47,.26)';
+ for(let i=1;i<=n;i++){const x=X(c.x[i]),y=Y(c.y[i]);if(x<left||x>right||y<top||y>bottom)continue;ctx.fillRect(x-1.1,y-1.1,2.2,2.2);}
+ if(n){ctx.beginPath();const start=Math.max(0,n-60);ctx.moveTo(X(c.x[start]),Y(c.y[start]));for(let i=start+1;i<=n;i++)ctx.lineTo(X(c.x[i]),Y(c.y[i]));ctx.strokeStyle='rgba(42,72,42,.36)';ctx.lineWidth=1.1;ctx.stroke();
+   const px=X(c.proposedX[n]),py=Y(c.proposedY[n]);ctx.beginPath();ctx.setLineDash([4,4]);ctx.moveTo(X(c.x[n-1]),Y(c.y[n-1]));ctx.lineTo(px,py);ctx.strokeStyle='rgba(167,94,64,.85)';ctx.stroke();ctx.setLineDash([]);
+   if(px>=left&&px<=right&&py>=top&&py<=bottom){ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle=color.proposal;ctx.lineWidth=1.7;ctx.stroke();}
+ }
+ const cx=X(c.x[n]),cy=Y(c.y[n]);if(cx>=left&&cx<=right&&cy>=top&&cy<=bottom){ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.fillStyle=color.current;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}
+ ctx.restore();
+ ctx.font='10px ui-monospace,monospace';ctx.textAlign='right';ctx.fillStyle=color.muted;ctx.fillText('x',right,bottom+26);
+ ctx.save();ctx.translate(14,top+9);ctx.rotate(-Math.PI/2);ctx.fillText('y',0,0);ctx.restore();
+}
+function draw(){if(state.mode==='density'){drawDensity();drawTrace();}else drawBanana();}
+function notifySize(){if(window.parent===window)return;const height=Math.ceil($('mh-widget').getBoundingClientRect().height)+2;window.parent.postMessage({type:'academic-notes:mh-resize',height},location.origin==='null'?'*':location.origin);}
+// UI event binding
+$('iterations').addEventListener('input',e=>{stop();setStep(Number(e.target.value));});
+document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>{stop();setStep(Number(b.dataset.n));}));
+document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.tab)));
+document.querySelector('.tabs').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const mode=e.key==='Home'?'density':e.key==='End'?'banana':state.mode==='density'?'banana':'density';setMode(mode);$('tab-'+mode).focus();});
+$('sigma').addEventListener('input',e=>{stop();state.sigma[state.mode]=Number(e.target.value);runs[state.mode]=null;updateLabels();requestPaint();});
+$('play').addEventListener('click',togglePlay);
+$('step').addEventListener('click',()=>{stop();setStep(state.iteration+1);});
+$('add100').addEventListener('click',()=>{stop();setStep(state.iteration+100);});
+$('reset').addEventListener('click',()=>{stop();setStep(0);});
+$('new-run').addEventListener('click',()=>{stop();state.seed=(state.seed+7919)>>>0;runs={density:null,banana:null};state.iteration=0;setStep(0);});
+$('speed').addEventListener('change',e=>{state.speed=Number(e.target.value);});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
+window.addEventListener('pagehide',stop);
+window.addEventListener('resize',requestPaint);
+if('ResizeObserver'in window){new ResizeObserver(notifySize).observe(document.getElementById('mh-widget'));}else window.addEventListener('load',notifySize);
+window.addEventListener('load',()=>{requestPaint();notifySize();});
+updateLabels();requestPaint();notifySize();
+})();
+</script>
+</body>
+</html>
