@@ -6,7 +6,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "dev": "node scripts/build.mjs && node scripts/serve.mjs",
-    "check": "node --check app.js && node --check scripts/build.mjs && node --check scripts/serve.mjs && node --test tests/*.test.mjs && node scripts/build.mjs",
+    "check": "node --check app.js && node --check demos/mh-kernel.mjs && node --check scripts/build.mjs && node --check scripts/serve.mjs && node --check scripts/preview.mjs && node --test tests/*.test.mjs && node scripts/build.mjs",
     "preview": "node scripts/build.mjs && node scripts/preview.mjs"
   },
   "engines": {
