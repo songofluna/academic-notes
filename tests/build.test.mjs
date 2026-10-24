@@ -100,13 +100,6 @@ async function put(dir, path, text) {
   await mkdir(dirname(join(dir,path)), {recursive:true});
   await writeFile(join(dir,path), typeof text==='string'?text:JSON.stringify(text));
 }
-const course = {slug:'cs229',title:'CS229',order:2,sections:[
-  {id:'advanced',title:'Advanced',order:10,chapters:[]},
-  {id:'foundations',title:'Foundations',order:2,chapters:[
-    {id:'regression',title:'Regression',order:10}, {id:'basics',title:'Basics',order:2}
-  ]}
-]};
-
 test('articles publish explicitly, isolate slugs from notes and preserve Markdown bytes', async t => {
   const dir=await fixture(t);
   const body=String.raw`## 수식
@@ -140,28 +133,34 @@ print("<tag>")
   assert.doesNotMatch(await readFile(join(dir,'dist/site-data.js'),'utf8'), /PRIVATE_SENTINEL|UNSET_SENTINEL|DRAFT_ARTICLE_SENTINEL/);
 });
 
-test('course outlines use numeric order and optional note classification is backward compatible', async t => {
-  const dir=await fixture(t);
-  await put(dir,'content/courses/cs229.json',course);
-  await put(dir,'content/courses/first.json',{slug:'first',title:'First',order:1,sections:[]});
-  await put(dir,'content/notes/legacy.md','---\ntitle: Legacy\n---\nUntouched');
-  await put(dir,'content/notes/chapter.md','---\nslug: chapter\ntitle: Chapter note\ncourse: cs229\nsection: foundations\nchapter: basics\norder: 10\n---\nBody');
-  const result=build(dir);assert.equal(result.status,0,result.stderr);
-  const data=await payload(dir);
-  assert.deepEqual(data.courses.map(c=>c.slug),['first','cs229']);
-  assert.deepEqual(data.courses[1].sections.map(s=>s.slug),['foundations','advanced']);
-  assert.deepEqual(data.courses[1].sections[0].chapters.map(c=>c.slug),['basics','regression']);
-  assert.equal(data.notes.find(n=>n.slug==='legacy').course,'');
-  assert.equal(data.notes.find(n=>n.slug==='chapter').order,10);
-});
-
-for (const meta of ['course: absent', 'course: cs229\nsection: absent', 'course: cs229\nsection: foundations\nchapter: absent', 'section: foundations']) {
-  test(`unknown outline references fail with note context: ${meta.replaceAll('\n',' / ')}`, async t => {
-    const dir=await fixture(t);await put(dir,'content/courses/cs229.json',course);
-    await put(dir,'content/notes/broken.md',`---\nslug: broken\ntitle: Broken\n${meta}\n---\nBody`);
-    const result=build(dir);assert.notEqual(result.status,0);assert.match(result.stderr,/Unknown Course \/ Section \/ Chapter in note broken/);
+for (const meta of [
+  'course: absent',
+  'course: cs229\nsection: absent',
+  'course: generative-models\nsection: "1.1~1.2 "\nchapter: 1. Introduction to deep generative models.',
+  'section: foundations\nchapter: basics'
+]) {
+  test(`legacy outline metadata cannot block publishing: ${meta.replaceAll('\n',' / ')}`, async t => {
+    const dir=await fixture(t);
+    const source=`---\nslug: newnote1\ntitle: GM chapter1 1.1~1.2\ncategory: generative\n${meta}\n---\n## Original section\n\n$X$\n\n[demo:metropolis-hastings]`;
+    await put(dir,'content/notes/newnote1.md',source);
+    const result=build(dir);assert.equal(result.status,0,result.stderr);
+    const data=await payload(dir);
+    assert.equal(data.notes.length,1);
+    assert.equal(data.notes[0].category,'generative');
+    assert.equal(data.notes[0].body,'## Original section\n\n$X$\n\n[demo:metropolis-hastings]');
+    assert.equal(await readFile(join(dir,'content/notes/newnote1.md'),'utf8'),source);
   });
 }
+
+test('retired course configuration is neither validated nor modified', async t => {
+  const dir=await fixture(t);
+  const source='{ incomplete legacy configuration';
+  await put(dir,'content/courses/old.json',source);
+  await put(dir,'content/notes/public.md','---\ntitle: Public\ncourse: old\n---\nBody');
+  const result=build(dir);assert.equal(result.status,0,result.stderr);
+  assert.equal((await payload(dir)).notes[0].course,'old');
+  assert.equal(await readFile(join(dir,'content/courses/old.json'),'utf8'),source);
+});
 
 test('incomplete draft classifications stay out of the public payload', async t => {
   const dir=await fixture(t);
@@ -171,27 +170,27 @@ test('incomplete draft classifications stay out of the public payload', async t 
 });
 
 for (const value of ['-1', '1.5', 'not-a-number', 'true']) {
-  test(`invalid lecture order is rejected: ${value}`, async t=>{
+  test(`retired lecture order does not block publication: ${value}`, async t=>{
     const dir=await fixture(t);
-    await put(dir,'content/notes/invalid.md',`---\ntitle: Invalid\norder: ${value}\n---\nBody`);
-    const result=build(dir);assert.notEqual(result.status,0);assert.match(result.stderr,/Invalid order/);
+    const source=`---\ntitle: Existing note\norder: ${value}\n---\nBody`;
+    await put(dir,'content/notes/legacy.md',source);
+    const result=build(dir);assert.equal(result.status,0,result.stderr);
+    assert.equal((await payload(dir)).notes.length,1);
+    assert.equal(await readFile(join(dir,'content/notes/legacy.md'),'utf8'),source);
   });
 }
 
-test('duplicate outline IDs and article slugs fail the build', async t=>{
+test('duplicate article slugs still fail the build', async t=>{
   const dir=await fixture(t);
-  await put(dir,'content/courses/cs229.json',{...course,sections:[course.sections[0],course.sections[0]]});
-  assert.match(build(dir).stderr,/Invalid or duplicate outline ID/);
-  await rm(join(dir,'content/courses'),{recursive:true});
   for(const file of ['a','b'])await put(dir,`content/articles/${file}.md`,'---\nslug: duplicate\ntitle: Duplicate\n---\nBody');
   assert.match(build(dir).stderr,/Duplicate slugs in content\/articles/);
 });
 
-test('empty article collection and missing course directory are valid; unexpected errors still fail', async t=>{
+test('empty article collection is valid; unexpected errors still fail', async t=>{
   const dir=await fixture(t);
   await mkdir(join(dir,'content/articles'),{recursive:true});
   let result=build(dir);assert.equal(result.status,0,result.stderr);
-  assert.deepEqual((await payload(dir)).articles,[]);assert.deepEqual((await payload(dir)).courses,[]);
+  assert.deepEqual((await payload(dir)).articles,[]);
   await rm(join(dir,'content/articles'),{recursive:true});
   await put(dir,'content/articles','Not a directory');
   result=build(dir);assert.notEqual(result.status,0);assert.match(result.stderr,/ENOTDIR/);

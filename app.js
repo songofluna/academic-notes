@@ -12,7 +12,6 @@
     { id: 'all', label: 'All' },
     { id: 'probability', label: 'Probability & Statistics' },
     { id: 'generative', label: 'Generative Models' },
-    { id: 'graphs', label: 'Graph Learning' },
     { id: 'deep-learning', label: 'Deep Learning' },
   ];
   const $ = id => document.getElementById(id);
@@ -27,7 +26,6 @@
   } catch (err) {persistent = false; console.warn('Local storage unavailable', err);}
   let notesFilter = 'all';
   let notesQuery = '';
-  let notesCourse = '';
   let articlesQuery = '';
   let toastTimer = 0;
   let editorTimer = 0;
@@ -85,37 +83,11 @@
   }
   function filtersHtml(active='all') {return `<div class="filters" id="note-filters" role="group" aria-label="Note categories">${CATEGORIES.map(x=>`<button type="button" class="filter" data-filter="${x.id}" aria-pressed="${x.id===active}">${x.label}</button>`).join('')}</div>`;}
   const byDate = (a,b) => String(b.date||'').localeCompare(String(a.date||'')) || a.title.localeCompare(b.title) || a.slug.localeCompare(b.slug);
-  const byOrder = (a,b) => (a.order ?? Infinity) - (b.order ?? Infinity) || a.title.localeCompare(b.title, 'en', {numeric:true}) || a.slug.localeCompare(b.slug);
-  const courses = () => [...(DATA.courses || [])].sort(byOrder);
   const publicArticles = () => (DATA.articles || []).filter(a=>a.published && !a.draft).sort(byDate);
-  function noteContext(note) {
-    const course=courses().find(c=>c.slug===note.course);
-    const section=course?.sections.find(s=>s.slug===note.section);
-    const chapter=section?.chapters?.find(c=>c.slug===note.chapter);
-    return {course,section,chapter};
-  }
   function postRows(posts, type='notes') {
-    return posts.map(n=>`<article class="entry"><div class="entry-top"><a class="entry-title" href="#/${type}/${encodeURIComponent(n.slug)}">${esc(n.title)}</a><span class="entry-meta">${esc(n.date||'')}${type==='notes'?` · ${esc(noteContext(n).course?.title||labels[n.category]||'Note')}`:''}${sampleNote(n)}${n.localEdit?'<span class="local-mark">Local</span>':''}</span></div>${n.summary?`<p>${esc(n.summary)}</p>`:''}${type==='articles' && normalizeTags(n.tags).length?`<p class="entry-tags">${normalizeTags(n.tags).map(t=>`<span>${esc(t)}</span>`).join('')}</p>`:''}</article>`).join('');
+    return posts.map(n=>`<article class="entry"><div class="entry-top"><a class="entry-title" href="#/${type}/${encodeURIComponent(n.slug)}">${esc(n.title)}</a><span class="entry-meta">${esc(n.date||'')}${type==='notes'?` · ${esc(labels[n.category]||n.category||'Note')}`:''}${sampleNote(n)}${n.localEdit?'<span class="local-mark">Local</span>':''}</span></div>${n.summary?`<p>${esc(n.summary)}</p>`:''}${type==='articles' && normalizeTags(n.tags).length?`<p class="entry-tags">${normalizeTags(n.tags).map(t=>`<span>${esc(t)}</span>`).join('')}</p>`:''}</article>`).join('');
   }
   const noteRows = notes => postRows(notes);
-  function courseGroups(course, notes=publicNotes()) {
-    const own=notes.filter(n=>n.course===course.slug);
-    const direct=own.filter(n=>!n.section).sort(byOrder);
-    const sections=[...course.sections].sort(byOrder).map(section=>({
-      ...section, notes:own.filter(n=>n.section===section.slug && !n.chapter).sort(byOrder),
-      chapters:[...(section.chapters||[])].sort(byOrder).map(chapter=>({...chapter, notes:own.filter(n=>n.section===section.slug && n.chapter===chapter.slug).sort(byOrder)})).filter(c=>c.notes.length)
-    })).filter(s=>s.notes.length||s.chapters.length);
-    return {direct,sections};
-  }
-  function courseSequence(course) {
-    const {direct,sections}=courseGroups(course);
-    return [...direct,...sections.flatMap(s=>[...s.notes,...s.chapters.flatMap(c=>c.notes)])];
-  }
-  function courseTree(course, notes=publicNotes(), current='') {
-    const {direct,sections}=courseGroups(course,notes);
-    const links=items=>items.map(n=>`<li><a href="#/notes/${encodeURIComponent(n.slug)}" ${n.slug===current?'aria-current="page"':''}>${esc(n.title)}</a></li>`).join('');
-    return `<ul class="course-tree">${links(direct)}${sections.map(s=>`<li><span class="outline-section">${esc(s.title)}</span><ul>${links(s.notes)}${s.chapters.map(c=>`<li><span class="outline-chapter">${esc(c.title)}</span><ul>${links(c.notes)}</ul></li>`).join('')}</ul></li>`).join('')}</ul>`;
-  }
   const currentProjects = () => Array.isArray(local.projects) ? local.projects : DATA.projects;
   function projectRows(short=false) {
     const projects=short?currentProjects().filter(p=>p.selected===true):currentProjects();
@@ -174,26 +146,20 @@
       ${s.currentlyStudying||s.sidebarNote?`<div class="side-group"><div class="side-line"></div>${s.currentlyStudying?`<h3>Currently Studying</h3>${normalizeTags(s.currentlyStudying).map(t=>`<p class="sidebar-note">${esc(t)}</p>`).join('')}`:''}${s.sidebarNote?`<p class="sidebar-note">${esc(s.sidebarNote)}</p>`:''}</div>`:''}</aside></div>`;
   }
   function renderNotes() {
-    const visibleCourses=courses().filter(c=>publicNotes().some(n=>n.course===c.slug));
-    app.innerHTML=pageLead('','Notes','') + `<div class="page-main"><div class="notes-controls"><div class="archive-controls"><input id="notes-search" class="search" type="search" value="${esc(notesQuery)}" placeholder="Search notes" aria-label="Search notes"><select id="notes-course" class="archive-select" aria-label="Filter by course"><option value="">All courses</option>${visibleCourses.map(c=>`<option value="${esc(c.slug)}" ${notesCourse===c.slug?'selected':''}>${esc(c.title)}</option>`).join('')}</select></div>${filtersHtml(notesFilter)}<p class="editor-status" id="notes-count" role="status"></p></div><div id="notes-results"></div></div>`;
+    app.innerHTML=pageLead('','Notes','') + `<div class="page-main"><div class="notes-controls"><input id="notes-search" class="search" type="search" value="${esc(notesQuery)}" placeholder="Search notes" aria-label="Search notes">${filtersHtml(notesFilter)}<p class="editor-status" id="notes-count" role="status"></p></div><div id="notes-results"></div></div>`;
     updateNotesResults();
   }
   function updateNotesResults() {
     const box=$('notes-results'); if(!box) return;
     const q=notesQuery.trim().toLocaleLowerCase();
-    const found=publicNotes().filter(n=>{
-      const context=noteContext(n);
-      return (!notesCourse||n.course===notesCourse)&&(notesFilter==='all'||n.category===notesFilter)&&(!q||[n.title,n.summary,n.body,...normalizeTags(n.tags),labels[n.category],...Object.values(context).map(x=>x?.title||'')].join(' ').toLocaleLowerCase().includes(q));
-    });
-    const grouped=courses().filter(c=>found.some(n=>n.course===c.slug));
-    const other=found.filter(n=>!n.course);
-    box.innerHTML=grouped.map(c=>`<section class="course-group"><div class="section-heading"><h2><a href="#/courses/${encodeURIComponent(c.slug)}">${esc(c.title)}</a></h2><span class="faint">${found.filter(n=>n.course===c.slug).length}</span></div>${courseTree(c,found)}</section>`).join('')+(other.length?`<section class="other-notes">${grouped.length?'<h2>Other Notes</h2>':''}${noteRows(other)}</section>`:'')+(!found.length && (q||notesFilter!=='all'||notesCourse)?'<p class="no-results">No matching notes.</p>':'');
+    const found=publicNotes().filter(n=>(notesFilter==='all'||n.category===notesFilter)&&(!q||[n.title,n.summary,n.body,...normalizeTags(n.tags),labels[n.category]].join(' ').toLocaleLowerCase().includes(q)));
+    box.innerHTML=noteRows(found)+(!found.length && (q||notesFilter!=='all')?'<p class="no-results">No matching notes.</p>':'');
     $('notes-count').textContent=publicNotes().length?`${found.length} / ${publicNotes().length} notes`:'';
   }
-  function renderCourse(slug) {
-    const course=courses().find(c=>c.slug===slug);
-    if(!course){app.innerHTML=pageLead('','Course not found','');return;}
-    app.innerHTML=pageLead('',course.title,'', '<a class="small-link" href="#/notes">← Notes</a>')+`<div class="page-main"><nav aria-label="Course contents">${courseTree(course)}</nav></div>`;
+  function renderLegacyCourse(slug) {
+    notesFilter=({'cs229':'probability','generative-models':'generative','deep-learning':'deep-learning'})[slug] || 'all';
+    notesQuery='';
+    go('/notes');
   }
   function renderArticles() {
     app.innerHTML=pageLead('','Articles','')+`<div class="page-main"><input id="articles-search" class="search" type="search" value="${esc(articlesQuery)}" placeholder="Search articles" aria-label="Search articles"><p class="editor-status" id="articles-count" role="status"></p><div id="articles-results"></div></div>`;
@@ -279,13 +245,9 @@
     const n=isNote?noteBySlug(slug):publicArticles().find(a=>a.slug===slug);
     if(!n || (n.draft && !local.notes[slug])) { app.innerHTML=pageLead('404','글을 찾을 수 없습니다.','')+`<div class="page-main"><a href="#/${type}" class="small-link">← ${label}</a></div>`;return; }
     const contents=markdown(n.body), reading=Math.max(1,Math.ceil(String(n.body||'').length/750));
-    const {course,section,chapter}=isNote?noteContext(n):{};
-    const sequence=course?courseSequence(course):[], index=sequence.findIndex(x=>x.slug===n.slug);
-    const previous=sequence[index-1], next=index>=0?sequence[index+1]:null;
-    const neighbor=(post,text)=>post?`<a href="#/notes/${encodeURIComponent(post.slug)}"><span>${text}</span>${esc(post.title)}</a>`:'<span></span>';
-    app.innerHTML=`<div class="article-header"><div class="breadcrumbs"><a href="#/">Home</a><span>/</span><a href="#/${type}">${label}</a>${course?`<span>/</span><a href="#/courses/${encodeURIComponent(course.slug)}">${esc(course.title)}</a>`:''}${section?`<span>/</span><span>${esc(section.title)}</span>`:''}${chapter?`<span>/</span><span>${esc(chapter.title)}</span>`:''}</div><h1 class="post-title">${esc(n.title)}</h1>${n.summary?`<p class="article-deck">${esc(n.summary)}</p>`:''}<div class="article-meta"><span>${esc(n.date||'Undated')}</span>${isNote?`<span>${esc(labels[n.category]||'Study Note')}</span>`:''}<span>~${reading} min read</span>${n.localEdit?'<span class="local-mark">Local preview</span>':''}${n.draft?'<span class="draft-indicator">Draft</span>':''}${n.sample?'<span class="sample-label">Sample content</span>':''}</div>${normalizeTags(n.tags).length?`<div class="entry-tags post-tags">${normalizeTags(n.tags).map(t=>`<span>${esc(t)}</span>`).join('')}</div>`:''}</div>
-      <div class="article-shell"><div class="post-main"><article class="article-content" id="rendered-markdown">${n.localEdit?'<div class="notice">이 글의 수정 내용은 현재 브라우저에만 저장되어 있습니다. GitHub에 게시되지 않았습니다.</div>':''}${contents.html}</article>${previous||next?`<nav class="note-pagination" aria-label="Course sequence">${neighbor(previous,'← Previous')}${neighbor(next,'Next →')}</nav>`:''}</div>
-      <aside class="article-aside">${course?`<h3><a href="#/courses/${encodeURIComponent(course.slug)}">${esc(course.title)}</a></h3><nav class="course-toc" aria-label="Course contents">${courseTree(course,publicNotes(),n.slug)}</nav>`:''}${contents.headings.length?`<h3>On this page</h3><nav>${contents.headings.filter(x=>x.level<=3).map(h=>`<a href="#${h.id}" data-anchor="${h.id}">${esc(h.title)}</a>`).join('')}</nav>`:''}<div class="article-side-actions">${isNote?`<a href="#/studio/edit/${encodeURIComponent(n.slug)}">Edit locally ↗</a>`:''}<a href="#/${type}">← All ${type}</a><button type="button" class="link-button quiet" data-action="copy-link">Copy link</button></div></aside></div>`;
+    app.innerHTML=`<div class="article-header"><div class="breadcrumbs"><a href="#/">Home</a><span>/</span><a href="#/${type}">${label}</a></div><h1 class="post-title">${esc(n.title)}</h1>${n.summary?`<p class="article-deck">${esc(n.summary)}</p>`:''}<div class="article-meta"><span>${esc(n.date||'Undated')}</span>${isNote?`<span>${esc(labels[n.category]||'Study Note')}</span>`:''}<span>~${reading} min read</span>${n.localEdit?'<span class="local-mark">Local preview</span>':''}${n.draft?'<span class="draft-indicator">Draft</span>':''}${n.sample?'<span class="sample-label">Sample content</span>':''}</div>${normalizeTags(n.tags).length?`<div class="entry-tags post-tags">${normalizeTags(n.tags).map(t=>`<span>${esc(t)}</span>`).join('')}</div>`:''}</div>
+      <div class="article-shell"><div class="post-main"><article class="article-content" id="rendered-markdown">${n.localEdit?'<div class="notice">이 글의 수정 내용은 현재 브라우저에만 저장되어 있습니다. GitHub에 게시되지 않았습니다.</div>':''}${contents.html}</article></div>
+      <aside class="article-aside">${contents.headings.length?`<h3>On this page</h3><nav>${contents.headings.filter(x=>x.level<=3).map(h=>`<a href="#${h.id}" data-anchor="${h.id}">${esc(h.title)}</a>`).join('')}</nav>`:''}<div class="article-side-actions">${isNote?`<a href="#/studio/edit/${encodeURIComponent(n.slug)}">Edit locally ↗</a>`:''}<a href="#/${type}">← All ${type}</a><button type="button" class="link-button quiet" data-action="copy-link">Copy link</button></div></aside></div>`;
     setupExperiments();latex($('rendered-markdown'));
   }
   function renderProjects() {
@@ -331,7 +293,7 @@
     <div class="editor-layout"><div class="editor-panel"><h2>Content</h2><div class="editor-status" id="save-status">${n.localEdit?'Local changes saved':'Source note — edits will be stored locally'}</div>
       ${field('field-title','Title / 한국어 제목',n.title,{required:true})}
       <div class="form-grid">${field('field-slug','Slug / 영문 주소',n.slug,{required:true})}${field('field-date','Date',n.date||dateNow(),{type:'date'})}</div>
-      <div class="form-grid"><label class="editor-field"><span>Category</span><select id="field-category">${CATEGORIES.slice(1).map(cat=>`<option value="${cat.id}" ${n.category===cat.id?'selected':''}>${cat.label}</option>`).join('')}</select></label>${field('field-tags','Tags / comma-separated',normalizeTags(n.tags).join(', '))}</div>
+      <div class="form-grid"><label class="editor-field"><span>Category</span><select id="field-category">${(CATEGORIES.slice(1).some(cat=>cat.id===n.category)?CATEGORIES.slice(1):[...CATEGORIES.slice(1),{id:n.category,label:n.category}]).map(cat=>`<option value="${esc(cat.id)}" ${n.category===cat.id?'selected':''}>${esc(cat.label)}</option>`).join('')}</select></label>${field('field-tags','Tags / comma-separated',normalizeTags(n.tags).join(', '))}</div>
       ${field('field-summary','Summary / 글 목록 요약',n.summary,{textarea:true,rows:2})}
       <div class="editor-toolbar"><span class="muted" style="font-size:12px;font-weight:600">Body / Markdown</span><div class="action-row"><button type="button" data-insert="heading">H2</button><button type="button" data-insert="bold">B</button><button type="button" data-insert="inline-math" title="문장 안에 수식 넣기">$x$</button><button type="button" data-insert="math" title="독립된 수식 넣기">∑ Block</button><button type="button" data-insert="code">&lt;/&gt;</button><button type="button" data-action="insert-image">Image</button></div></div>
       <textarea id="field-body" class="editor-textarea" spellcheck="false" aria-label="Markdown article body">${esc(n.body)}</textarea><input id="inline-image-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden><p class="editor-guidance">예: <code>## 제목</code>, <code>**굵게**</code>, <code>$x^2$</code> (문장 중간), <code>$$ ... $$</code> (독립 수식, 위아래 선 없음), <code>[demo:normal-kl]</code>. 이미지 파일은 임시로 저장되며 온라인 발행할 때 함께 업로드해야 합니다.</p>
@@ -395,7 +357,7 @@
   function yamlString(x){return JSON.stringify(String(x ?? ''));}
   function noteMarkdown(n) {
     const fm=[['slug',n.slug],['title',n.title],['date',n.date],['category',n.category],['summary',n.summary],['tags',normalizeTags(n.tags).join(', ')]].map(([k,v])=>`${k}: ${yamlString(v)}`);
-    for(const key of ['course','section','chapter','order']) if(n[key] != null && n[key] !== '') fm.push(`${key}: ${key==='order'?Number(n[key]):yamlString(n[key])}`);
+    for(const key of ['course','section','chapter','order']) if(n[key] != null && n[key] !== '') fm.push(`${key}: ${yamlString(n[key])}`);
     return `---\n${fm.join('\n')}\ndraft: ${n.draft===true}\nsample: false\n---\n\n${n.body||''}\n`;
   }
   function downloadMD(slug){const n=noteBySlug(slug);if(!n){toast('글을 찾을 수 없습니다.');return;} downloadFile(`${n.slug}.md`,noteMarkdown(n),'text/markdown;charset=utf-8');toast('Markdown 파일을 내려받았습니다. 실제 게시하려면 CMS에 저장하세요.');}
@@ -426,7 +388,7 @@
     if(path==='/')renderHome();
     else if(path==='/notes')renderNotes();
     else if(path.startsWith('/notes/'))renderArticle(path.slice(7));
-    else if(path.startsWith('/courses/'))renderCourse(path.slice(9));
+    else if(path.startsWith('/courses/'))renderLegacyCourse(path.slice(9));
     else if(path==='/articles')renderArticles();
     else if(path.startsWith('/articles/'))renderArticle(path.slice(10),'articles');
     else if(path==='/projects')renderProjects();
@@ -502,7 +464,6 @@
     }
   });
   document.addEventListener('change',async event=>{
-    if(event.target.id==='notes-course'){notesCourse=event.target.value;updateNotesResults();return;}
     if(event.target.id==='inline-image-file' && event.target.files?.length){
       try{
         const file=event.target.files[0];const data=await compressImage(file,900);
