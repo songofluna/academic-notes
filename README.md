@@ -63,7 +63,7 @@ npm run dev
 | `data/projects.json` | 프로젝트 목록 |
 | `content/notes/*.md` | 강의 학습 노트 (기존 파일·주소 유지) |
 | `content/articles/*.md` | 독립 Articles (YAML frontmatter 포함) |
-| `content/courses/*.json` | Course → Section → Chapter 목차와 정렬 순서 |
+| `content/courses/*.json` | 이전 Course 설정 보관용. 현재 빌드와 CMS에서는 사용하지 않음 |
 | `assets/hero-photo.webp` | 홈페이지 오른쪽 사진 (현재는 생성한 임시 사진) |
 | `styles.css` | 흰색·연두색 색상과 글꼴·간격·반응형 디자인 |
 | `app.js` | 페이지, 에디터, 인터랙티브 그래프, 검색 |
@@ -80,7 +80,7 @@ npm run dev
 node scripts/build.mjs
 ```
 
-`content/notes/`, `content/articles/`, `content/courses/`는 비어 있거나 폴더 자체가 없어도 빌드됩니다. 설정·사진·프로젝트는 그대로 포함됩니다. 잘못된 글 형식, 중복 slug, 기타 파일 접근 오류는 계속 빌드를 실패시킵니다.
+`content/notes/`, `content/articles/`는 비어 있거나 폴더 자체가 없어도 빌드됩니다. 이전 `content/courses/`는 빌드에서 읽지 않습니다. 설정·사진·프로젝트는 그대로 포함됩니다. 잘못된 글 형식, 중복 slug, 기타 파일 접근 오류는 계속 빌드를 실패시킵니다.
 
 현재 구축한 사이트는 **프레임워크 없는 정적 구조**입니다. 향후 Astro/MDX 등으로 옮기더라도 게시글 `.md`와 사이트 데이터 `.json`을 별도로 보관하므로 콘텐츠 이전이 쉽습니다.
 
@@ -231,47 +231,19 @@ proposal 크기를 바꾸면서 mixing을 관찰해 봅시다.
 
 상단 메뉴는 **Home / Notes / Articles / Projects / About**입니다. `#/experiments`와 기존 데모 파일·삽입 명령어는 유지되며 Projects의 **Experiments ↗**로 접근할 수 있습니다. 기존 Notes를 Articles로 옮기지 않습니다.
 
-### Notes: 강의 목차
+### Notes: 카테고리별 글 목록
 
-1. Pages CMS의 **Courses**에서 Course를 만들거나 수정합니다. CS229, Deep Learning, Generative Models의 빈 목차를 기본으로 제공합니다.
-2. Course 아래 **Sections**, 각 Section 아래 **Chapters**를 추가합니다. 각각 고유한 영문 ID, 표시 제목, 0 이상의 정수 순서를 입력합니다. 제목은 나중에 자유롭게 바꿀 수 있습니다.
-3. **Study Notes**에서 Course를 선택하고, 그 목차의 **Section ID**, **Chapter ID**, **Note order**를 입력합니다. Section·Chapter는 선택 사항이며, 분류 없는 기존 글은 Notes 목록에 남습니다.
-4. 기존처럼 **Unpublished draft**를 끄고 저장하면 게시됩니다.
+Pages CMS의 **Study Notes → Category**에서 다음 중 하나를 선택합니다.
 
-Course는 CMS의 [Reference 필드](https://pagescms.org/docs/configuration/fields/reference/)로 선택합니다. Section·Chapter는 선택한 Course 안의 ID를 입력합니다. 잘못된 참조는 글이 목차에서 조용히 누락되지 않도록 빌드 오류로 알려 줍니다. 이미 사용 중인 ID를 변경하거나 삭제할 때에는 해당 Notes의 참조도 함께 수정해야 합니다. 미완성 분류를 저장하려면 Draft로 둡니다.
+- **Probability & Statistics** (`probability`)
+- **Generative Models** (`generative`)
+- **Deep Learning** (`deep-learning`)
 
-Course 예시 (`content/courses/cs229.json`):
+Notes 화면에는 **All / Probability & Statistics / Generative Models / Deep Learning** 탭과 검색창이 있습니다. 탭을 누르면 그 카테고리의 글만 날짜 최신순으로 표시합니다. 검색은 선택한 카테고리 안에서 제목·요약·본문·태그를 찾습니다. All에서는 기존의 다른 카테고리 글도 빠짐없이 표시합니다.
 
-```json
-{
-  "slug": "cs229",
-  "title": "CS229",
-  "order": 1,
-  "sections": [
-    {
-      "id": "supervised-learning",
-      "title": "Supervised Learning",
-      "order": 1,
-      "chapters": [
-        { "id": "linear-regression", "title": "Linear Regression", "order": 1 }
-      ]
-    }
-  ]
-}
-```
+Chapter와 Section은 글 제목이나 본문의 Markdown 제목(`##`, `###`)으로 자유롭게 작성합니다. 별도의 Course 등록, Section/Chapter ID, 강의 순서 입력은 필요하지 않습니다. 본문의 **On this page** 목차는 계속 지원합니다.
 
-Note frontmatter에 추가할 필드:
-
-```yaml
-course: cs229
-section: supervised-learning
-chapter: linear-regression
-order: 2
-```
-
-Course·Section·Chapter·Note의 `order`는 숫자 오름차순입니다. 순서가 비어 있으면 마지막, 같으면 제목과 ID/slug 순으로 정렬합니다. Course/Section에 직접 속한 글은 그 아래 하위 목차보다 먼저 나옵니다. 날짜는 강의 순서에 영향을 주지 않으며 홈의 Recent Notes에서만 최신순으로 사용합니다.
-
-`#/notes`에는 강의별 계층 목차와 검색·Course·Category 필터가 표시됩니다. `#/courses/cs229`에서는 해당 강의 목차를 볼 수 있습니다. 개별 글 주소는 계속 `#/notes/<slug>`이며, 분류된 글에는 경로·목차·이전/다음 글이 표시됩니다. 공개 글이 없는 Course·Section·Chapter는 목록에서 생략합니다. 로컬 Studio에서 기존 Note를 편집하거나 Markdown으로 내보내도 분류 필드를 보존합니다.
+기존 글의 `course`, `section`, `chapter`, `order` 메타데이터와 `content/courses/` 파일은 삭제하지 않습니다. 이 값들은 목록·정렬·게시 여부를 결정하지 않으며, 등록되지 않은 값이나 예전 순서 값 때문에 전체 배포가 중단되지 않습니다. 글 본문과 `#/notes/<slug>` 주소도 그대로 유지합니다. 이전 `#/courses/cs229`, `#/courses/generative-models`, `#/courses/deep-learning` 주소는 해당 카테고리의 Notes 목록으로 연결합니다.
 
 ### Articles: 독립 글
 
@@ -315,4 +287,4 @@ Home은 **Featured Articles → Recent Notes → Selected Projects** 순서입�
 
 ### 변경 검증
 
-`npm run check`에서 빈 컬렉션, Notes/Articles 본문 보존, 비공개 내용 제외, 컬렉션 간 동일 slug, 숫자 순서, 잘못된 목차 참조와 중복 ID를 확인합니다. 기존 MH 통계 검증과 배포 워크플로는 그대로 유지합니다. 브라우저에서는 현재 콘텐츠와 별도의 임시 데이터로 세 홈 목록, 강의 순서·이전/다음 이동, Article 렌더링, 프로젝트 링크, 빈 화면과 모바일을 점검합니다. 검증용 글을 실제 컬렉션에 게시하지 않습니다.
+`npm run check`에서 빈 컬렉션, Notes/Articles 본문 보존, 비공개 내용 제외, 컬렉션 간 동일 slug, 이전 분류 메타데이터가 있어도 게시되는지와 중복 slug 검출을 확인합니다. 기존 MH 통계 검증과 배포 워크플로는 그대로 유지합니다. 브라우저에서는 카테고리 탭과 검색, 기존 글·수식·데모, Articles/Projects, 이전 URL 연결과 모바일 화면을 점검합니다. 검증용 글을 실제 컬렉션에 게시하지 않습니다.
