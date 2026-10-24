@@ -2,7 +2,6 @@
 slug: newnote1
 title: GM chapter1 1.1~1.2
 date: 2026-10-24
-course: generative-models
 category: generative
 draft: false
 sample: false
@@ -198,7 +197,7 @@ $$
 
 \begin{aligned}
 
-p_\theta(x)&\geq 0[4pt]
+p_\theta(x)&\geq 0
 
 \int_{\mathbb R^d}p_\theta(x)dx&=1
 
@@ -244,13 +243,15 @@ $$
 
 ### 관측값과 데이터셋
 
+
 | 기호 | 의미 |
-| --- | --- |
+| ---------------- | -------------------- |
 | $x\in\mathcal X$ | 하나의 관측값(Observation) |
 | $x_j$ | 관측값 $x$의 $j$번째 좌표 |
 | $x^{(i)}$ | 데이터셋에서 $i$번째 관측값 |
 | $N$ | 관측값의 개수 |
 | $\mathcal D$ | 전체 데이터셋 |
+
 
 특히 $x_j$와 $x^{(i)}$는 서로 다르다.
 
@@ -270,7 +271,7 @@ $$
 
 $$
 
-\mathcal D=\{x^{(i)}\}_{i=1}^{N}
+\mathcal D=x^{(i)}_{i=1}^{N}
 
 $$
 
