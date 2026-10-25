@@ -197,9 +197,9 @@ $$
 
 \begin{aligned}
 
-p_\theta(x)&\geq 0
+p_\theta(x) &\geq 0 \\[6pt]
 
-\int_{\mathbb R^d}p_\theta(x)dx&=1
+\int_{\mathbb R^d} p_\theta(x)\,\mathrm{d}x &= 1
 
 \end{aligned}
 
@@ -271,7 +271,7 @@ $$
 
 $$
 
-\mathcal D=x^{(i)}_{i=1}^{N}
+\mathcal D=\{x^{(i)}\}_{i=1}^{N}
 
 $$
 
