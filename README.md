@@ -1,6 +1,6 @@
 # Academic Notes Studio — 운영 가능한 개인 학술 사이트 초안
 
-v3의 흰색 + 연두색 디자인을 유지하면서 **Notes / Articles / Projects / About / Writing Studio** 기능을 붙인 프로젝트입니다. 실제 게시글 제목과 본문은 한국어, 메뉴·분야명·섹션명은 영어입니다.
+흰색 배경, 왼쪽 작성자 정보, 오른쪽 글 목록과 본문으로 구성된 개인 학술 블로그입니다. **Notes / Articles / Projects / About / Writing Studio**를 지원합니다. 실제 게시글 제목과 본문은 한국어, 메뉴·분야명·섹션명은 영어입니다.
 
 **현재 상태:** [GitHub Pages 사이트](https://songofluna.github.io/academic-notes/)가 공개되어 있습니다. 상단 **Write ↗**는 이 저장소의 [Pages CMS 글쓰기 화면](https://app.pagescms.org/songofluna/academic-notes/main/collection/notes)을 새 탭으로 엽니다. GitHub 로그인과 저장소 접근 권한이 필요합니다. 별도의 로컬 스튜디오에서 사용하는 Publish locally 버튼은 내 브라우저에서 보이게 하는 기능이며 **인터넷에 글을 발행하지 않습니다.**
 
@@ -14,11 +14,11 @@ v3의 흰색 + 연두색 디자인을 유지하면서 **Notes / Articles / Proje
 npm run dev
 ```
 
-터미널에 표시된 `http://localhost:4173/`로 접속하면 됩니다. `npm install`은 필요하지 않습니다(외부 npm 패키지 0개).
+터미널에 표시된 `http://localhost:4173/`로 접속하면 됩니다. `npm install`은 필요하지 않습니다(npm 설치 의존성 없음; Prism은 라이선스와 함께 번들 포함).
 
 ### 사용해 보기
 
-1. 로컬 편집을 체험하려면 홈의 **Explore → Writing Studio ↗** 클릭 (`#/studio`). 온라인 글쓰기는 상단 **Write ↗**를 사용합니다.
+1. 로컬 편집을 체험하려면 `#/studio` 주소에서 Writing Studio 열기. 온라인 글쓰기는 상단 **Write ↗**를 사용합니다.
 2. **+ New note** → 한국어 제목, 영어 slug, Category, Summary, Markdown 본문 작성.
 3. 오른쪽 **Live Preview**에서 수식/표/코드/그림 확인.
 4. **Save draft**는 초안으로 저장; **Publish locally**는 이 브라우저의 목록에 글을 표시.
@@ -64,7 +64,7 @@ npm run dev
 | `content/notes/*.md` | 강의 학습 노트 (기존 파일·주소 유지) |
 | `content/articles/*.md` | 독립 Articles (YAML frontmatter 포함) |
 | `content/courses/*.json` | 이전 Course 설정 보관용. 현재 빌드와 CMS에서는 사용하지 않음 |
-| `assets/hero-photo.webp` | 홈페이지 오른쪽 사진 (현재는 생성한 임시 사진) |
+| `assets/hero-photo.webp` | 왼쪽 작성자 영역의 기존 공부 공간 사진 |
 | `styles.css` | 흰색·연두색 색상과 글꼴·간격·반응형 디자인 |
 | `app.js` | 페이지, 에디터, 인터랙티브 그래프, 검색 |
 | `demos/metropolis-hastings.html` | MH 시뮬레이터 UI와 Canvas 그래프 |
@@ -231,19 +231,19 @@ proposal 크기를 바꾸면서 mixing을 관찰해 봅시다.
 
 상단 메뉴는 **Home / Notes / Articles / Projects / About**입니다. `#/experiments`와 기존 데모 파일·삽입 명령어는 유지되며 Projects의 **Experiments ↗**로 접근할 수 있습니다. 기존 Notes를 Articles로 옮기지 않습니다.
 
-### Notes: 카테고리별 글 목록
+### Notes: Course → Chapter → Note
 
-Pages CMS의 **Study Notes → Category**에서 다음 중 하나를 선택합니다.
+Pages CMS의 **Study Notes → Category**에서 Probability & Statistics, Generative Models, Deep Learning을 선택합니다. 검색과 카테고리 필터는 그대로 사용할 수 있습니다.
 
-- **Probability & Statistics** (`probability`)
-- **Generative Models** (`generative`)
-- **Deep Learning** (`deep-learning`)
+강의별로 정리하려면 선택 항목을 입력합니다.
 
-Notes 화면에는 **All / Probability & Statistics / Generative Models / Deep Learning** 탭과 검색창이 있습니다. 탭을 누르면 그 카테고리의 글만 날짜 최신순으로 표시합니다. 검색은 선택한 카테고리 안에서 제목·요약·본문·태그를 찾습니다. All에서는 기존의 다른 카테고리 글도 빠짐없이 표시합니다.
+- **Course**: `cs229`, `generative-models`, `deep-learning` 또는 원하는 강의명. 비워 두면 기존 Category를 사용합니다.
+- **Chapter**: `Chapter 01. Introduction`처럼 자유롭게 입력합니다. 등록된 ID는 필요하지 않습니다.
+- **Reading order**: 같은 Chapter 안에서 읽을 순서(1, 2, 3). 비워 두면 제목의 숫자 순서로 정렬합니다.
 
-Chapter와 Section은 글 제목이나 본문의 Markdown 제목(`##`, `###`)으로 자유롭게 작성합니다. 별도의 Course 등록, Section/Chapter ID, 강의 순서 입력은 필요하지 않습니다. 본문의 **On this page** 목차는 계속 지원합니다.
+Notes의 **Course order / Newest first**로 강의순·날짜순을 전환합니다. Chapter 2는 Chapter 10보다 먼저 표시합니다. Chapter가 없는 글은 해당 Course의 첫 목록에 표시하며, 내용에서 임의로 Chapter를 추측하지 않습니다. 개별 Notes 하단의 Previous / Next note는 같은 Course의 읽기 순서를 따릅니다.
 
-기존 글의 `course`, `section`, `chapter`, `order` 메타데이터와 `content/courses/` 파일은 삭제하지 않습니다. 이 값들은 목록·정렬·게시 여부를 결정하지 않으며, 등록되지 않은 값이나 예전 순서 값 때문에 전체 배포가 중단되지 않습니다. 글 본문과 `#/notes/<slug>` 주소도 그대로 유지합니다. 이전 `#/courses/cs229`, `#/courses/generative-models`, `#/courses/deep-learning` 주소는 해당 카테고리의 Notes 목록으로 연결합니다.
+기존 글·주소·`section` 메타데이터·`content/courses/` 파일은 보존합니다. 예전 Course 파일은 계속 읽지 않습니다. 미등록 Course/Chapter나 잘못된 order는 전체 배포를 막지 않으며, 사용 가능한 이름·기본 정렬로 표시합니다. `#/courses/cs229`에는 명시적인 CS229 글이 아직 없을 경우 기존 Probability 목록을 보여 주어 이전 연결을 유지합니다.
 
 ### Articles: 독립 글
 
@@ -283,8 +283,13 @@ $$
 | `demoUrl` | 데모 링크 (예: `demos/metropolis-hastings.html` 또는 외부 HTTPS 주소) |
 | `selected` | 홈의 Selected Projects에 표시 |
 
-Home은 **Featured Articles → Recent Notes → Selected Projects** 순서입니다. Featured와 Selected는 명시적으로 선택한 항목만 표시하고, 해당 콘텐츠가 없으면 제목·빈 목록·안내 문구를 모두 생략합니다. 기존 프로젝트를 임의로 Selected로 지정하지 않습니다. 소개와 사진, 흰색·연두색 디자인은 유지합니다.
+Home은 Notes와 Articles를 합친 **Recent posts → Featured Articles → Selected Projects** 순서입니다. 각 글의 날짜와 분류를 표시합니다. Featured와 Selected는 명시적으로 선택한 항목만 표시하고, 해당 콘텐츠가 없으면 제목·빈 목록·안내 문구를 모두 생략합니다. 기존 프로젝트를 임의로 Selected로 지정하지 않습니다. 소개와 사진, 흰색·연두색 디자인은 유지합니다.
 
 ### 변경 검증
 
 `npm run check`에서 빈 컬렉션, Notes/Articles 본문 보존, 비공개 내용 제외, 컬렉션 간 동일 slug, 이전 분류 메타데이터가 있어도 게시되는지와 중복 slug 검출을 확인합니다. 기존 MH 통계 검증과 배포 워크플로는 그대로 유지합니다. 브라우저에서는 카테고리 탭과 검색, 기존 글·수식·데모, Articles/Projects, 이전 URL 연결과 모바일 화면을 점검합니다. 검증용 글을 실제 컬렉션에 게시하지 않습니다.
+
+
+## Design and reading experience
+
+디자인 결정과 회귀 검증 범위는 [DESIGN.md](DESIGN.md)를 참고하세요. 코드 블록은 `python`, `javascript`/`js`, `json`, `bash`/`sh`, `css`, `html`/`markup` 언어를 지정하면 번들에 포함된 Prism 1.30.0으로 강조합니다. 알 수 없는 언어는 일반 코드로 표시합니다. 수식은 기존 MathJax를 사용합니다. MathJax 파일을 처음 가져올 때 인터넷 연결이 필요합니다.
