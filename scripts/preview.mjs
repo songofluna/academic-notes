@@ -5,6 +5,10 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 let html=await readFile(join(root,'index.html'),'utf8');
 const css=await readFile(join(root,'styles.css'),'utf8');
+for (const [path, attributes] of [['assets/content-model.js','defer'], ['assets/vendor/prism.js','data-manual defer']]) {
+  const source=await readFile(join(root,path),'utf8');
+  html=html.replace(`<script src="${path}" ${attributes}></script>`,()=>`<script data-manual>\n${source.replace(/<\/script/gi,'<\\/script')}\n</script>`);
+}
 const js=await readFile(join(root,'app.js'),'utf8');
 let data=await readFile(join(root,'dist/site-data.js'),'utf8');
 // Inline the shared kernel only for the portable preview; deployed demos load it as a module.
