@@ -3,7 +3,7 @@
 - Source: user-provided handwritten `Ch1 3.pdf`, 14 pages (PDF page numbers, not printed labels).
 - SHA-256: `8be87a5939c17ee2cad0013db2ad532ed2b2b49a314750ad4c22ead6af84410a`
 - Inspected: all 14 rendered pages on 2026-11-04.
-- Scope this pass: §§1.3–1.4, both on PDF p. 2, as two separate notes.
+- Current pass: §1.5 on PDF p. 3. Earlier §§1.3–1.4 on p. 2 are recorded below and remain unchanged.
 - Existing §§1.1–1.2: `content/notes/newnote1.md`; preserve without rewriting.
 - Editorial workflow: follow [the publishing guide](README.md). Keep prose proportionate to the handwritten source; include only necessary explanations. Published edited drafts remain author-review-pending. The concision revision below supersedes the initial expanded prose.
 
@@ -14,8 +14,8 @@
 | 1.1–1.2 | 1 | Introduction, data/model distributions, notation | Existing published note; unchanged |
 | 1.3 | 2, upper half | Finite samples, empirical distribution, resampling | Published; author review pending |
 | 1.4 | 2, lower half | Density evaluation, sampling, Gaussian pushforward | Published; author review pending |
-| 1.5 | 3 | MLE, empirical NLL, Gaussian example and degenerate case | Next |
-| 1.6 | 4 | Forward KL and population/empirical likelihood | Planned |
+| 1.5 | 3 | MLE, empirical NLL, Gaussian example and degenerate case | Written; author review pending |
+| 1.6 | 4 | Forward KL and population/empirical likelihood | Next |
 | 1.7 | 5–6 | Reverse KL, mode covering/seeking, support example | Planned |
 | 1.8 | 7–8 | Data-space score, Fisher divergence, Gaussian/mixture examples | Planned |
 | 1.9 | 9–10 | f-divergence, JS, total variation, Wasserstein comparison | Planned |
@@ -95,3 +95,17 @@ Start §1.5 on PDF p. 3: maximum likelihood, empirical negative log-likelihood, 
 - The change is limited to terminology and the corresponding publishing guide. Mathematical expressions, explanations, note URLs, the original §§1.1–1.2, and unrelated site content are preserved. Author review remains pending; the next section remains §1.5.
 - Validation before publication: all 40 `npm run check` tests pass; all 16/32 mathematical expressions in §§1.3/1.4 are byte-for-byte unchanged.
 - Browser preview: section 1.4 displays the revised terminology, 32 MathJax expressions without errors, and a working ToC; at 390 px the text and formulas remain within the page width.
+
+
+## Section 1.5 — 2026-11-04
+
+- Note: `content/notes/gm-ch01-15.md` — [1.5 Maximum Likelihood Estimation](https://songofluna.github.io/academic-notes/#/notes/gm-ch01-15). Keeps `작성자 검토 전`; publication is not author approval.
+- Re-inspected PDF p. 3 visually and confirmed the source PDF SHA-256 is unchanged. Preserved the order: Definition 1.5.1 (Likelihood, Log-Likelihood, Empirical NLL), identical-observation edge case, Example 1.5.2 (Gaussian MLE), then the author's question leading to §1.6.
+- The prose follows §§1.1–1.2 and the updated terminology guide. Necessary clarification is limited to fixed observations versus varying parameters, density versus point probability, v as variance, and the N rather than N−1 denominator. No KL proof or new example is added.
+- Prose: 1,215 characters including spaces and English terms, collapsing whitespace; excludes frontmatter, headings, review notice and all math. Three subheadings. Recompared the draft with the source and retained its core equations, derivative steps and observations −1, 0, 2.
+- Mathematical verification: exact rational arithmetic gives mean 1/3 and variance 14/9. Analytic NLL derivatives agree with finite differences at the optimum and two other parameter points; identical observations increase log-likelihood as positive variance approaches zero. Gaussian MLE formulas were also cross-checked against [Stanford CS229 notes, Part X, pp. 1–2](https://cs229.stanford.edu/notes2021fall/cs229-notes9.pdf). This is a verification source, not a reproduced image or expanded lesson.
+- Figures: none; equations and the original numerical example suffice. No external image was copied. Future necessary figures should be sought in papers/web sources first and checked for reuse permission.
+- Interactive: after the prose was complete, proposed a mean/variance and NLL comparison. The author explicitly chose text-only publication on 2026-11-04; no new simulator or embed is created.
+- Validation: `npm run check` passes all 40 tests and builds 7 notes. Desktop at 1280 px and mobile at 390 × 844 display 35 MathJax expressions (12 display formulas), with no math errors or page overflow; all mobile display formulas fit their 350 px containers. ToC navigation works and no browser JavaScript errors were observed. Long Gaussian NLL and variance arithmetic use explicit aligned line breaks.
+- Existing notes, images, demos, CMS settings, site design and deployment code are unchanged. The new note follows §1.4 in reading order.
+- Next: §1.6, PDF p. 4. Resolve the recorded population/empirical NLL notation issue when drafting that section; do not expand it into §1.5.
