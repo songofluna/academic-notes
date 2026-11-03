@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dilated Causal Convolution Explorer</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#fff;color:#303830;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:760px;margin:auto;padding:12px 2px}h1{font-size:21px;font-weight:600;letter-spacing:-.025em;margin:0 0 16px}button,select{font:inherit;color:inherit;background:#fff;border:1px solid #d9dfd3;min-height:44px;padding:6px 12px;cursor:pointer}.controls,.presets{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.controls label{display:flex;align-items:center;gap:8px;font-size:13px;color:#68705f}input[type=range]{width:125px;accent-color:#65863f;min-height:44px}.controls output{color:#303830;min-width:10px}.controls button{margin-left:auto}.presets{margin:12px 0}.presets button{font-size:13px;flex:1}.presets button[aria-pressed=true]{background:#e4eed8;border-color:#819d64;color:#385124}button:focus-visible,select:focus-visible,input:focus-visible,.diagram:focus-visible{outline:2px solid #65863f;outline-offset:3px}.schedule{display:flex;gap:12px;flex-wrap:wrap}.schedule label{display:flex;gap:6px;align-items:center;font-size:13px;color:#68705f}.schedule select{padding:6px 9px}.alignment{font-size:12px;color:#68705f;margin:14px 0 6px}.diagram{overflow-x:auto;border-top:1px solid #e2e7dd;border-bottom:1px solid #e2e7dd;overscroll-behavior-x:contain;scrollbar-color:#a6b993 #f0f3eb}.diagram svg{display:block;max-width:none}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0 0}.stats dt{font-size:12px;color:#6d7565}.stats dd{font-size:21px;margin:4px 0 0;font-variant-numeric:tabular-nums}.legend{display:flex;gap:16px;flex-wrap:wrap;margin:12px 0 0;font-size:12px;color:#68705f}.legend span{display:flex;align-items:center;gap:6px}.swatch{width:12px;height:12px;border-radius:50%;border:1px solid #70984e;background:#dfebcf}.swatch.gap{background:#fff;border:1px dashed #a7b19b}.range{font-size:13px;color:#55614a;margin:12px 0 0;overflow-wrap:anywhere}@media(max-width:440px){h1{font-size:19px}.controls{gap:6px}.presets{gap:5px}.presets button{padding:6px}.schedule{gap:8px}.stats dd{font-size:19px}.stats dt{font-size:11px}}
+</style>
+</head>
+<body>
+<main>
+<h1>Dilated Causal Convolution Explorer</h1>
+<div class="controls"><label for="layers">Layers <input id="layers" type="range" min="1" max="4" value="4"><output id="layer-count">4</output></label><button id="reset">Reset</button></div>
+<div class="presets" role="group" aria-label="Dilation schedule"><button id="standard" aria-pressed="false">Standard</button><button id="doubling" aria-pressed="true">Doubling</button><button id="custom" aria-pressed="false">Custom</button></div>
+<div id="schedule" class="schedule" role="group" aria-label="Layer dilations"></div>
+<p class="alignment">Kernel 2 · stride 1 · input shifted by 1</p>
+<div id="diagram" class="diagram" tabindex="0" role="region" aria-label="Convolution paths; scroll horizontally"><svg id="graph" role="img" aria-label="Exact paths from the selected output to shifted raw inputs"></svg></div>
+<div class="legend"><span><i class="swatch"></i>Connected</span><span><i class="swatch gap"></i>Gap</span></div>
+<dl class="stats" aria-live="polite"><div><dt>RF span</dt><dd id="span"></dd></div><div><dt>Reachable inputs</dt><dd id="reachable"></dd></div><div><dt>Gaps</dt><dd id="gaps"></dd></div></dl>
+<p class="range" id="input-range"></p>
+</main>
+<script type="module">
+import { dilatedGraph } from './wavenet-kernel.mjs';
+const $ = id => document.getElementById(id);
+const NS = 'http://www.w3.org/2000/svg';
+let preset = 'doubling', custom = [1,2,4,8];
+const reportSize = () => parent.postMessage({type:'academic-notes:wavenet-resize',height:Math.ceil(document.querySelector('main').getBoundingClientRect().height)},location.origin === 'null' ? '*' : location.origin);
+function svg(tag, attrs, text) {
+  const element = document.createElementNS(NS,tag);
+  for (const [key,value] of Object.entries(attrs)) element.setAttribute(key,String(value));
+  if (text !== undefined) element.textContent = text;
+  return element;
+}
+function render() {
+  const layers = Number($('layers').value);
+  const dilations = Array.from({length:layers}, (_,i) => preset === 'standard' ? 1 : preset === 'doubling' ? 2**i : custom[i]);
+  const state = dilatedGraph(dilations);
+  $('layer-count').textContent = layers;
+  for (const id of ['standard','doubling','custom']) $(id).setAttribute('aria-pressed',String(preset === id));
+  $('schedule').replaceChildren(...dilations.map((d,i) => {
+    const label = document.createElement('label');
+    label.textContent = 'd'+(i+1);
+    const select = document.createElement('select');
+    select.setAttribute('aria-label','Layer '+(i+1)+' dilation');
+    for (let value=1; value<=8; value++) {
+      const option = document.createElement('option'); option.value = value; option.textContent = value;
+      select.append(option);
+    }
+    select.value = d;
+    select.addEventListener('change', () => {custom = [...dilations,...custom.slice(layers)]; custom[i] = Number(select.value); preset = 'custom'; render();});
+    label.append(select); return label;
+  }));
+  const step = 40, left = 104, right = 40, top = 52, rowGap = 86;
+  const width = left + right + (state.span-1)*step, height = top + layers*rowGap + 54;
+  const x = offset => left + (state.span-1-offset)*step;
+  const y = layer => top + (layers-layer)*rowGap;
+  const graph = $('graph');
+  graph.setAttribute('width',Math.max(width,260)); graph.setAttribute('height',height);
+  graph.replaceChildren();
+  for (const edge of state.edges) {
+    graph.append(svg('path',{d:'M'+x(edge.source)+' '+(y(edge.layer-1)-8)+' L'+x(edge.offset)+' '+(y(edge.layer)+8),fill:'none',stroke:'#89a56c','stroke-width':1.8}));
+  }
+  for (let layer=0; layer<=layers; layer++) {
+    graph.append(svg('text',{x:6,y:y(layer)-4,fill:'#59674f','font-size':13},layer === 0 ? 'Input' : 'Layer '+layer));
+    if (layer>0) graph.append(svg('text',{x:6,y:y(layer)+15,fill:'#7c8575','font-size':12},'d = '+dilations[layer-1]));
+    for (let offset=0; offset<state.span; offset++) {
+      const connected = state.nodes[layer].includes(offset);
+      const target = layer === layers && offset === 0;
+      graph.append(svg('circle',{cx:x(offset),cy:y(layer),r:target ? 9 : 6,fill:target ? '#547838' : connected ? '#dceacb' : '#fff',stroke:connected ? '#70984e' : '#cbd2c5','stroke-width':1.4,...(!connected ? {'stroke-dasharray':'3 2'} : {})}));
+      if (layer===0) graph.append(svg('text',{x:x(offset),y:y(0)+28,fill:connected ? '#385124' : '#9aa28f','font-size':12,'text-anchor':'middle'},'t−'+(offset+1)));
+    }
+  }
+  graph.append(svg('text',{x:x(0),y:20,fill:'#385124','font-size':13,'text-anchor':'end'},'Predict xₜ'));
+  $('span').textContent = state.span;
+  $('reachable').textContent = state.lags.length;
+  $('gaps').textContent = state.gaps.length;
+  $('input-range').textContent = 'Raw input: x(t−'+state.span+') … x(t−1)';
+  requestAnimationFrame(() => {$('diagram').scrollLeft = $('diagram').scrollWidth; reportSize();});
+}
+for (const id of ['standard','doubling','custom']) $(id).addEventListener('click', () => {preset = id; render();});
+$('layers').addEventListener('input',render);
+$('reset').addEventListener('click', () => {preset = 'doubling'; custom = [1,2,4,8]; $('layers').value = 4; render();});
+new ResizeObserver(reportSize).observe(document.querySelector('main'));
+render();
+</script>
+</body>
+</html>

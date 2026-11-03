@@ -32,6 +32,10 @@ const gatedPixelcnnKernel=(await readFile(join(root,'demos/gated-pixelcnn-kernel
 const gatedPixelcnnDemo=(await readFile(join(root,'demos/gated-pixelcnn-stacks.html'),'utf8'))
   .replace("import { allowedContext, shiftExample } from './gated-pixelcnn-kernel.mjs';",()=>gatedPixelcnnKernel);
 data+='\nwindow.GATED_PIXELCNN_DEMO_SRCDOC = '+JSON.stringify(gatedPixelcnnDemo).replace(/</g,'\\u003c')+';\n';
+const wavenetKernel=(await readFile(join(root,'demos/wavenet-kernel.mjs'),'utf8')).replace(/^export /gm,'');
+const wavenetDemo=(await readFile(join(root,'demos/wavenet-dilation.html'),'utf8'))
+  .replace("import { dilatedGraph } from './wavenet-kernel.mjs';",()=>wavenetKernel);
+data+='\nwindow.WAVENET_DEMO_SRCDOC = '+JSON.stringify(wavenetDemo).replace(/</g,'\\u003c')+';\n';
 const img=await readFile(join(root,'assets','hero-photo.webp'));
 const inlineImage='data:image/webp;base64,'+img.toString('base64');
 // site config references to /assets work in the packed HTML without companion files.

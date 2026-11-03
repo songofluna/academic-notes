@@ -117,6 +117,9 @@
   function gatedPixelcnnDemoHtml() {
     return '<div class="mh-embed-wrap"><iframe class="mh-embed" data-gated-pixelcnn-demo data-src="demos/gated-pixelcnn-stacks.html" loading="lazy" title="Two-Stack &amp; Shift Explorer" referrerpolicy="same-origin" scrolling="no"></iframe></div>';
   }
+  function wavenetDemoHtml() {
+    return '<div class="mh-embed-wrap"><iframe class="mh-embed" data-wavenet-demo data-src="demos/wavenet-dilation.html" loading="lazy" title="Dilated Causal Convolution Explorer" referrerpolicy="same-origin" scrolling="no"></iframe></div>';
+  }
   function experimentHtml(id='home') {
     const pre=id.replace(/[^a-z0-9-]/gi,'');
     return `<div class="demo" data-normal-demo="${pre}" aria-label="Compare two normal distributions">
@@ -131,9 +134,9 @@
       <div class="demo-footer"><button class="reset" type="button" data-reset-plot>Reset ↺</button></div></div>`;
   }
   function setupExperiments(scope=app) {
-    scope.querySelectorAll('[data-mh-demo][data-src], [data-empirical-demo][data-src], [data-made-demo][data-src], [data-pixelcnn-demo][data-src], [data-gated-pixelcnn-demo][data-src]').forEach(frame=>{
+    scope.querySelectorAll('[data-mh-demo][data-src], [data-empirical-demo][data-src], [data-made-demo][data-src], [data-pixelcnn-demo][data-src], [data-gated-pixelcnn-demo][data-src], [data-wavenet-demo][data-src]').forEach(frame=>{
       const load=()=>{
-        const packed=frame.hasAttribute('data-gated-pixelcnn-demo')?window.GATED_PIXELCNN_DEMO_SRCDOC:frame.hasAttribute('data-mh-demo')?window.MH_DEMO_SRCDOC:frame.hasAttribute('data-made-demo')?window.MADE_DEMO_SRCDOC:frame.hasAttribute('data-pixelcnn-demo')?window.PIXELCNN_DEMO_SRCDOC:window.EMPIRICAL_DEMO_SRCDOC;
+        const packed=frame.hasAttribute('data-wavenet-demo')?window.WAVENET_DEMO_SRCDOC:frame.hasAttribute('data-gated-pixelcnn-demo')?window.GATED_PIXELCNN_DEMO_SRCDOC:frame.hasAttribute('data-mh-demo')?window.MH_DEMO_SRCDOC:frame.hasAttribute('data-made-demo')?window.MADE_DEMO_SRCDOC:frame.hasAttribute('data-pixelcnn-demo')?window.PIXELCNN_DEMO_SRCDOC:window.EMPIRICAL_DEMO_SRCDOC;
         if(packed)frame.srcdoc=packed;
         else frame.src=frame.dataset.src;
         frame.removeAttribute('data-src');
@@ -267,6 +270,7 @@
       if(/^\[demo:made-mask-explorer\]$/i.test(s)){flushPara();flushList();html+=madeDemoHtml();continue;}
       if(/^\[demo:pixelcnn-blind-spot\]$/i.test(s)){flushPara();flushList();html+=pixelcnnDemoHtml();continue;}
       if(/^\[demo:gated-pixelcnn-stacks\]$/i.test(s)){flushPara();flushList();html+=gatedPixelcnnDemoHtml();continue;}
+      if(/^\[demo:wavenet-dilation\]$/i.test(s)){flushPara();flushList();html+=wavenetDemoHtml();continue;}
       const ul=s.match(/^[-*]\s+(.+)$/),ol=s.match(/^\d+\.\s+(.+)$/);
       if(ul||ol){flushPara();const type=ul?'ul':'ol';if(list.length&&type!==listType)flushList();listType=type;list.push((ul||ol)[1]);continue;}
       if(s.startsWith('>')){flushPara();flushList();const quote=[];while(i<lines.length&&lines[i].trim().startsWith('>')){quote.push(lines[i].trim().replace(/^>\s?/,''));i++;}i--;html+=`<blockquote><p>${inlineMd(quote.join(' '))}</p></blockquote>`;continue;}
@@ -429,7 +433,7 @@
   async function readFileAsText(file){return await file.text();}
   window.addEventListener('message',event=>{
     if(event.origin!==window.location.origin)return;
-    const selectors={'academic-notes:gated-pixelcnn-resize':'iframe[data-gated-pixelcnn-demo]','academic-notes:mh-resize':'iframe[data-mh-demo]','academic-notes:empirical-resize':'iframe[data-empirical-demo]','academic-notes:made-resize':'iframe[data-made-demo]','academic-notes:pixelcnn-resize':'iframe[data-pixelcnn-demo]'};
+    const selectors={'academic-notes:wavenet-resize':'iframe[data-wavenet-demo]','academic-notes:gated-pixelcnn-resize':'iframe[data-gated-pixelcnn-demo]','academic-notes:mh-resize':'iframe[data-mh-demo]','academic-notes:empirical-resize':'iframe[data-empirical-demo]','academic-notes:made-resize':'iframe[data-made-demo]','academic-notes:pixelcnn-resize':'iframe[data-pixelcnn-demo]'};
     const selector=selectors[event.data?.type];
     if(!selector)return;
     const frame=Array.from(document.querySelectorAll(selector)).find(el=>el.contentWindow===event.source);
