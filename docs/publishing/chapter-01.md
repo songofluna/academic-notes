@@ -18,8 +18,8 @@
 | 1.6 | 4 | Forward KL and population/empirical likelihood | Published; author review pending |
 | 1.7 | 5–6 | Reverse KL, mode covering/seeking, support example | Published; author review pending |
 | 1.8 | 7–8 | Data-space score, Fisher divergence, Gaussian/mixture examples | Published author-supplied manuscript; review notice retained |
-| 1.9 | 9–10 | f-divergence, JS, total variation, Wasserstein comparison | Author-supplied manuscript; publication prepared |
-| 1.10 | 11 | Explicit/implicit models and density existence | Author-supplied manuscript; publication prepared |
+| 1.9 | 9–10 | f-divergence, JS, total variation, Wasserstein comparison | Published author-supplied manuscript; review notice retained |
+| 1.10 | 11 | Explicit/implicit models and density existence | Published author-supplied manuscript; review notice retained |
 | 1.11 | 12–13 | Latent variables, changes of variables, Jacobian examples | Planned |
 | 1.12 | 14 | Taxonomy of major generative-model families | Planned |
 
@@ -173,3 +173,5 @@ Start §1.5 on PDF p. 3: maximum likelihood, empirical negative log-likelihood, 
 - Source checksum (붙여넣은 텍스트.txt): SHA-256 `b58b040fb274d6854b0697ecfb255391199e061d6eb7c8783b822ceda0ae613b`.
 - Source checksum (ch01-19-js-divergence.jpeg): SHA-256 `48a69c9db2cf2b718417826a10911311a13f5f44109e387839aaec908e5956d0`.
 - Source checksum (ch01-19-disjoint-distributions.jpeg): SHA-256 `b0231da82dd6a46ab76191b2bb080a0f7c04f899a919d130c746769958101d36`.
+- Publication: [PR #19](https://github.com/songofluna/academic-notes/pull/19), merged as `74c8d9e1157b7c347fae6b69c96d15e9b51e20d0`. The [PR check](https://github.com/songofluna/academic-notes/actions/runs/41696831012) and [GitHub Pages deployment](https://github.com/songofluna/academic-notes/actions/runs/41696959650) succeeded. Both the uploaded branch and merged main tree matched the tested local tree exactly, including the two binary figures.
+- Public verification on 2026-11-04 KST: [section 1.9](https://songofluna.github.io/academic-notes/#/notes/gm-ch01-19) renders 134 body expressions (37 display), both tables and both attached figures; [section 1.10](https://songofluna.github.io/academic-notes/#/notes/gm-ch01-110) renders 39 expressions (7 display). Desktop 1280 px and mobile 390 px have zero math errors or horizontal page overflow. Both figures load from the site's `/academic-notes/images/` paths at original widths 1748/1400 px and fit the 350 px mobile body. Mobile ToC links reach the Wasserstein and EBM sections; the §1.9 Next note link opens §1.10. No browser JavaScript errors were observed. Public desktop/mobile screenshots were saved for each post. The author-review notices remain unchanged.
