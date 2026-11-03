@@ -15,7 +15,7 @@
 | 1.3 | 2, upper half | Finite samples, empirical distribution, resampling | Published; author review pending |
 | 1.4 | 2, lower half | Density evaluation, sampling, Gaussian pushforward | Published; author review pending |
 | 1.5 | 3 | MLE, empirical NLL, Gaussian example and degenerate case | Published; author review pending |
-| 1.6 | 4 | Forward KL and population/empirical likelihood | Written; author review pending |
+| 1.6 | 4 | Forward KL and population/empirical likelihood | Published; author review pending |
 | 1.7 | 5–6 | Reverse KL, mode covering/seeking, support example | Next |
 | 1.8 | 7–8 | Data-space score, Fisher divergence, Gaussian/mixture examples | Planned |
 | 1.9 | 9–10 | f-divergence, JS, total variation, Wasserstein comparison | Planned |
@@ -125,3 +125,5 @@ Start §1.5 on PDF p. 3: maximum likelihood, empirical negative log-likelihood, 
 - Validation: `npm run check` passes all 40 tests and builds 8 notes. Desktop and 390 × 844 mobile render 31 MathJax expressions (7 display formulas) without errors or page overflow; all mobile display formulas fit 350 px. The KL proof uses explicit line breaks. Mobile ToC and the §1.5 → §1.6 reading link work; no browser JavaScript errors observed.
 - Figures and interactive components: none. The derivation is fully expressed by the text and equations; no new experiment was proposed or implemented. Existing notes, figures, demos, CMS and site code remain unchanged.
 - Next: §1.7 on PDF pp. 5–6. Reconcile the recorded mode-covering caption and log-ratio issue before drafting; do not silently extend or rewrite §1.6.
+- Publication: [PR #16](https://github.com/songofluna/academic-notes/pull/16), merged as `f7d1670961b337147b7148afb2d78c28a5ec52cc`. The [PR check](https://github.com/songofluna/academic-notes/actions/runs/41675845179) and [Pages deployment](https://github.com/songofluna/academic-notes/actions/runs/41676065214) completed successfully.
+- Public verification on 2026-11-04 KST: the note displays the correct title and all 31 MathJax expressions (7 display formulas), without math errors or page overflow. At 390 × 844 all display formulas fit their 350 px containers. The mobile ToC opens Proposition 1.6.2, and the public §1.5 next-note link opens §1.6. Desktop and mobile screenshots were saved. Existing note contents remain unchanged.
