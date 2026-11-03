@@ -52,11 +52,11 @@ $$
 
 여기서 $H$와 $W$는 각각 이미지의 높이와 너비이며, $x_i$는 $i$번째 위치의 픽셀을 의미한다. 이 표기에서는 RGB 이미지의 경우에도 한 위치의 픽셀을 세 채널로 이루어진 벡터로 볼 수 있다.
 
-> **[그림 5.7-1 삽입 위치 — Raster Order]**
+![Raster Scan과 Zigzag의 픽셀 순서](images/raster-order.jpg)
 
+*Figure 5.7-1. Raster Scan Ordering(왼쪽)과 Zigzag Ordering(오른쪽)의 비교. 본문에서는 왼쪽 순서를 사용한다.*
 
-
-> **추천 이미지:** $4\times4$ 픽셀 격자에 1부터 16까지 번호를 붙이고, 각 행을 왼쪽에서 오른쪽으로 읽은 뒤 다음 행으로 내려가는 화살표를 그린 그림. 아직 생성하지 않은 픽셀과 이미 생성한 픽셀을 서로 다른 색으로 표시하면 이후의 조건부 확률 설명과 연결하기 좋다.
+출처: The Gradient, *Likelihood-based Generative Models I: Autoregressive Models* (사용자 제공 이미지).
 
 ### Chain Rule을 이용한 확률분포 분해
 
@@ -211,11 +211,11 @@ Mask A에서 가운데를 0으로 두는 이유는 데이터 누출(Data Leakage
 
 반면 Mask B가 참조하는 가운데 값은 원본 픽셀값이 아니다. 첫 번째 Masked Convolution을 통과하면서 이미 허용된 과거 정보만 담도록 구성된 표현이다.
 
-> **[그림 5.7-2 삽입 위치 — Mask A와 Mask B 비교]**
+![3×3 커널의 RGB 채널별 Mask B](images/mask-a-b.jpg)
 
+*Figure 5.7-2. 3×3 커널에서 입력·출력 RGB 채널 조합에 따른 Mask B.*
 
-
-> **추천 이미지:** $3\times3$ Kernel을 나란히 놓고 허용된 위치(1)는 연한 초록색, 차단된 위치(0)는 회색으로 표시한다. 가운데 칸에는 강조 테두리를 넣고, Mask A는 `현재 Raw Pixel 차단`, Mask B는 `현재 Hidden Feature 사용`이라고 주석을 단다. 마스크가 적용되는 기준 픽셀은 두 그림에서 같은 위치여야 한다.
+출처: [Minibatch AI, *PixelCNN*](https://minibatchai.com/2023/01/27/pixel-cnn.html) (사용자 제공 이미지).
 
 ### Masked Convolution과 조건부 확률
 
@@ -243,11 +243,11 @@ Mask를 사용한다고 해서 모든 과거 픽셀의 정보를 충분히 활�
 
 따라서 **미래 정보를 차단하는 것**과 **사용 가능한 과거 정보를 모두 활용하는 것**은 서로 다른 문제이다.
 
-> **[그림 5.7-3 삽입 위치 — PixelCNN Blind Spot]**
+![PixelCNN의 Blind Spot과 Vertical·Horizontal Stack](images/pixelcnn-blind-spot.jpg)
 
+*Figure 5.7-3. Masked Convolution의 Blind Spot(위)과 Vertical·Horizontal Stack의 결합(아래).*
 
-
-> **추천 이미지:** 중앙의 예측 대상 픽셀을 표시하고, Raster Order에서 이미 생성된 영역 전체와 실제 Masked Convolution의 Receptive Field를 서로 다른 색으로 나타낸다. **과거 영역이면서 Receptive Field에는 포함되지 않는 부분**을 별도 색상으로 강조해 `Blind Spot`이라고 표시한다. 특히 대상 픽셀의 오른쪽 위에 생기는 누락 영역이 드러나도록 그리는 것이 좋다.
+출처: van den Oord et al., *Conditional Image Generation with PixelCNN Decoders* (2016), Figure 2. 사용자 제공 이미지: Francisco Ingham의 동명 논문 소개 글(Medium).
 
 ---
 
@@ -331,11 +331,11 @@ $$
 
 $h_{2,2}$를 계산한 뒤 모델은 이를 이용해 가운데 픽셀에 대한 조건부 분포를 예측하고, 예를 들어 $x_{2,2}=0$을 샘플링할 수 있다.
 
-> **[그림 5.7-4 삽입 위치 — Row LSTM의 Hidden State 전달]**
+![Row LSTM의 Hidden State 전달과 수용 영역](images/row-lstm.jpg)
 
+*Figure 5.7-4. Row LSTM의 input-to-state·state-to-state 연결과 삼각형 형태의 수용 영역.*
 
-
-> **추천 이미지:** 왼쪽에는 $3\times3$ 이진 이미지`1 0 1 / 0 ? ? / ? ? ?`)를 두고 현재 예측할 $(2,2)$ 위치를 테두리로 강조한다. 오른쪽에는 $h_{1,1},h_{1,2},h_{1,3}$에서 $h_{2,2}$로 향하는 화살표를 그린다. 이후 행으로 정보가 전달되는 방향도 함께 표시한다. 첨부 필기의 손그림을 깨끗하게 다시 그린 형태가 적합하다.
+출처: 모두의연구소 슬라이드, *Pixel RNN to Pixel CNN++* (사용자 제공). 슬라이드에 표시된 원 출처: [Jaejun Yoo, *PR12: PixelRNN*](https://www.slideshare.net/thinkfactory/pr12-pixelrnn-jaejun-yoo).
 
 Row LSTM은 과거 행의 정보를 Recurrent Hidden State에 누적한다는 점에서 단순히 국소적인 Convolution을 적용하는 것과 다르다. 다만 행 단위의 정보 전달만으로 모든 방향의 과거 정보를 완전히 활용하는 것은 별개의 문제이다. 이를 더 적극적으로 다루는 구조가 **Diagonal BiLSTM**이다.
 
@@ -431,11 +431,11 @@ $$
 
 필기에 첨부한 강의 슬라이드에서는 이 변환과 함께 **$2\times1$ Convolution Kernel**을 사용한다고 설명한다. 이는 Skewing된 배열에서 인접한 행의 정보가 연결되도록 처리하는 구조이다.
 
-> **[그림 5.7-5 삽입 위치 — Diagonal Skewing]**
+![Diagonal BiLSTM의 Skewing 변환](images/diagonal-skewing.jpg)
 
+*Figure 5.7-5. 각 행을 한 칸씩 이동해 대각선을 열로 정렬하고, 계산 후 원래 배치로 되돌린다.*
 
-
-> **추천 이미지:** 원본 필기 두 번째 이미지에 포함된 강의 슬라이드의 *`Parallelized by skew operation`** 도식. 왼쪽은 $n\times n$ 격자, 오른쪽은 $n\times(2n-1)$ 격자이며, 각 행이 오른쪽으로 이동하여 대각선 원소가 수직으로 정렬되는 모습을 보여준다. 게시용으로는 슬라이드를 그대로 캡처하는 대신 같은 원리의 그림을 새로 그리는 것이 더 선명하다. 오른쪽 그림에 $2\times1$ Kernel이 적용되는 위치를 추가해도 좋다.
+출처: [van den Oord et al., *Pixel Recurrent Neural Networks* (2016)](https://proceedings.mlr.press/v48/oord16.html), Figure 3. 사용자 제공 캡처. [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 ### Bidirectional 계산과 미래 정보 차단
 
@@ -449,11 +449,11 @@ Diagonal BiLSTM에서는 대각선 방향의 정보를 양쪽에서 모아, 더 
 
 한 행 아래로 옮기는 이유는 오른쪽에서 왼쪽으로 모은 정보가 **현재 행이 아니라 이전 행의 정보**로만 사용되게 하기 위해서다. 이전 행의 픽셀들은 Raster Order상 모두 과거에 속하므로, 이 방식으로 미래 픽셀의 정보가 예측에 섞이지 않도록 한다.
 
-> **[그림 5.7-6 삽입 위치 — Diagonal BiLSTM의 양방향 정보 결합]**
+![Diagonal BiLSTM의 양방향 정보 전달](images/diagonal-bilstm.jpg)
 
+*Figure 5.7-6. Diagonal BiLSTM의 양방향 Hidden State와 Skewing을 이용한 대각선 계산.*
 
-
-> **추천 이미지:** 왼쪽에는 왼쪽→오른쪽 방향으로 계산한 Feature Map, 가운데에는 오른쪽→왼쪽 방향으로 계산한 Feature Map, 오른쪽에는 두 정보를 합친 Map을 배치한다. 가운데 Map을 **한 행 아래로 Shift**하는 화살표를 강조한다. 현재 예측할 픽셀의 오른쪽에 있는 미래 정보가 결합 후에도 전달되지 않는다는 것을 색상으로 표시한다.
+출처: 모두의연구소 슬라이드, *Pixel RNN to Pixel CNN++* (사용자 제공). 슬라이드에 표시된 원 출처: [Jaejun Yoo, *PR12: PixelRNN*](https://www.slideshare.net/thinkfactory/pr12-pixelrnn-jaejun-yoo).
 
 Diagonal BiLSTM의 핵심은 **대각선 방향으로 넓은 공간적 의존성을 학습하면서도, 이미 생성된 픽셀만 사용한다는 Autoregressive 조건을 유지하는 것**이다.
 

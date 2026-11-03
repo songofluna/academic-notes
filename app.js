@@ -59,7 +59,7 @@
   const localCount=()=>Object.keys(local.notes).length + Object.keys(local.site).length + Object.keys(local.images).length + (local.projects?1:0);
   function safeUrl(url) {
     const s=String(url||'').trim();
-    if (/^(https?:\/\/|mailto:|#|\.\.?\/|assets\/|demos\/|\/assets\/)/i.test(s)) return s;
+    if (/^(https?:\/\/|mailto:|#|\.\.?\/|assets\/|images\/|demos\/|\/assets\/)/i.test(s)) return s;
     if (/^data:image\/(png|webp|jpeg|gif);base64,/i.test(s)) return s;
     return '#';
   }
