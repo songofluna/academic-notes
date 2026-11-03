@@ -6,19 +6,17 @@ category: generative
 draft: false
 sample: false
 ---
-
-
 # 5.7 PixelRNN and PixelCNN
 
 이미지 생성에도 Autoregressive Modeling을 적용할 수 있다. 문장을 단어 또는 토큰의 순서로 분해하듯, 이미지는 픽셀의 순서로 분해한다. **PixelCNN**과 **PixelRNN**은 이전에 관측한 픽셀을 조건으로 다음 픽셀의 확률분포를 계산하는 대표적인 모델이다.
 
 이 절에서는 다음 세 가지 문제를 중심으로 두 모델을 살펴본다.
 
-1. 이미지의 픽셀을 어떻게 Autoregressive하게 모델링하는가?
+1)이미지의 픽셀을 어떻게 Autoregressive하게 모델링하는가?
 
-2. CNN에서 아직 생성하지 않은 픽셀의 정보를 차단하면서 조건부 확률을 어떻게 계산하는가?
+2)CNN에서 아직 생성하지 않은 픽셀의 정보를 차단하면서 조건부 확률을 어떻게 계산하는가?
 
-3. PixelCNN의 **Blind Spot** 문제를 PixelRNN, 특히 **Diagonal BiLSTM**에서는 어떻게 다루는가?
+3)PixelCNN의 **Blind Spot** 문제를 PixelRNN, 특히 **Diagonal BiLSTM**에서는 어떻게 다루는가?
 
 ## 5.7.1 Autoregressive Image Modeling
 
@@ -34,9 +32,9 @@ $$
 
 \begin{pmatrix}
 
- x_1 & x_2 & x_3\\
+ x_1 & x_2 & x_3
 
- x_4 & x_5 & x_6\\
+ x_4 & x_5 & x_6
 
  x_7 & x_8 & x_9
 
@@ -56,7 +54,7 @@ $$
 
 > **[그림 5.7-1 삽입 위치 — Raster Order]**
 
->
+
 
 > **추천 이미지:** $4\times4$ 픽셀 격자에 1부터 16까지 번호를 붙이고, 각 행을 왼쪽에서 오른쪽으로 읽은 뒤 다음 행으로 내려가는 화살표를 그린 그림. 아직 생성하지 않은 픽셀과 이미 생성한 픽셀을 서로 다른 색으로 표시하면 이후의 조건부 확률 설명과 연결하기 좋다.
 
@@ -102,11 +100,11 @@ $$
 
 \begin{aligned}
 
- x_1 &\sim p_\theta(x_1),\\
+ x_1 &\sim p_\theta(x_1),
 
- x_2 &\sim p_\theta(x_2\mid x_1),\\
+ x_2 &\sim p_\theta(x_2\mid x_1),
 
- &\ \vdots\\
+ &\ \vdots
 
  x_D &\sim p_\theta(x_D\mid x_{<D}).
 
@@ -136,9 +134,9 @@ $$
 
  p_\theta(x_i\mid x_{<i})
 
- &=p_\theta(x_{i,R}\mid x_{<i})\\
+ &=p_\theta(x_{i,R}\mid x_{<i})
 
- &\quad\times p_\theta(x_{i,G}\mid x_{<i},x_{i,R})\\
+ &\quad\times p_\theta(x_{i,G}\mid x_{<i},x_{i,R})
 
  &\quad\times p_\theta(x_{i,B}\mid x_{<i},x_{i,R},x_{i,G}).
 
@@ -176,9 +174,9 @@ M_A=
 
 \begin{pmatrix}
 
-1&1&1\\
+1&1&1
 
-1&0&0\\
+1&0&0
 
 0&0&0
 
@@ -190,9 +188,9 @@ M_B=
 
 \begin{pmatrix}
 
-1&1&1\\
+1&1&1
 
-1&1&0\\
+1&1&0
 
 0&0&0
 
@@ -207,7 +205,6 @@ Mask의 숫자 **1은 해당 위치의 연결을 허용한다**는 뜻이고, **
 두 Mask의 차이는 가운데 원소 하나이다.
 
 - **Mask A:** 가운데가 0이다. 첫 번째 Layer에서 사용하며, 현재 예측할 **원본 픽셀값**을 직접 참조하지 못하게 한다.
-
 - **Mask B:** 가운데가 1이다. 이후 Layer에서 사용한다. 앞선 Layer가 이미 과거 픽셀만 이용해 만든 **Hidden Feature**이므로 현재 위치의 Hidden Feature를 참조하는 것은 허용된다.
 
 Mask A에서 가운데를 0으로 두는 이유는 데이터 누출(Data Leakage)을 막기 위해서다. 예를 들어 이미지의 중앙 픽셀이 0인지 1인지 예측하는 문제에서, 모델이 그 픽셀값을 입력으로 직접 받아버리면 조건부 분포를 학습할 필요가 없어진다.
@@ -216,7 +213,7 @@ Mask A에서 가운데를 0으로 두는 이유는 데이터 누출(Data Leakage
 
 > **[그림 5.7-2 삽입 위치 — Mask A와 Mask B 비교]**
 
->
+
 
 > **추천 이미지:** $3\times3$ Kernel을 나란히 놓고 허용된 위치(1)는 연한 초록색, 차단된 위치(0)는 회색으로 표시한다. 가운데 칸에는 강조 테두리를 넣고, Mask A는 `현재 Raw Pixel 차단`, Mask B는 `현재 Hidden Feature 사용`이라고 주석을 단다. 마스크가 적용되는 기준 픽셀은 두 그림에서 같은 위치여야 한다.
 
@@ -248,7 +245,7 @@ Mask를 사용한다고 해서 모든 과거 픽셀의 정보를 충분히 활�
 
 > **[그림 5.7-3 삽입 위치 — PixelCNN Blind Spot]**
 
->
+
 
 > **추천 이미지:** 중앙의 예측 대상 픽셀을 표시하고, Raster Order에서 이미 생성된 영역 전체와 실제 Masked Convolution의 Receptive Field를 서로 다른 색으로 나타낸다. **과거 영역이면서 Receptive Field에는 포함되지 않는 부분**을 별도 색상으로 강조해 `Blind Spot`이라고 표시한다. 특히 대상 픽셀의 오른쪽 위에 생기는 누락 영역이 드러나도록 그리는 것이 좋다.
 
@@ -296,9 +293,9 @@ X=
 
 \begin{pmatrix}
 
-1&0&1\\
+1&0&1
 
-0&?&?\\
+0&?&?
 
 ?&?&?
 
@@ -312,11 +309,11 @@ Raster Order상 현재 생성할 픽셀은 $x_{2,2}$이다. 첫 번째 행의 �
 
 $$
 
-p_\theta\!\left(
+p_\theta\left(
 
  x_{2,2}=0
 
- \mid x_{1,1}=1,\,x_{1,2}=0,\,x_{1,3}=1,\,x_{2,1}=0
+ \mid x_{1,1}=1,x_{1,2}=0,x_{1,3}=1,x_{2,1}=0
 
 \right)
 
@@ -336,7 +333,7 @@ $h_{2,2}$를 계산한 뒤 모델은 이를 이용해 가운데 픽셀에 대한
 
 > **[그림 5.7-4 삽입 위치 — Row LSTM의 Hidden State 전달]**
 
->
+
 
 > **추천 이미지:** 왼쪽에는 $3\times3$ 이진 이미지`1 0 1 / 0 ? ? / ? ? ?`)를 두고 현재 예측할 $(2,2)$ 위치를 테두리로 강조한다. 오른쪽에는 $h_{1,1},h_{1,2},h_{1,3}$에서 $h_{2,2}$로 향하는 화살표를 그린다. 이후 행으로 정보가 전달되는 방향도 함께 표시한다. 첨부 필기의 손그림을 깨끗하게 다시 그린 형태가 적합하다.
 
@@ -356,9 +353,9 @@ $$
 
 \begin{pmatrix}
 
-A&B&C\\
+A&B&C
 
-D&E&F\\
+D&E&F
 
 G&H&I
 
@@ -372,15 +369,15 @@ $$
 
 \begin{aligned}
 
-\mathcal G_1&=\{A\},\\
+\mathcal G_1&=A,
 
-\mathcal G_2&=\{B,D\},\\
+\mathcal G_2&=B,D,
 
-\mathcal G_3&=\{C,E,G\},\\
+\mathcal G_3&=C,E,G,
 
-\mathcal G_4&=\{F,H\},\\
+\mathcal G_4&=F,H,
 
-\mathcal G_5&=\{I\}.
+\mathcal G_5&=I.
 
 \end{aligned}
 
@@ -436,7 +433,7 @@ $$
 
 > **[그림 5.7-5 삽입 위치 — Diagonal Skewing]**
 
->
+
 
 > **추천 이미지:** 원본 필기 두 번째 이미지에 포함된 강의 슬라이드의 *`Parallelized by skew operation`** 도식. 왼쪽은 $n\times n$ 격자, 오른쪽은 $n\times(2n-1)$ 격자이며, 각 행이 오른쪽으로 이동하여 대각선 원소가 수직으로 정렬되는 모습을 보여준다. 게시용으로는 슬라이드를 그대로 캡처하는 대신 같은 원리의 그림을 새로 그리는 것이 더 선명하다. 오른쪽 그림에 $2\times1$ Kernel이 적용되는 위치를 추가해도 좋다.
 
@@ -454,7 +451,7 @@ Diagonal BiLSTM에서는 대각선 방향의 정보를 양쪽에서 모아, 더 
 
 > **[그림 5.7-6 삽입 위치 — Diagonal BiLSTM의 양방향 정보 결합]**
 
->
+
 
 > **추천 이미지:** 왼쪽에는 왼쪽→오른쪽 방향으로 계산한 Feature Map, 가운데에는 오른쪽→왼쪽 방향으로 계산한 Feature Map, 오른쪽에는 두 정보를 합친 Map을 배치한다. 가운데 Map을 **한 행 아래로 Shift**하는 화살표를 강조한다. 현재 예측할 픽셀의 오른쪽에 있는 미래 정보가 결합 후에도 전달되지 않는다는 것을 색상으로 표시한다.
 
