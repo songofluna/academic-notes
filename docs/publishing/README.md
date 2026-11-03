@@ -25,6 +25,8 @@ These are limits to prevent expansion, not targets to fill. Shorter is appropria
 
 Write natural Korean explanatory paragraphs at an accessible first-year statistics level. Introduce symbols in context, connect equations to their meanings, and use English technical terms when helpful. Avoid reassurance, rhetorical announcements, contrast slogans, repeated bold text and bullet-point summaries. A short section generally needs no more than two or three meaningful subheadings. Do not append routine “key takeaways” or conclusions.
 
+The author's prose samples are tone references, not templates for the order of explanation. Preserve the source's argument and order. Let the writer's reasoning be apparent through connected sentences that explain what to notice in an equation and why it matters. Do not add first-person anecdotes, emotions or phrases such as “I found this interesting.” Keep the reasoning rigorous and accessible to a first-year statistics student willing to work through it.
+
 ## Korean and English terminology
 
 - Match the terminology in `content/notes/newnote1.md` (§§1.1–1.2), not just its paragraph style. Keep explanations in Korean.
