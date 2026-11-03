@@ -3,7 +3,7 @@
 - Source: user-provided handwritten `Ch1 3.pdf`, 14 pages (PDF page numbers, not printed labels).
 - SHA-256: `8be87a5939c17ee2cad0013db2ad532ed2b2b49a314750ad4c22ead6af84410a`
 - Inspected: all 14 rendered pages on 2026-11-04.
-- Current pass: §1.7 on PDF pp. 5–6. Earlier §§1.1–1.6 remain unchanged.
+- Current pass: §1.8, publishing the author-supplied manuscript and two supplied figures. Earlier notes remain unchanged.
 - Existing §§1.1–1.2: `content/notes/newnote1.md`; preserve without rewriting.
 - Editorial workflow: follow [the publishing guide](README.md). Keep prose proportionate to the handwritten source; include only necessary explanations. Published edited drafts remain author-review-pending. The concision revision below supersedes the initial expanded prose.
 
@@ -17,13 +17,13 @@
 | 1.5 | 3 | MLE, empirical NLL, Gaussian example and degenerate case | Published; author review pending |
 | 1.6 | 4 | Forward KL and population/empirical likelihood | Published; author review pending |
 | 1.7 | 5–6 | Reverse KL, mode covering/seeking, support example | Published; author review pending |
-| 1.8 | 7–8 | Data-space score, Fisher divergence, Gaussian/mixture examples | Next |
+| 1.8 | 7–8 | Data-space score, Fisher divergence, Gaussian/mixture examples | Author-supplied manuscript; publication prepared |
 | 1.9 | 9–10 | f-divergence, JS, total variation, Wasserstein comparison | Planned |
 | 1.10 | 11 | Explicit/implicit models and density existence | Planned |
 | 1.11 | 12–13 | Latent variables, changes of variables, Jacobian examples | Planned |
 | 1.12 | 14 | Taxonomy of major generative-model families | Planned |
 
-Keep each future pass to one or two sections. For §1.8 and §1.11, one section is already substantial; reassess reading length before splitting. Do not start them in this pass.
+The author paused the earlier request to write §§1.8–1.12 and supplied the §1.8 manuscript for publication only. Do not continue §§1.9–1.12 without further instruction.
 
 ## Source review for future passes
 
@@ -143,3 +143,16 @@ Start §1.5 on PDF p. 3: maximum likelihood, empirical negative log-likelihood, 
 - Next: §1.8, source PDF pp. 7–8. Check the recorded positivity/domain assumptions for the data-space score before drafting; do not extend §1.7 into that material.
 - Publication: [PR #17](https://github.com/songofluna/academic-notes/pull/17), merged as `6cea562e14a74aa1cf417b9fbcc2042fa2da389a`. The [PR check](https://github.com/songofluna/academic-notes/actions/runs/41680544197) and [Pages deployment](https://github.com/songofluna/academic-notes/actions/runs/41680696290) succeeded. A concurrent Pages CMS update to §1.5 (`23c245d`) was preserved when merging; this task did not edit that note.
 - Public verification on 2026-11-04 KST: correct title, 49 MathJax expressions including 7 display formulas, zero math errors and no horizontal page overflow at 1280 px and 390 × 844. All mobile display formulas fit the 350 px body. The mobile ToC scrolls to Example 1.7.4, and the public §1.6 Next note link opens §1.7. No browser JavaScript errors observed. Desktop/mobile screenshots saved; author review remains pending.
+
+
+## Section 1.8 — author-supplied manuscript, 2026-11-04
+
+- Note: `content/notes/gm-ch01-18.md` — [1.8 Fisher Divergence and Score Functions](https://songofluna.github.io/academic-notes/#/notes/gm-ch01-18). The manuscript's `작성자 검토 전` notice is preserved.
+- The author stopped the earlier drafting request and supplied the complete text. Replaced only its two figure instruction blocks with images, concise captions and source credits; added publishing metadata. All other body text and all 89 TeX expressions match the supplied manuscript exactly. The earlier assistant-written draft is not included.
+- Manuscript SHA-256: `939f61ba668a0e186d2a6a810290d9f635f4d650581bb54a65a22f71b91a1c9b`.
+- Figure 1: the author explicitly supplied and selected Eric J. Ma's PDF / Log PDF / Score image after the reuse-status discussion. Stored without alteration and credited to the linked Score Functions page. No public reuse license was verified, so no license is asserted for this image.
+- Figure 2: the author-supplied Gaussian-mixture score image, stored without alteration; credited to Neuromatch Academy / Binxu Wang. [Course license](https://github.com/NeuromatchAcademy/course-content-dl/blob/main/LICENSE.md): CC BY 4.0. The caption links to the current DiffusionGenerativeModels tutorial path.
+- `ch01-18-gaussian-score.jpg` SHA-256: `9cf48e2de7d146cc405e482ed44898e993953ba4fc2f458af1c27f1caac07013`.
+- `ch01-18-mixture-score.jpg` SHA-256: `1867307dfb89fbfe4a539987424fb4bf24d6eccaf0baf8b7215f9d906680a809`.
+- Validation: `npm run check` passes all 40 tests and builds 10 notes. Desktop 1280 × 900 and mobile 390 × 844 render 89 MathJax expressions, including 36 display formulas, without math errors or page-level horizontal overflow. Both local images load at their original dimensions; no browser JavaScript errors observed.
+- Existing notes, images, CMS configuration, demos, design and deployment code are unchanged. No interactive component is added. §§1.9–1.12 remain unstarted pending the author's next instruction.
