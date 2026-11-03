@@ -12,8 +12,8 @@
 | Sections | PDF pages | Proposed note scope | Status |
 | --- | --- | --- | --- |
 | 1.1–1.2 | 1 | Introduction, data/model distributions, notation | Existing published note; unchanged |
-| 1.3 | 2, upper half | Finite samples, empirical distribution, resampling | Ready for publication; author review pending |
-| 1.4 | 2, lower half | Density evaluation, sampling, Gaussian pushforward | Ready for publication; author review pending |
+| 1.3 | 2, upper half | Finite samples, empirical distribution, resampling | Published; author review pending |
+| 1.4 | 2, lower half | Density evaluation, sampling, Gaussian pushforward | Published; author review pending |
 | 1.5 | 3 | MLE, empirical NLL, Gaussian example and degenerate case | Next |
 | 1.6 | 4 | Forward KL and population/empirical likelihood | Planned |
 | 1.7 | 5–6 | Reverse KL, mode covering/seeking, support example | Planned |
@@ -63,7 +63,10 @@ These observations are review flags, not silent corrections to published notes.
 - Mobile table of contents navigates correctly; figures render. Empirical controls/reset were exercised; at M = 10,000 the observed frequencies were 0.2478 / 0.4968 / 0.2554 (seed 1304), sample mean 0.2630. At the top of the article the experiment iframe had no source yet, confirming lazy loading.
 - Existing MH embed: Next step records one rejected state; Banana tab and +100 reach 101 samples with 59.4% acceptance. No browser JavaScript errors observed.
 - Existing posts, figures, CMS settings, project data, MH source files and deployment workflow are unchanged.
-- Deployment: pending the pull request merge and live-page verification; update this record after deployment.
+- Publication: [PR #12](https://github.com/songofluna/academic-notes/pull/12), merged as `27024c4f50a68a87fc606397ef5430989870047a`.
+- [PR check](https://github.com/songofluna/academic-notes/actions/runs/41663501576) and [GitHub Pages deployment](https://github.com/songofluna/academic-notes/actions/runs/41663607081) both completed successfully.
+- Public verification on 2026-11-04 KST: both note URLs above load; 75/78 MathJax containers and zero math error nodes; original SVG figures load from the `/academic-notes/images/` path. The live empirical iframe is unloaded until scrolled into view and reproduces the recorded 10,000-draw frequencies. Reset and +100 work at 390 px, with a 350 px iframe and no page-level overflow. The mobile §1.4 ToC, Gaussian plot and caption also render correctly.
+- No blocking issue found in these two sections. Final author review is still pending; future source-review flags above belong to later sections.
 
 ### Next pass
 
