@@ -12,11 +12,9 @@ sample: false
 
 이 절에서는 다음 세 가지 문제를 중심으로 두 모델을 살펴본다.
 
-1)이미지의 픽셀을 어떻게 Autoregressive하게 모델링하는가?
-
-2)CNN에서 아직 생성하지 않은 픽셀의 정보를 차단하면서 조건부 확률을 어떻게 계산하는가?
-
-3)PixelCNN의 **Blind Spot** 문제를 PixelRNN, 특히 **Diagonal BiLSTM**에서는 어떻게 다루는가?
+1. 이미지의 픽셀을 어떻게 Autoregressive하게 모델링하는가?
+2. CNN에서 아직 생성하지 않은 픽셀의 정보를 차단하면서 조건부 확률을 어떻게 계산하는가?
+3. PixelCNN의 **Blind Spot** 문제를 PixelRNN, 특히 **Diagonal BiLSTM**에서는 어떻게 다루는가?
 
 ## 5.7.1 Autoregressive Image Modeling
 
@@ -29,25 +27,17 @@ Autoregressive Model을 적용하려면 이 픽셀들에 **순서(Ordering)** �
 예를 들어 $3\times3$ 이미지의 픽셀을 다음과 같이 나열할 수 있다.
 
 $$
-
 \begin{pmatrix}
-
- x_1 & x_2 & x_3
-
- x_4 & x_5 & x_6
-
+ x_1 & x_2 & x_3\\
+ x_4 & x_5 & x_6\\
  x_7 & x_8 & x_9
-
 \end{pmatrix}
-
 $$
 
 이제 이미지 전체를 하나의 벡터로 표현한다.
 
 $$
-
- x=(x_1,x_2,\ldots,x_D),\qquad D=H\times W
-
+x=(x_1,x_2,\ldots,x_D),\qquad D=H\times W
 $$
 
 여기서 $H$와 $W$는 각각 이미지의 높이와 너비이며, $x_i$는 $i$번째 위치의 픽셀을 의미한다. 이 표기에서는 RGB 이미지의 경우에도 한 위치의 픽셀을 세 채널로 이루어진 벡터로 볼 수 있다.
@@ -63,23 +53,16 @@ $$
 확률의 **Chain Rule**에 따르면, 이미지 전체의 결합확률분포는 다음과 같이 분해할 수 있다.
 
 $$
-
 \boxed{
-
  p_\theta(x)
-
  =\prod_{i=1}^{D}p_\theta(x_i\mid x_{<i})
-
 }
-
 $$
 
 여기서
 
 $$
-
- x_{<i}=(x_1,\ldots,x_{i-1})
-
+x_{<i}=(x_1,\ldots,x_{i-1})
 $$
 
 는 Raster Order에서 $i$번째 픽셀보다 먼저 등장한 픽셀들을 의미한다. 첫 번째 픽셀의 경우 이전 픽셀이 없으므로 첫 번째 항은 $p_\theta(x_1)$이다.
@@ -87,9 +70,7 @@ $$
 $3\times3$ 이미지의 다섯 번째 픽셀 $x_5$를 생성한다고 하자. 조건부 분포는
 
 $$
-
- p_\theta(x_5\mid x_1,x_2,x_3,x_4)
-
+p_\theta(x_5\mid x_1,x_2,x_3,x_4)
 $$
 
 이다. $x_5$를 생성할 때는 첫 번째 행의 세 픽셀과 두 번째 행의 첫 픽셀만 사용할 수 있다. $x_6,\ldots,x_9$는 아직 생성되지 않았으므로 조건에 포함할 수 없다.
@@ -97,19 +78,12 @@ $$
 실제 생성 과정에서는 모델이 이 조건부 분포를 예측하고, 그 분포에서 $x_5$를 하나 뽑는다. 같은 과정을 반복하면 이미지 전체가 완성된다.
 
 $$
-
 \begin{aligned}
-
- x_1 &\sim p_\theta(x_1),
-
- x_2 &\sim p_\theta(x_2\mid x_1),
-
- &\ \vdots
-
+ x_1 &\sim p_\theta(x_1),\\
+ x_2 &\sim p_\theta(x_2\mid x_1),\\
+ &\ \vdots\\
  x_D &\sim p_\theta(x_D\mid x_{<D}).
-
 \end{aligned}
-
 $$
 
 즉, 이미지는 **픽셀 하나씩 조건부 확률분포에서 샘플링한 결과**이다.
@@ -119,31 +93,20 @@ $$
 RGB 이미지에서는 픽셀 하나도 세 개의 채널로 이루어져 있다.
 
 $$
-
- x_i=(x_{i,R},x_{i,G},x_{i,B})
-
+x_i=(x_{i,R},x_{i,G},x_{i,B})
 $$
 
 따라서 픽셀 $x_i$의 조건부 분포를 채널 단위로 한 번 더 분해할 수 있다.
 
 $$
-
 \boxed{
-
 \begin{aligned}
-
  p_\theta(x_i\mid x_{<i})
-
- &=p_\theta(x_{i,R}\mid x_{<i})
-
- &\quad\times p_\theta(x_{i,G}\mid x_{<i},x_{i,R})
-
+ &=p_\theta(x_{i,R}\mid x_{<i})\\
+ &\quad\times p_\theta(x_{i,G}\mid x_{<i},x_{i,R})\\
  &\quad\times p_\theta(x_{i,B}\mid x_{<i},x_{i,R},x_{i,G}).
-
 \end{aligned}
-
 }
-
 $$
 
 이 식은 각 픽셀의 R, G, B 값을 순서대로 생성할 수 있음을 뜻한다. 먼저 이전 픽셀들로부터 빨간색 채널을 생성하고, 이어서 생성한 빨간색 값까지 고려해 초록색 채널을 생성한다. 마지막으로 빨간색과 초록색 값을 모두 고려해 파란색 채널을 생성한다.
@@ -167,37 +130,22 @@ PixelCNN은 이를 방지하기 위해 **Masked Convolution**을 사용한다. C
 현재 위치가 $3\times3$ Kernel의 가운데라고 가정하자. 필기에서 정의한 두 종류의 Mask는 다음과 같다.
 
 $$
-
 \boxed{
-
-M_A=
-
+\begin{aligned}
+M_A&=
 \begin{pmatrix}
-
-1&1&1
-
-1&0&0
-
+1&1&1\\
+1&0&0\\
 0&0&0
-
-\end{pmatrix},
-
-\qquad
-
-M_B=
-
+\end{pmatrix},\\[0.6em]
+M_B&=
 \begin{pmatrix}
-
-1&1&1
-
-1&1&0
-
+1&1&1\\
+1&1&0\\
 0&0&0
-
 \end{pmatrix}
-
+\end{aligned}
 }
-
 $$
 
 Mask의 숫자 **1은 해당 위치의 연결을 허용한다**는 뜻이고, **0은 연결을 차단한다**는 뜻이다. 실제 Convolution에서는 Kernel의 가중치 $W$에 Mask $M$을 원소별로 곱한 $W\odot M$을 사용한다.
@@ -224,9 +172,7 @@ PixelCNN은 여러 Masked Convolution Layer를 쌓아 이전 픽셀들의 정보
 예를 들어 흑백 이미지의 픽셀값이 0과 1뿐이라면, 다섯 번째 픽셀에 대해 모델은
 
 $$
-
- p_\theta(x_5=1\mid x_1,x_2,x_3,x_4)
-
+p_\theta(x_5=1\mid x_1,x_2,x_3,x_4)
 $$
 
 같은 조건부 확률을 계산할 수 있다. 픽셀값이 $0,1,\ldots,255$ 중 하나라면, 출력은 해당 256개 값에 대한 확률분포가 될 수도 있다.
@@ -260,9 +206,7 @@ PixelRNN은 이미지의 공간적 의존성을 RNN 구조로 모델링한다. �
 이미지의 $r$번째 행에 있는 Hidden State들을 다음과 같이 묶어 표현하자.
 
 $$
-
 H_r=(h_{r,1},h_{r,2},\ldots,h_{r,W})
-
 $$
 
 여기서 $h_{r,c}$는 $r$번째 행, $c$번째 열에 대응하는 Hidden State이며, $W$는 이미지의 너비이다.
@@ -270,13 +214,9 @@ $$
 필기의 Row LSTM 계산을 추상적으로 쓰면 다음과 같다.
 
 $$
-
 \boxed{
-
 H_r=\operatorname{RowLSTM}(H_{r-1},X_r)
-
 }
-
 $$
 
 $X_r$는 현재 행의 입력 표현을 뜻한다. 실제 구현에서는 Autoregressive 조건을 지키도록 입력에 적절한 Mask나 Shift를 적용해야 한다.
@@ -288,19 +228,12 @@ $X_r$는 현재 행의 입력 표현을 뜻한다. 실제 구현에서는 Autore
 다음과 같은 이진 이미지에서 가운데 픽셀을 예측한다고 하자.
 
 $$
-
 X=
-
 \begin{pmatrix}
-
-1&0&1
-
-0&?&?
-
+1&0&1\\
+0&?&?\\
 ?&?&?
-
 \end{pmatrix}
-
 $$
 
 Raster Order상 현재 생성할 픽셀은 $x_{2,2}$이다. 첫 번째 행의 세 픽셀과 두 번째 행의 첫 번째 픽셀은 이미 알려져 있다.
@@ -308,23 +241,16 @@ Raster Order상 현재 생성할 픽셀은 $x_{2,2}$이다. 첫 번째 행의 �
 따라서 목표는 다음 조건부 확률을 계산하는 것이다.
 
 $$
-
-p_\theta\left(
-
- x_{2,2}=0
-
- \mid x_{1,1}=1,x_{1,2}=0,x_{1,3}=1,x_{2,1}=0
-
-\right)
-
+\begin{aligned}
+p_\theta\!\bigl(x_{2,2}=0\mid{}&x_{1,1}=1,\,x_{1,2}=0,\\
+ &x_{1,3}=1,\,x_{2,1}=0\bigr)
+\end{aligned}
 $$
 
 필기의 그림에서는 이전 행의 Hidden State
 
 $$
-
 h_{1,1},\quad h_{1,2},\quad h_{1,3}
-
 $$
 
 로부터 현재 위치의 Hidden State $h_{2,2}$로 정보가 전달되는 모습을 보여준다. 각 Hidden State는 해당 위치까지 모인 정보를 압축한 표현이므로, 여러 위치의 정보를 다음 행으로 전달하는 데 사용할 수 있다.
@@ -350,37 +276,23 @@ Row LSTM이 행 단위로 정보를 전달한다면, **Diagonal BiLSTM**은 이�
 다음 $3\times3$ 격자를 생각하자.
 
 $$
-
 \begin{pmatrix}
-
-A&B&C
-
-D&E&F
-
+A&B&C\\
+D&E&F\\
 G&H&I
-
 \end{pmatrix}
-
 $$
 
 왼쪽 위에서 오른쪽 아래로 진행하면서, 같은 반대각선(Anti-diagonal)에 속하는 위치들을 묶으면 다음과 같다.
 
 $$
-
 \begin{aligned}
-
-\mathcal G_1&=A,
-
-\mathcal G_2&=B,D,
-
-\mathcal G_3&=C,E,G,
-
-\mathcal G_4&=F,H,
-
-\mathcal G_5&=I.
-
+\mathcal G_1&=\{A\},\\
+\mathcal G_2&=\{B,D\},\\
+\mathcal G_3&=\{C,E,G\},\\
+\mathcal G_4&=\{F,H\},\\
+\mathcal G_5&=\{I\}.
 \end{aligned}
-
 $$
 
 이처럼 같은 대각선 위의 위치들은 함께 처리하고, 대각선들 사이에는 Recurrent하게 정보를 전달하도록 구성할 수 있다. 한 대각선의 픽셀 수가 여러 개이므로, 이를 하나씩 순차 처리하는 대신 **같은 대각선에 속한 위치들을 병렬로 계산**하는 것이 핵심이다.
@@ -392,25 +304,17 @@ $$
 예를 들어 원래의 $3\times3$ 배열이
 
 ```
-
 A B C
-
 D E F
-
 G H I
-
 ```
 
-였다면 Skewing을 적용한 배열은 다음과 같다. 점`·`)은 계산을 위한 빈 위치이다.
+였다면 Skewing을 적용한 배열은 다음과 같다. 점(`·`)은 계산을 위한 빈 위치이다.
 
 ```
-
 A B C · ·
-
 · D E F ·
-
 · · G H I
-
 ```
 
 이제 $B$와 $D$, $C$와 $E$와 $G$, $F$와 $H$가 각각 같은 열에 놓인다.
@@ -418,13 +322,9 @@ A B C · ·
 일반적인 $n\times n$ 이미지에서는 $r$번째 행을 오른쪽으로 $r-1$칸 이동한다. 따라서 배열의 크기는 다음과 같이 변한다.
 
 $$
-
 \boxed{
-
  n\times n\quad\longrightarrow\quad n\times(2n-1)
-
 }
-
 $$
 
 행의 수는 유지되지만, 오른쪽으로 이동한 부분을 담기 위해 열의 수가 늘어나는 것이다. 이렇게 정렬하면 같은 대각선에 속하는 위치들을 병렬로 처리하기 쉬워진다.
