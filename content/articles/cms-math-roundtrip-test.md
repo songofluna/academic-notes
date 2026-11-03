@@ -2,6 +2,7 @@
 slug: cms-math-roundtrip-test
 title: CMS math roundtrip test
 date: 2026-11-03
+summary: "Roundtrip check: metadata-only edit"
 published: false
 featured: false
 ---
