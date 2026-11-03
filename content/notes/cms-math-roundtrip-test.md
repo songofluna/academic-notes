@@ -3,6 +3,7 @@ slug: cms-math-roundtrip-test
 title: CMS math roundtrip test
 date: 2026-11-03
 category: probability
+summary: "Roundtrip check: metadata-only edit"
 draft: true
 sample: false
 ---
