@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Empirical distribution</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#fff;color:#303338;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{padding:12px 1px}h1{font-size:23px;font-weight:600;letter-spacing:-.025em;margin:0 0 10px}.dataset{margin:0 0 16px;color:#666b65}.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:#5b6159}.legend span{display:flex;align-items:center;gap:7px}.legend i{width:13px;height:13px;display:inline-block;border:2px solid #586e43}.legend .sample{border:0;background:#b6c79f}svg{display:block;width:100%;height:auto;margin:10px 0 16px}.controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap;border-top:1px solid #e4e7e1;padding-top:16px}button,select{font:inherit;color:inherit;background:white;border:1px solid #cfd6c8;padding:7px 11px;border-radius:0;min-height:40px}button{cursor:pointer}button:hover{background:#f3f6ef}button:disabled{opacity:.45;cursor:default}button:focus-visible,select:focus-visible{outline:2px solid #73924f;outline-offset:3px}label{margin-right:2px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;border-top:1px solid #e4e7e1;margin:18px 0 0;padding:16px 0 0}.stats dt{color:#737970;font-size:11px;letter-spacing:.05em;text-transform:uppercase}.stats dd{margin:5px 0 0;font-variant-numeric:tabular-nums;font-size:20px}.seed{display:flex;align-items:center;gap:12px;margin-top:16px;color:#6a7065;font-size:12px}.seed button{font-size:13px;min-height:36px;padding:5px 9px}@media(max-width:420px){h1{font-size:21px}.controls{gap:8px}button,select{font-size:14px}.stats dd{font-size:18px}.legend{gap:13px;font-size:12px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<main>
+<h1>Empirical distribution</h1>
+<p class="dataset">Data: −1, 0, 0, 2 · N = 4</p>
+<div class="legend"><span><i></i>Empirical mass</span><span><i class="sample"></i>Resampled frequency</span></div>
+<svg id="plot" viewBox="0 0 520 280" role="img" aria-label="Empirical probabilities and resampled relative frequencies"></svg>
+<div class="controls">
+<label for="draws">Draws</label>
+<select id="draws"><option value="0">0</option><option value="10">10</option><option value="100">100</option><option value="1000">1,000</option><option value="10000">10,000</option></select>
+<button id="step" type="button">Next draw</button><button id="add" type="button">+100</button><button id="reset" type="button">Reset</button>
+</div>
+<dl class="stats" aria-live="polite" aria-atomic="true"><div><dt>Draws · M</dt><dd id="count">0</dd></div><div><dt>Sample mean</dt><dd id="mean">—</dd></div><div><dt>Last draw</dt><dd id="last">—</dd></div></dl>
+<div class="seed"><span>Seed <output id="seed">1304</output></span><button id="new-seed" type="button">New seed</button></div>
+<noscript>Enable JavaScript to resample. The fixed probabilities are P(−1)=1/4, P(0)=1/2, P(2)=1/4.</noscript>
+</main>
+<script type="module">
+import { createEmpiricalSampler } from './empirical-kernel.mjs';
+const data = [-1, 0, 0, 2];
+let seed = 1304, count = 0, sampler = createEmpiricalSampler(data, seed);
+const $ = id => document.getElementById(id);
+const reportSize = () => parent.postMessage({type:'academic-notes:empirical-resize',height:Math.ceil(document.body.getBoundingClientRect().height)}, location.origin === 'null' ? '*' : location.origin);
+function render() {
+  const state = sampler.at(count);
+  $('count').textContent = count.toLocaleString('en-US');
+  $('mean').textContent = state.mean === null ? '—' : state.mean.toFixed(4);
+  $('last').textContent = state.last === null ? '—' : String(state.last);
+  $('seed').textContent = seed;
+  const old = $('draws').querySelector('[data-custom]');
+  if (old) old.remove();
+  if (![0, 10, 100, 1000, 10000].includes(count)) {
+    const option = document.createElement('option');
+    option.value = count; option.textContent = count.toLocaleString('en-US'); option.dataset.custom = '';
+    $('draws').append(option);
+  }
+  $('draws').value = String(count);
+  $('step').disabled = $('add').disabled = count >= 10000;
+  let marks = [0,.25,.5,.75,1].map(p => `<line x1="55" x2="505" y1="${230-190*p}" y2="${230-190*p}" stroke="#e4e7e1"/><text x="45" y="${236-190*p}" text-anchor="end">${p}</text>`).join('');
+  marks += state.distribution.map(d => {
+    const x = 220 + d.value * 120, f = d.frequency || 0;
+    return `<rect x="${x-40}" y="${230-190*d.mass}" width="34" height="${190*d.mass}" fill="none" stroke="#586e43" stroke-width="2"/><rect x="${x+6}" y="${230-190*f}" width="34" height="${190*f}" fill="#b6c79f"/><text x="${x}" y="263" text-anchor="middle">${d.value}</text>`;
+  }).join('');
+  $('plot').innerHTML = `<g font-family="sans-serif" font-size="18" fill="#60665c">${marks}</g>`;
+  $('plot').setAttribute('aria-label', state.distribution.map(d=>`x=${d.value}, empirical mass ${d.mass}, resampled frequency ${d.frequency === null ? 'not yet sampled' : d.frequency.toFixed(4)}`).join('; '));
+  requestAnimationFrame(reportSize);
+}
+$('draws').addEventListener('change', event => {count=Number(event.target.value);render();});
+$('step').addEventListener('click', () => {count=Math.min(10000,count+1);render();});
+$('add').addEventListener('click', () => {count=Math.min(10000,count+100);render();});
+$('reset').addEventListener('click', () => {count=0;sampler=createEmpiricalSampler(data,seed);render();});
+$('new-seed').addEventListener('click', () => {seed=(seed+1)>>>0;count=0;sampler=createEmpiricalSampler(data,seed);render();});
+new ResizeObserver(reportSize).observe(document.querySelector('main'));
+render();
+</script>
+</body>
+</html>

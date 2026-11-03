@@ -16,6 +16,10 @@ const kernel=(await readFile(join(root,'demos/mh-kernel.mjs'),'utf8')).replace(/
 const demo=(await readFile(join(root,'demos/metropolis-hastings.html'),'utf8'))
   .replace("import { generateChain, pdf1, log2, bananaContour } from './mh-kernel.mjs';",()=>kernel);
 data+='\nwindow.MH_DEMO_SRCDOC = '+JSON.stringify(demo).replace(/</g,'\\u003c')+';\n';
+const empiricalKernel=(await readFile(join(root,'demos/empirical-kernel.mjs'),'utf8')).replace(/^export /gm,'');
+const empiricalDemo=(await readFile(join(root,'demos/empirical-distribution.html'),'utf8'))
+  .replace("import { createEmpiricalSampler } from './empirical-kernel.mjs';",()=>empiricalKernel);
+data+='\nwindow.EMPIRICAL_DEMO_SRCDOC = '+JSON.stringify(empiricalDemo).replace(/</g,'\\u003c')+';\n';
 const img=await readFile(join(root,'assets','hero-photo.webp'));
 const inlineImage='data:image/webp;base64,'+img.toString('base64');
 // site config references to /assets work in the packed HTML without companion files.

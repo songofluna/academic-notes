@@ -37,4 +37,10 @@ test('portable preview preserves JavaScript/LaTeX dollars and embeds a working M
   const module = demo.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
   const result = spawnSync(process.execPath, ['--check', '--input-type=module'], { input: module, encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
+  const empirical=context.window.EMPIRICAL_DEMO_SRCDOC;
+  assert.match(empirical,/function createEmpiricalSampler/);
+  assert.doesNotMatch(empirical,/import .* from '\.\/empirical-kernel\.mjs'/);
+  const empiricalModule=empirical.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
+  const empiricalCheck=spawnSync(process.execPath,['--check','--input-type=module'],{input:empiricalModule,encoding:'utf8'});
+  assert.equal(empiricalCheck.status,0,empiricalCheck.stderr);
 });
