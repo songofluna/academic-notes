@@ -27,9 +27,6 @@ sample: false
 10. **Chapter 10.** Mathematical Foundations for Continuous-Time Generative Models
 11. **Chapter 11.** Score SDE and Probability-Flow ODE
 12. **Chapter 12.** Flow-Based Perspective: From Normalizing Flows to Flow Matching
-13. **Chapter 13.** A Unified View of Modern Generative Models
-14. **Chapter 14.** Guidance and Efficient Sampling
-15. **Chapter 15.** Fast Diffusion-Based Generators and Current Directions
 
 ## About the Notes
 
