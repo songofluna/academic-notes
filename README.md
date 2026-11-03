@@ -117,7 +117,7 @@ import numpy as np
 
 ## 6. 수식이 문장과 자연스럽게 이어지도록 작성하기 (v4.1)
 
-기존 v4에는 수식 앞뒤에 회색 구분선이 있었지만, v4.1에서는 **그 선을 제거**했습니다. 수식은 본문 속에서 일반적인 학술 교재처럼 표시됩니다. 수식 종류에 따라 글쓰기 툴바에서 `$x$` 또는 `∑ Block`을 누르세요.
+기존 v4에는 수식 앞뒤에 회색 구분선이 있었지만, v4.1에서는 **그 선을 제거**했습니다. 수식은 본문 속에서 일반적인 학술 교재처럼 표시됩니다. 로컬 Writing Studio에서는 수식 툴바를 사용할 수 있고, Pages CMS에서는 아래 구문을 그대로 입력합니다.
 
 문장 중간에 넣을 때는 `$...$` 또는 `\(...\)`를 사용합니다.
 
@@ -139,11 +139,40 @@ $$
 
 닫는 `$$` 뒤에 `는`이나 다른 글자를 붙이기보다 다음 줄에서 설명을 이어 쓰는 것을 권장합니다. v4.1에서는 닫는 `$$` 뒤 텍스트도 수식 내부로 들어가지 않도록 파서를 보완했습니다. 단, 게시글 소스가 잘못된 LaTeX 자체라면 MathJax도 올바르게 그리지 못할 수 있습니다.
 
+### Pages CMS에서 수식 원문 보존하기
+
+Notes와 Articles의 본문은 [Pages CMS의 Markdown 코드 편집기](https://pagescms.org/docs/configuration/fields/code/)로 열립니다. 서식 편집기와 Source 모드를 오가며 변환하지 않으므로 LaTeX의 역슬래시와 줄바꿈을 원문으로 저장합니다. 기존 게시글 파일은 이 설정 변경으로 수정되지 않습니다.
+
+**Article (Markdown, LaTeX)**에 본문만 붙여 넣으세요. 제목·날짜·분류는 위의 별도 입력란에서 관리합니다. 행렬에서는 열을 `&`, 행을 `\\`로 구분합니다. 실제 줄바꿈만으로는 행이 나뉘지 않습니다.
+
+```markdown
+문장 안의 수식 $p_\theta(x)$와 집합 $\{1,2,3\}$.
+
+$$
+A=\begin{bmatrix}
+1 & 2 & 3 \\
+4 & 5 & 6 \\
+7 & 8 & 9
+\end{bmatrix}
+$$
+
+$$
+\begin{aligned}
+a &= b+c \\
+d &= e+f
+\end{aligned}
+$$
+```
+
+`\theta`, `\{`, `\\` 등을 그대로 입력하며 JSON 문자열처럼 역슬래시를 추가하지 않습니다. 코드 편집기는 LaTeX 미리보기를 제공하지 않으므로 저장·배포 후 글에서 표시를 확인하세요. 잘못 입력한 LaTeX를 자동으로 고치거나 수식의 의미를 바꾸지는 않습니다.
+
+이미지는 CMS의 **Media**에 올린 뒤 `![설명](assets/파일명.jpg)`로 연결합니다. 표·코드 블록·`[demo:metropolis-hastings]`도 기존 Markdown 구문 그대로 사용할 수 있습니다. 배포 전부터 열어 둔 CMS 편집창은 작성 중인 내용을 별도로 보관한 후 새로고침하여 새 편집기를 불러오세요.
+
 ## 7. 이 저장소의 온라인 발행 절차
 
 저장소: [songofluna/academic-notes](https://github.com/songofluna/academic-notes) · 공개 주소: [GitHub Pages](https://songofluna.github.io/academic-notes/)
 
-1. 사이트 상단 **Write ↗** → Pages CMS에 GitHub로 로그인 → **Study Notes**에서 새 글 작성·저장. CMS의 Markdown **Source** 모드에서 LaTeX를 입력하면 특수 구문을 유지하기 편합니다.
+1. 사이트 상단 **Write ↗** → Pages CMS에 GitHub로 로그인 → **Study Notes**에서 새 글 작성·저장. **Article (Markdown, LaTeX)** 원문 편집기에 Markdown과 LaTeX를 그대로 입력합니다.
 2. CMS 저장 또는 PR 병합으로 `main`에 변경 사항이 생기면 **Deploy website**가 `npm run check`를 실행하고 `dist/`를 배포합니다.
 3. [Actions](https://github.com/songofluna/academic-notes/actions)에서 해당 commit의 배포 성공을 확인하고 공개 사이트에서 글·사진을 확인합니다.
 
@@ -153,7 +182,7 @@ PR의 **Check website**는 검증만 수행합니다. 공개 사이트는 `main`
 
 - 글에서 이미지 업로드 기능은 우선 브라우저 로컬로 저장합니다. 실제 게시 시에는 해당 이미지를 GitHub의 `assets/` 또는 Pages CMS 미디어 라이브러리에 별도 업로드한 뒤 경로를 맞춰 주세요. 임시 이미지가 영구 서버에 저장되지는 않습니다.
 - `$$ ... $$` / `$ ... $` / `\( ... \)` 등의 수식 렌더링은 MathJax 3 CDN을 사용합니다. 인터넷이 없는 환경에서는 LaTeX 원문으로 보일 수 있습니다.
-- 기본 Markdown 제목/목록/표/코드/이미지/링크/수식을 지원합니다. 현재 편집기는 **완전한 Notion형 WYSIWYG 에디터는 아닙니다.** 실제 Pages CMS에서는 rich-text 편집을 사용할 수 있습니다.
+- 기본 Markdown 제목/목록/표/코드/이미지/링크/수식을 지원합니다. 현재 편집기는 **완전한 Notion형 WYSIWYG 에디터는 아닙니다.** Pages CMS의 Notes와 Articles 본문은 수식 원문을 보존하는 Markdown 코드 편집기를 사용합니다.
 - 방문 통계, 별도 작성자 로그인, 댓글 서비스, 검색엔진 최적화(사이트맵 등)는 향후 선택적으로 추가해야 합니다.
 
 ## 9. 테스트
@@ -172,7 +201,7 @@ MH 검사는 실제 배포되는 샘플러를 직접 가져옵니다. 정규 pro
 ## 10. Metropolis–Hastings 노트 작성
 
 1. [Write / Study Notes](https://app.pagescms.org/songofluna/academic-notes/main/collection/notes)에서 새 글을 만듭니다.
-2. 제목과 고유한 영문 slug 등을 입력하고, **Body → Source** 모드에서 원하는 위치에 아래 내용을 입력합니다. 명령어는 코드 블록이나 인라인 코드로 감싸지 않습니다.
+2. 제목과 고유한 영문 slug 등을 입력하고, **Article (Markdown, LaTeX)** 원문 편집기의 원하는 위치에 아래 내용을 입력합니다. 명령어는 코드 블록이나 인라인 코드로 감싸지 않습니다.
 
 ```markdown
 ## Metropolis–Hastings 실험
@@ -269,7 +298,7 @@ $$
 [demo:metropolis-hastings]
 ````
 
-주소는 `#/articles/<slug>`입니다. Notes와 같은 slug를 사용해도 서로 다른 글입니다. Notes와 동일한 Markdown·LaTeX·코드·이미지 렌더러와 `[demo:normal-kl]`, `[demo:metropolis-hastings]`를 사용합니다. 본문은 기존처럼 CMS의 **Source** 모드로 편집할 수 있습니다. Articles의 로컬 Studio 편집은 제공하지 않으며 Pages CMS에서 관리합니다.
+주소는 `#/articles/<slug>`입니다. Notes와 같은 slug를 사용해도 서로 다른 글입니다. Notes와 동일한 Markdown·LaTeX·코드·이미지 렌더러와 `[demo:normal-kl]`, `[demo:metropolis-hastings]`를 사용합니다. 본문은 CMS의 **Article (Markdown, LaTeX)** 원문 편집기에서 작성합니다. Articles의 로컬 Studio 편집은 제공하지 않으며 Pages CMS에서 관리합니다.
 
 `published: true`인 Articles만 배포 데이터에 포함합니다. `draft: true`도 함께 있으면 비공개로 처리합니다. 공개 GitHub 저장소의 원본 파일까지 비공개로 만드는 설정은 아닙니다.
 

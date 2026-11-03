@@ -82,6 +82,57 @@ test('note-local images are published without rewriting Markdown or image bytes'
   assert.equal(await readFile(join(dir, 'content/notes/illustrated.md'), 'utf8'), source);
 });
 
+test('Notes and Articles preserve CMS math source through repeated builds', async t => {
+  const dir = await fixture(t);
+  const body = String.raw`## 수식 원문
+
+문장 안의 $p_\theta(x)$와 $\{1,2,3\}$.
+
+$$
+A=\begin{bmatrix}
+1 & 2 & 3 \\
+4 & 5 & 6 \\
+7 & 8 & 9
+\end{bmatrix}
+$$
+
+$$
+\begin{aligned}
+p_\theta(x) &\ge 0 \\
+\int_{\mathbb{R}^d} p_\theta(x)\,\mathrm{d}x &= 1
+\end{aligned}
+$$
+
+$$
+f(x)=\begin{cases}
+x^2 & x < 0 \\
+\frac{1}{2} & x \ge 0
+\end{cases}
+$$
+
+[demo:metropolis-hastings]
+
+![사진](assets/hero-photo.webp)`;
+  const sources = new Map();
+  for (const collection of ['notes', 'articles']) {
+    const path = join(dir, 'content', collection, 'math-source.md');
+    const source = `---\nslug: math-source\ntitle: 수식 원문\npublished: true\ndraft: false\n---\n${body}\n`;
+    await mkdir(dirname(path), { recursive: true });
+    await writeFile(path, source);
+    sources.set(path, source);
+  }
+  for (let pass = 0; pass < 2; pass++) {
+    const result = build(dir);
+    assert.equal(result.status, 0, result.stderr);
+    const data = await payload(dir);
+    assert.equal(data.notes[0].body, body);
+    assert.equal(data.articles[0].body, body);
+    for (const [path, source] of sources) {
+      assert.equal(await readFile(path, 'utf8'), source);
+    }
+  }
+});
+
 test('unexpected filesystem errors still fail the build', async t => {
   const dir = await fixture(t);
   await mkdir(join(dir, 'content'));
