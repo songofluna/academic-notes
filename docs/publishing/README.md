@@ -36,7 +36,9 @@ Write natural Korean explanatory paragraphs at an accessible first-year statisti
 
 Default to **zero figures and zero interactive components**. Add one only when it materially helps understanding that prose and equations cannot provide as well. Do not create extra topics or lengthy instructions to justify a widget.
 
-Use an appropriate source diagram when available and reusable, or make a mathematically accurate original diagram. Record source/licensing evidence; attribution alone does not grant reuse rights. Keep experiment controls concise, responsive and lazy-loaded. Preserve existing simulator files and shortcode support when removing an embed from a particular note.
+When a figure is needed, first search papers and the web for an appropriate existing diagram. Prefer a relevant reusable source figure over an original illustration; record source/licensing evidence, since attribution alone does not grant reuse rights. Omit figures that do not materially help.
+
+Finish the prose before proposing an interactive component, then ask the author whether to add the specific experiment. Do not implement one before that approval. Keep approved experiment controls concise, responsive and lazy-loaded. Preserve existing simulator files and shortcode support when removing an embed from a particular note.
 
 ## Public prose and internal records
 
