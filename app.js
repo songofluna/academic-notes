@@ -27,6 +27,12 @@
   let notesFilter = 'all';
   let notesQuery = '';
   let articlesQuery = '';
+  let articleTag = '';
+  let articleYear = '';
+  let notesCourse = '';
+  let notesSort = 'course';
+  let demoObserver;
+  const {courseId, courseName, courses, chapters} = window.SiteContent;
   let toastTimer = 0;
   let editorTimer = 0;
   let lastEditorSlug = null;
@@ -76,7 +82,7 @@
     $('site-brand').innerHTML=brand(site().siteName || 'notes.');
     $('primary-nav').innerHTML=menus.map(([name,url])=>`<a href="#${url}" ${path===url || path.startsWith(url+'/') && url!=='/' || url==='/notes' && path.startsWith('/courses/') ? 'aria-current="page"':''}>${esc(name)}</a>`).join('') + `<a href="${path.startsWith('/articles') ? CMS_NOTES_URL.replace('/notes','/articles') : CMS_NOTES_URL}" class="nav-write" target="_blank" rel="noopener noreferrer">Write ↗</a>`;
     document.title=`${site().siteName || 'notes.'} — ${path==='/'?'Study Notes':path.includes('editor')?'Editor':(path.split('/')[1]||'Notes')}`;
-    $('footer-note').textContent='Personal academic notes · '+(localCount() ? 'Local editing preview (not yet published)' : 'Work in progress');
+    $('footer-note').textContent='Personal academic notes · '+(localCount() ? 'Local editing preview (not yet published)' : 'Statistics & Machine Learning');
   }
   function pageLead(label,title,description,extra='') {
     return `<div class="page-lead">${label?`<span class="overline">${esc(label)}</span>`:''}<h1>${esc(title)}</h1>${description?`<p class="lead-text">${esc(description)}</p>`:''}${extra}</div>`;
@@ -85,7 +91,7 @@
   const byDate = (a,b) => String(b.date||'').localeCompare(String(a.date||'')) || a.title.localeCompare(b.title) || a.slug.localeCompare(b.slug);
   const publicArticles = () => (DATA.articles || []).filter(a=>a.published && !a.draft).sort(byDate);
   function postRows(posts, type='notes') {
-    return posts.map(n=>`<article class="entry"><div class="entry-top"><a class="entry-title" href="#/${type}/${encodeURIComponent(n.slug)}">${esc(n.title)}</a><span class="entry-meta">${esc(n.date||'')}${type==='notes'?` · ${esc(labels[n.category]||n.category||'Note')}`:''}${sampleNote(n)}${n.localEdit?'<span class="local-mark">Local</span>':''}</span></div>${n.summary?`<p>${esc(n.summary)}</p>`:''}${type==='articles' && normalizeTags(n.tags).length?`<p class="entry-tags">${normalizeTags(n.tags).map(t=>`<span>${esc(t)}</span>`).join('')}</p>`:''}</article>`).join('');
+    return posts.map(n=>`<article class="entry"><div class="entry-top"><a class="entry-title" href="#/${type}/${encodeURIComponent(n.slug)}">${esc(n.title)}</a><span class="entry-meta"><time datetime="${esc(n.date||'')}">${esc(n.date||'')}</time>${type==='notes'?` · ${esc(labels[n.category]||n.category||'Note')}`:' · Article'}${sampleNote(n)}${n.localEdit?'<span class="local-mark">Local</span>':''}</span></div>${n.summary?`<p>${esc(n.summary)}</p>`:''}${normalizeTags(n.tags).length?`<p class="entry-tags">${normalizeTags(n.tags).map(t=>`<span>${esc(t)}</span>`).join('')}</p>`:''}</article>`).join('');
   }
   const noteRows = notes => postRows(notes);
   const currentProjects = () => Array.isArray(local.projects) ? local.projects : DATA.projects;
@@ -96,7 +102,7 @@
   // Metropolis–Hastings is packaged as a self-contained, dependency-free iframe.
   // Use [demo:metropolis-hastings] on its own line in a study note to embed it.
   function mhDemoHtml() {
-    const source=window.MH_DEMO_SRCDOC ? `srcdoc="${esc(window.MH_DEMO_SRCDOC)}"` : 'src="demos/metropolis-hastings.html"';
+    const source='data-src="demos/metropolis-hastings.html"';
     return `<div class="mh-embed-wrap"><iframe class="mh-embed" data-mh-demo ${source} loading="lazy" title="Interactive Metropolis–Hastings sampler" referrerpolicy="same-origin" scrolling="no"></iframe></div>`;
   }
   function experimentHtml(id='home') {
@@ -110,9 +116,22 @@
         <g fill="#9da99f" font-size="10" font-family="monospace" text-anchor="middle"><text x="31" y="226">−4</text><text x="154" y="226">−2</text><text x="277" y="226">0</text><text x="400" y="226">2</text><text x="523" y="226">4</text></g>
       </svg>
       <div class="controls"><div class="control"><label for="${pre}-mu">Mean μ</label><input type="range" data-mu id="${pre}-mu" min="-2.2" max="2.2" step="0.1" value="1.1"><output data-mu-value for="${pre}-mu">1.1</output></div><div class="control"><label for="${pre}-sigma">Std. dev. σ</label><input type="range" data-sigma id="${pre}-sigma" min="0.6" max="1.8" step="0.05" value="0.85"><output data-sigma-value for="${pre}-sigma">0.85</output></div></div>
-      <div class="demo-footer"><span>KL divergence is zero when the distributions are identical.</span><button class="reset" type="button" data-reset-plot>Reset ↺</button></div></div>`;
+      <div class="demo-footer"><button class="reset" type="button" data-reset-plot>Reset ↺</button></div></div>`;
   }
   function setupExperiments(scope=app) {
+    scope.querySelectorAll('[data-mh-demo][data-src]').forEach(frame=>{
+      const load=()=>{
+        if(window.MH_DEMO_SRCDOC)frame.srcdoc=window.MH_DEMO_SRCDOC;
+        else frame.src=frame.dataset.src;
+        frame.removeAttribute('data-src');
+      };
+      if('IntersectionObserver' in window){
+        if(!demoObserver)demoObserver=new IntersectionObserver(entries=>entries.forEach(entry=>{
+          if(entry.isIntersecting){entry.target.dispatchEvent(new Event('load-demo'));demoObserver.unobserve(entry.target);}
+        }),{rootMargin:'0px'});
+        frame.addEventListener('load-demo',load,{once:true});demoObserver.observe(frame);
+      }else load();
+    });
     const normal=(x,m,s)=>Math.exp(-.5*((x-m)/s)**2)/(s*Math.sqrt(2*Math.PI));
     function curve(mean,std){return Array.from({length:241},(_,i)=>{const x=-4+8*i/240;return `${i===0?'M':'L'}${(31+(x+4)*492/8).toFixed(2)},${(205-normal(x,mean,std)*320).toFixed(2)}`;}).join(' ');}
     scope.querySelectorAll('[data-normal-demo]').forEach(node=>{
@@ -131,45 +150,51 @@
       redraw();
     });
   }
-  function renderHome() {
-    const s=site(), recent=publicNotes().slice(0,4), featured=publicArticles().filter(a=>a.featured), selected=projectRows(true);
-    app.innerHTML=`<section class="intro" aria-labelledby="intro-title">
-        <div class="intro-copy"><p class="intro-label">${esc(s.introLabel)}</p><h1 id="intro-title">${esc(s.introTitle)}</h1><p class="intro-body">${esc(s.introDescription)}</p>
-          <p class="interests"><span>Interests</span>${normalizeTags(s.interests).map((item,i)=>`${i?'<span class="divider">/</span>':''}<strong>${esc(item)}</strong>`).join('')}</p>
-        </div><figure class="intro-photo"><img src="${esc(mediaUrl(local.site.heroImageData||s.heroImage))}" alt="${esc(s.heroAlt)}"><figcaption class="visually-hidden">Hero photograph</figcaption></figure>
-      </section>
-      <div class="main-grid ${!recent.length&&!featured.length&&!selected?'home-empty':''}"><div class="column">
-        ${featured.length?`<section id="featured-articles"><div class="section-heading"><h2>Featured Articles</h2><a class="small-link" href="#/articles">All articles ↗</a></div>${postRows(featured,'articles')}</section>`:''}
-        ${recent.length?`<section id="notes"><div class="section-heading"><h2>Recent Notes</h2><a class="small-link" href="#/notes">All notes ↗</a></div><div id="home-note-list">${noteRows(recent)}</div></section>`:''}
-        ${selected?`<section id="projects"><div class="section-heading"><h2>Selected Projects</h2><a href="#/projects" class="small-link">View all ↗</a></div><div class="project-list">${selected}</div></section>`:''}
-      </div><aside class="sidebar"><div class="side-group"><h3>Explore</h3><a href="#/notes">Notes ↗</a><a href="#/articles">Articles ↗</a><a href="#/projects">Projects ↗</a><a href="#/studio">Writing Studio ↗</a></div>
-      ${s.currentlyStudying||s.sidebarNote?`<div class="side-group"><div class="side-line"></div>${s.currentlyStudying?`<h3>Currently Studying</h3>${normalizeTags(s.currentlyStudying).map(t=>`<p class="sidebar-note">${esc(t)}</p>`).join('')}`:''}${s.sidebarNote?`<p class="sidebar-note">${esc(s.sidebarNote)}</p>`:''}</div>`:''}</aside></div>`;
+  function authorSidebar(extra='') {
+    const s=site(), image=local.site.heroImageData||s.heroImage;
+    return `<aside class="author-sidebar" aria-label="Author and navigation"><div class="author-profile">
+      ${image?`<a class="author-photo" href="#/about"><img src="${esc(mediaUrl(image))}" alt="${esc(s.heroAlt||'Study space')}" width="192" height="128"></a>`:''}
+      <div class="author-identity"><a class="author-name" href="#/about">${esc(s.authorName||'songofluna')}</a>${s.affiliation?`<p>${esc(s.affiliation)}</p>`:''}<p class="author-description">${esc(s.introDescription||s.introLabel||'')}</p><a class="author-github" href="${esc(safeUrl(s.githubUrl||'https://github.com/songofluna'))}" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div>
+      </div>${s.interests?`<div class="author-interests"><h2>Interests</h2><p>${normalizeTags(s.interests).map(esc).join('<br>')}</p></div>`:''}${extra}</aside>`;
   }
-  function renderNotes() {
-    app.innerHTML=pageLead('','Notes','') + `<div class="page-main"><div class="notes-controls"><input id="notes-search" class="search" type="search" value="${esc(notesQuery)}" placeholder="Search notes" aria-label="Search notes">${filtersHtml(notesFilter)}<p class="editor-status" id="notes-count" role="status"></p></div><div id="notes-results"></div></div>`;
+  function publicLayout(content, extra='', className='') {
+    return `<div class="blog-layout ${className}">${authorSidebar(extra)}<div class="blog-content">${content}</div></div>`;
+  }
+  function courseNavigation(active='') {
+    const all=publicNotes();
+    return `<details class="course-nav" open><summary>Courses</summary><nav aria-label="Courses"><a href="#/notes" ${!active?'aria-current="page"':''}>All notes <span>${all.length}</span></a>${courses(all).map(c=>`<a href="#/courses/${encodeURIComponent(c.id)}" ${active===c.id?'aria-current="page"':''}>${esc(c.title)} <span>${c.notes.length}</span></a>`).join('')}</nav></details>`;
+  }
+  function renderHome() {
+    const recent=[...publicNotes().map(n=>({...n,type:'notes'})),...publicArticles().map(n=>({...n,type:'articles'}))].sort(byDate).slice(0,6);
+    const featured=publicArticles().filter(a=>a.featured), selected=projectRows(true);
+    app.innerHTML=publicLayout(`${recent.length?'<h1 class="home-title">Recent posts</h1>':''}${recent.length?`<section aria-label="Recent posts">${recent.map(n=>postRows([n],n.type)).join('')}</section>`:''}${featured.length?`<section class="home-section"><div class="section-heading"><h2>Featured Articles</h2><a class="small-link" href="#/articles">All articles →</a></div>${postRows(featured,'articles')}</section>`:''}${selected?`<section class="home-section"><div class="section-heading"><h2>Selected Projects</h2><a href="#/projects" class="small-link">All projects →</a></div>${selected}</section>`:''}`,courseNavigation());
+  }
+  function renderNotes(course='') {
+    notesCourse=course;
+    app.innerHTML=publicLayout(pageLead('',course?courseName(course):'Notes','')+`<div class="page-main"><div class="notes-controls"><div class="search-row"><input id="notes-search" class="search" type="search" value="${esc(notesQuery)}" placeholder="Search notes" aria-label="Search notes"><select id="notes-sort" aria-label="Note order"><option value="course" ${notesSort==='course'?'selected':''}>Course order</option><option value="date" ${notesSort==='date'?'selected':''}>Newest first</option></select></div>${filtersHtml(notesFilter)}<p class="editor-status" id="notes-count" role="status"></p></div><div id="notes-results"></div></div>`,courseNavigation(course));
     updateNotesResults();
   }
   function updateNotesResults() {
     const box=$('notes-results'); if(!box) return;
     const q=notesQuery.trim().toLocaleLowerCase();
-    const found=publicNotes().filter(n=>(notesFilter==='all'||n.category===notesFilter)&&(!q||[n.title,n.summary,n.body,...normalizeTags(n.tags),labels[n.category]].join(' ').toLocaleLowerCase().includes(q)));
-    box.innerHTML=noteRows(found)+(!found.length && (q||notesFilter!=='all')?'<p class="no-results">No matching notes.</p>':'');
-    $('notes-count').textContent=publicNotes().length?`${found.length} / ${publicNotes().length} notes`:'';
+    const found=publicNotes().filter(n=>(!notesCourse||courseId(n)===notesCourse)&&(notesFilter==='all'||n.category===notesFilter)&&(!q||[n.title,n.summary,n.body,n.chapter,courseName(courseId(n)),...normalizeTags(n.tags),labels[n.category]].join(' ').toLocaleLowerCase().includes(q)));
+    box.innerHTML=(notesSort==='date'?noteRows(found.sort(byDate)):courses(found).map(c=>`<section class="course-group" aria-label="${esc(c.title)}">${!notesCourse?`<h2><a href="#/courses/${encodeURIComponent(c.id)}">${esc(c.title)}</a><span>${c.notes.length}</span></h2>`:''}${chapters(c.notes).map(ch=>`<div class="chapter-group">${ch.title?`<h3>${esc(ch.title)}</h3>`:''}${noteRows(ch.notes)}</div>`).join('')}</section>`).join(''))+(!found.length && (q||notesFilter!=='all')?'<p class="no-results">No matching notes.</p>':'');
+    $('notes-count').textContent=publicNotes().length?`${found.length} ${found.length===1?'note':'notes'}`:'';
   }
   function renderLegacyCourse(slug) {
-    notesFilter=({'cs229':'probability','generative-models':'generative','deep-learning':'deep-learning'})[slug] || 'all';
-    notesQuery='';
-    go('/notes');
+    notesFilter='all';
+    renderNotes(slug==='cs229'&&!publicNotes().some(n=>courseId(n)==='cs229')?'probability':slug);
   }
   function renderArticles() {
-    app.innerHTML=pageLead('','Articles','')+`<div class="page-main"><input id="articles-search" class="search" type="search" value="${esc(articlesQuery)}" placeholder="Search articles" aria-label="Search articles"><p class="editor-status" id="articles-count" role="status"></p><div id="articles-results"></div></div>`;
+    const all=publicArticles(), tags=[...new Set(all.flatMap(a=>normalizeTags(a.tags)))].sort(), years=[...new Set(all.map(a=>a.date.slice(0,4)).filter(Boolean))].sort().reverse();
+    app.innerHTML=publicLayout(pageLead('','Articles','')+`<div class="page-main">${all.length?`<div class="search-row article-search"><input id="articles-search" class="search" type="search" value="${esc(articlesQuery)}" placeholder="Search articles" aria-label="Search articles"><select id="article-year" aria-label="Article year"><option value="">All years</option>${years.map(y=>`<option ${articleYear===y?'selected':''}>${esc(y)}</option>`).join('')}</select></div>${tags.length?`<div class="filters" aria-label="Article tags"><button class="filter" data-article-tag="" aria-pressed="${!articleTag}">All tags</button>${tags.map(t=>`<button class="filter" data-article-tag="${esc(t)}" aria-pressed="${articleTag===t}">${esc(t)}</button>`).join('')}</div>`:''}`:''}<p class="editor-status" id="articles-count" role="status"></p><div id="articles-results"></div></div>`);
     updateArticlesResults();
   }
   function updateArticlesResults() {
     const q=articlesQuery.trim().toLocaleLowerCase(), all=publicArticles();
-    const found=all.filter(a=>!q||[a.title,a.summary,a.body,...normalizeTags(a.tags)].join(' ').toLocaleLowerCase().includes(q));
-    $('articles-results').innerHTML=postRows(found,'articles')+(!found.length&&q?'<p class="no-results">No matching articles.</p>':'');
-    $('articles-count').textContent=all.length?`${found.length} / ${all.length} articles`:'';
+    const found=all.filter(a=>(!articleTag||normalizeTags(a.tags).includes(articleTag))&&(!articleYear||a.date.startsWith(articleYear))&&(!q||[a.title,a.summary,a.body,...normalizeTags(a.tags)].join(' ').toLocaleLowerCase().includes(q)));
+    $('articles-results').innerHTML=postRows(found,'articles')+(!found.length&&(q||articleTag||articleYear)?'<p class="no-results">No matching articles.</p>':'');
+    $('articles-count').textContent=all.length?`${found.length} ${found.length===1?'article':'articles'}`:'';
   }
   function inlineMd(raw) {
     const code=[];
@@ -192,7 +217,7 @@
         flushPara();flushList();const lang=s.slice(3).trim().replace(/[^a-z0-9-]/gi,'');const code=[];
         while(i+1<lines.length&&!/^```/.test(lines[i+1].trim()))code.push(lines[++i]);
         if(i+1<lines.length)i++;
-        html+=`<pre><code class="language-${lang}">${esc(code.join('\n'))}</code></pre>`;continue;
+        html+=`<pre tabindex="0"><code class="language-${lang}">${esc(code.join('\n'))}</code></pre>`;continue;
       }
       if(s.includes('$$')) {
         // Display-math delimiters can be next to explanatory prose. Split the
@@ -229,7 +254,7 @@
         flushPara();flushList();const cell=text=>text.trim().replace(/^\|/,'').replace(/\|$/,'').split('|').map(x=>inlineMd(x.trim()));
         const header=cell(s);i+=2;const rows=[];
         for(;i<lines.length&&/^\|.*\|$/.test(lines[i].trim());i++)rows.push(cell(lines[i]));i--;
-        html+=`<table><thead><tr>${header.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.map(cells=>`<tr>${cells.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</tbody></table>`;continue;
+        html+=`<div class="table-scroll" role="region" aria-label="Table" tabindex="0"><table><thead><tr>${header.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.map(cells=>`<tr>${cells.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;continue;
       }
       flushList();para.push(s);
     }
@@ -245,22 +270,29 @@
     const n=isNote?noteBySlug(slug):publicArticles().find(a=>a.slug===slug);
     if(!n || (n.draft && !local.notes[slug])) { app.innerHTML=pageLead('404','글을 찾을 수 없습니다.','')+`<div class="page-main"><a href="#/${type}" class="small-link">← ${label}</a></div>`;return; }
     const contents=markdown(n.body), reading=Math.max(1,Math.ceil(String(n.body||'').length/750));
-    app.innerHTML=`<div class="article-header"><div class="breadcrumbs"><a href="#/">Home</a><span>/</span><a href="#/${type}">${label}</a></div><h1 class="post-title">${esc(n.title)}</h1>${n.summary?`<p class="article-deck">${esc(n.summary)}</p>`:''}<div class="article-meta"><span>${esc(n.date||'Undated')}</span>${isNote?`<span>${esc(labels[n.category]||'Study Note')}</span>`:''}<span>~${reading} min read</span>${n.localEdit?'<span class="local-mark">Local preview</span>':''}${n.draft?'<span class="draft-indicator">Draft</span>':''}${n.sample?'<span class="sample-label">Sample content</span>':''}</div>${normalizeTags(n.tags).length?`<div class="entry-tags post-tags">${normalizeTags(n.tags).map(t=>`<span>${esc(t)}</span>`).join('')}</div>`:''}</div>
-      <div class="article-shell"><div class="post-main"><article class="article-content" id="rendered-markdown">${n.localEdit?'<div class="notice">이 글의 수정 내용은 현재 브라우저에만 저장되어 있습니다. GitHub에 게시되지 않았습니다.</div>':''}${contents.html}</article></div>
-      <aside class="article-aside">${contents.headings.length?`<h3>On this page</h3><nav>${contents.headings.filter(x=>x.level<=3).map(h=>`<a href="#${h.id}" data-anchor="${h.id}">${inlineMd(h.title)}</a>`).join('')}</nav>`:''}<div class="article-side-actions">${isNote?`<a href="#/studio/edit/${encodeURIComponent(n.slug)}">Edit locally ↗</a>`:''}<a href="#/${type}">← All ${type}</a><button type="button" class="link-button quiet" data-action="copy-link">Copy link</button></div></aside></div>`;
-    setupExperiments();latex(app.querySelector('.article-shell'));
+    const toc=contents.headings.filter(x=>x.level<=3);
+    const tocHtml=toc.length?`<details class="article-toc" open><summary>On this page</summary><nav aria-label="On this page">${toc.map(h=>`<a class="toc-level-${h.level}" href="#${h.id}" data-anchor="${h.id}">${inlineMd(h.title)}</a>`).join('')}</nav></details>`:'';
+    const sequence=isNote?chapters(publicNotes().filter(p=>courseId(p)===courseId(n))).flatMap(c=>c.notes):[];
+    const position=sequence.findIndex(p=>p.slug===slug), prev=sequence[position-1], next=sequence[position+1];
+    app.innerHTML=publicLayout(`<div class="article-header"><div class="breadcrumbs"><a href="#/${type}">${label}</a>${isNote?`<span>/</span><a href="#/courses/${encodeURIComponent(courseId(n))}">${esc(courseName(courseId(n)))}</a>`:''}</div><h1 class="post-title">${esc(n.title)}</h1><div class="article-meta"><time datetime="${esc(n.date||'')}">${esc(n.date||'Undated')}</time>${isNote?`<span>${esc(labels[n.category]||'Study Note')}</span>`:''}<span>${reading} min read</span>${n.localEdit?'<span class="local-mark">Local preview</span>':''}${n.draft?'<span class="draft-indicator">Draft</span>':''}${n.sample?'<span class="sample-label">Sample content</span>':''}</div>${normalizeTags(n.tags).length?`<div class="entry-tags post-tags">${normalizeTags(n.tags).map(t=>`<span>${esc(t)}</span>`).join('')}</div>`:''}${n.summary?`<p class="article-deck">${esc(n.summary)}</p>`:''}</div>
+      <div class="mobile-toc">${tocHtml}</div><article class="article-content" id="rendered-markdown">${n.localEdit?'<div class="notice">이 글의 수정 내용은 현재 브라우저에만 저장되어 있습니다. GitHub에 게시되지 않았습니다.</div>':''}${contents.html}</article>
+      ${prev||next?`<nav class="reading-nav" aria-label="Reading order">${prev?`<a href="#/notes/${encodeURIComponent(prev.slug)}"><span>Previous note</span>${esc(prev.title)}</a>`:'<span></span>'}${next?`<a href="#/notes/${encodeURIComponent(next.slug)}"><span>Next note</span>${esc(next.title)}</a>`:''}</nav>`:''}
+      <div class="article-side-actions"><a href="#/${type}">← All ${type}</a><button type="button" class="link-button quiet" data-action="copy-link">Copy link</button>${isNote?`<a href="#/studio/edit/${encodeURIComponent(n.slug)}">Edit locally ↗</a>`:''}</div>`,tocHtml,'article-layout');
+    app.querySelector('.mobile-toc details')?.removeAttribute('open');
+    document.title=`${n.title} — ${site().siteName||'notes.'}`;
+    setupExperiments();window.Prism?.highlightAllUnder(app);latex(app);
   }
   function renderProjects() {
-    const rows=projectRows(false);
-    app.innerHTML=pageLead('','Projects','', '<a class="small-link" href="#/experiments">Experiments ↗</a>')+`<div class="page-main">${rows?`<div class="project-list">${rows}</div>`:''}</div>`;
+    const rows=projectRows(false), demoNote=publicNotes().find(n=>n.body.includes('[demo:metropolis-hastings]'));
+    app.innerHTML=publicLayout(pageLead('','Projects','')+`<div class="page-main">${rows}<section class="home-section"><h2>Interactive experiments</h2><article class="project-entry"><h3><a href="demos/metropolis-hastings.html" target="_blank" rel="noopener noreferrer">Metropolis–Hastings ↗</a></h3><p class="meta">JavaScript · Monte Carlo</p><div class="project-links">${demoNote?`<a href="#/notes/${encodeURIComponent(demoNote.slug)}" class="small-link">Study note →</a>`:''}<a href="#/experiments" class="small-link">All experiments →</a></div></article></section></div>`);
   }
   function renderExperiments() {
-    app.innerHTML=pageLead('Interactive Notes','Experiments','이론의 수식과 그래프를 직접 조작하면서 관찰하는 공간입니다. 시각화는 기존 공부 글에서도 불러올 수 있습니다.')+`<div class="page-main" style="max-width:750px"><span class="overline">01 / Probability</span><h2 style="margin-bottom:12px">Comparing Normal Distributions</h2><p class="explain">고정된 표준정규분포 p(x)와 움직이는 정규분포 q(x)를 비교해보세요.</p>${experimentHtml('experiments')}<div class="notice" style="margin-top:24px">글 본문에서 <code>[demo:normal-kl]</code>로 불러올 수 있습니다.</div><div class="mh-listing"><span class="overline">02 / Markov Chain Monte Carlo</span>${mhDemoHtml()}<p class="editor-guidance">글 본문에 <code>[demo:metropolis-hastings]</code>를 한 줄로 입력하면 같은 시뮬레이터가 표시됩니다.</p></div></div>`;
+    app.innerHTML=publicLayout(pageLead('','Experiments','')+`<div class="page-main"><h2>Normal distributions</h2>${experimentHtml('experiments')}<section class="mh-listing">${mhDemoHtml()}</section></div>`);
     setupExperiments();
   }
   function renderAbout() {
     const s=site();
-    app.innerHTML=pageLead('Personal / Introduction','About','')+`<div class="page-main" style="max-width:720px"><h2 style="margin-bottom:19px">Introduction</h2><p class="about-copy">${esc(s.about)}</p><h2 style="margin:47px 0 20px">Research Interests</h2><div class="pill-group">${normalizeTags(s.interests).map(x=>`<span class="pill">${esc(x)}</span>`).join('')}</div><h2 style="margin:45px 0 20px">Currently Studying</h2><p class="about-copy">${esc(s.currentlyStudying)}</p><div class="action-row" style="margin-top:46px">${s.githubUrl?`<a href="${esc(safeUrl(s.githubUrl))}" target="_blank" rel="noopener noreferrer" class="link-button quiet">GitHub ↗</a>`:''}${s.contactEmail?`<a href="mailto:${esc(s.contactEmail)}" class="link-button quiet">Email ↗</a>`:''}<a href="#/studio/settings" class="link-button">Edit introduction locally ↗</a></div></div>`;
+    app.innerHTML=publicLayout(pageLead('','About','')+`<div class="page-main article-content">${s.about?`<p>${esc(s.about)}</p>`:''}${s.interests?`<h2>Interests</h2><ul>${normalizeTags(s.interests).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}${s.currentlyStudying?`<h2>Currently studying</h2><ul>${normalizeTags(s.currentlyStudying).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}<div class="action-row"><a href="${esc(safeUrl(s.githubUrl||'https://github.com/songofluna'))}" target="_blank" rel="noopener noreferrer" class="small-link">GitHub ↗</a>${s.contactEmail?`<a href="mailto:${esc(s.contactEmail)}" class="small-link">Email ↗</a>`:''}</div></div>`);
   }
   const studioBanner=()=>`<div class="studio-banner"><strong>Local Studio / Preview mode</strong> — 이 화면에서 작성한 글과 설정은 현재 브라우저에만 저장됩니다. 아직 외부에 게시되지 않으며, 로그인이 필요한 실제 온라인 편집은 <a href="https://app.pagescms.org/" target="_blank" rel="noopener noreferrer">Pages CMS ↗</a>로 연결한 후 사용합니다. ${!persistent?'※ 이 브라우저는 로컬 저장을 허용하지 않습니다.':''}</div>`;
   function renderStudio() {
@@ -300,7 +332,7 @@
     </div><div class="editor-panel preview-panel"><h2>Live Preview</h2><p class="editor-status">이 영역은 본문을 실시간으로 미리 보여줍니다.</p><article class="article-content" id="editor-preview"></article></div></div>`;
     updateEditorPreview();
   }
-  function updateEditorPreview(){const el=$('editor-preview');if(!el)return;const body=$('field-body').value; if(window.MathJax?.typesetClear) try{MathJax.typesetClear([el]);}catch{} el.innerHTML=markdown(body).html||'<p class="faint">오른쪽에서 미리 보세요. 글을 작성하면 이곳에 나타납니다.</p>';setupExperiments(el);window.setTimeout(()=>{if($('editor-preview')===el)latex(el);},70);}
+  function updateEditorPreview(){const el=$('editor-preview');if(!el)return;const body=$('field-body').value; if(window.MathJax?.typesetClear) try{MathJax.typesetClear([el]);}catch{} el.innerHTML=markdown(body).html||'<p class="faint">오른쪽에서 미리 보세요. 글을 작성하면 이곳에 나타납니다.</p>';setupExperiments(el);window.Prism?.highlightAllUnder(el);window.setTimeout(()=>{if($('editor-preview')===el)latex(el);},70);}
   function storeEditor(draft,quiet=false) {
     if(!$('field-body'))return false;
     const obj=readEditor();
@@ -384,6 +416,8 @@
   });
   function render() {
     clearTimeout(editorTimer);
+    demoObserver?.disconnect();
+    if(window.MathJax?.typesetClear)window.MathJax.typesetClear([app]);
     const path=route();renderNav(path);
     if(path==='/')renderHome();
     else if(path==='/notes')renderNotes();
@@ -403,9 +437,11 @@
   }
   document.addEventListener('click',async event=>{
     const anchor=event.target.closest('[data-anchor]');
-    if(anchor){event.preventDefault();$(anchor.dataset.anchor)?.scrollIntoView({behavior:'smooth',block:'start'});return;}
+    if(anchor){event.preventDefault();const target=$(anchor.dataset.anchor);target?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});if(anchor.classList.contains('skip-link'))target?.focus({preventScroll:true});return;}
     const filter=event.target.closest('button[data-filter]');
     if(filter){notesFilter=filter.dataset.filter;document.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===filter)));if($('notes-results'))updateNotesResults();if($('home-note-list'))$('home-note-list').innerHTML=noteRows(publicNotes().filter(n=>notesFilter==='all'||n.category===notesFilter).slice(0,4));return;}
+    const tag=event.target.closest('[data-article-tag]');
+    if(tag){articleTag=tag.dataset.articleTag;document.querySelectorAll('[data-article-tag]').forEach(b=>b.setAttribute('aria-pressed',String(b===tag)));updateArticlesResults();return;}
     const insert=event.target.closest('[data-insert]');
     if(insert){const snippets={heading:'\n## 새 소제목\n\n',bold:'**강조할 내용**','inline-math':'$X \sim N(\mu, \sigma^2)$',math:'\n$$\n\\mathcal{L}(q) = \\mathbb{E}_q[\\log p(x,z)] - \\mathbb{E}_q[\\log q(z)]\n$$\n',code:'\n```python\nimport numpy as np\n```\n'};insertAtCursor(snippets[insert.dataset.insert]||'');return;}
     const action=event.target.closest('[data-action]')?.dataset.action;
@@ -464,6 +500,8 @@
     }
   });
   document.addEventListener('change',async event=>{
+    if(event.target.id==='notes-sort'){notesSort=event.target.value;updateNotesResults();}
+    if(event.target.id==='article-year'){articleYear=event.target.value;updateArticlesResults();}
     if(event.target.id==='inline-image-file' && event.target.files?.length){
       try{
         const file=event.target.files[0];const data=await compressImage(file,900);

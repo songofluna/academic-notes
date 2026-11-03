@@ -87,7 +87,7 @@ $$
 
 **거절(reject)되면 현재 상태를 다음 표본으로 다시 기록한다.** 거절된 시점도 체인의 한 단계다. 예를 들어 상태가 $-1,-1,-1,0.4$로 기록되었다면 네 개의 표본이며, 히스토그램에서도 $-1$을 세 번 집계한다.
 
-Proposal $q$에는 “후보를 어떻게 뽑는가”가 들어 있다. 실제 체인의 전이에는 채택 여부와 현재 위치에 머무는 사건까지 포함된다. 이 둘을 구별해야 MH의 동작을 이해할 수 있다. [일반적인 MH 채택 규칙과 상세균형에 관한 CMU 강의 노트]([https://www.math.cmu.edu/~gautam/c/2025-326/notes/sampling4-mcmc.html](https://www.math.cmu.edu/~gautam/c/2025-326/notes/sampling4-mcmc.html))
+Proposal $q$에는 “후보를 어떻게 뽑는가”가 들어 있다. 실제 체인의 전이에는 채택 여부와 현재 위치에 머무는 사건까지 포함된다. 이 둘을 구별해야 MH의 동작을 이해할 수 있다. [일반적인 MH 채택 규칙과 상세균형에 관한 CMU 강의 노트](https://www.math.cmu.edu/~gautam/c/2025-326/notes/sampling4-mcmc.html)
 
 ## 3. 이 데모가 사용하는 대칭 Gaussian proposal
 
@@ -125,7 +125,7 @@ $$
 
 $$
 
-이 노트의 분포식과 조작 설명은 [배포된 MH 샘플러]([https://github.com/songofluna/academic-notes/blob/5b223dfa892da2fe4ca649358b9404ca204b5a2d/demos/mh-kernel.mjs)와]([https://github.com/songofluna/academic-notes/blob/5b223dfa892da2fe4ca649358b9404ca204b5a2d/demos/mh-kernel.mjs)와](https://github.com/songofluna/academic-notes/blob/5b223dfa892da2fe4ca649358b9404ca204b5a2d/demos/mh-kernel.mjs)와)) [시뮬레이터 화면 코드]([https://github.com/songofluna/academic-notes/blob/5b223dfa892da2fe4ca649358b9404ca204b5a2d/demos/metropolis-hastings.html)를]([https://github.com/songofluna/academic-notes/blob/5b223dfa892da2fe4ca649358b9404ca204b5a2d/demos/metropolis-hastings.html)를](https://github.com/songofluna/academic-notes/blob/5b223dfa892da2fe4ca649358b9404ca204b5a2d/demos/metropolis-hastings.html)를)) 기준으로 한다.
+이 노트의 분포식과 조작 설명은 [배포된 MH 샘플러](https://github.com/songofluna/academic-notes/blob/5b223dfa892da2fe4ca649358b9404ca204b5a2d/demos/mh-kernel.mjs)와 [시뮬레이터 화면 코드](https://github.com/songofluna/academic-notes/blob/5b223dfa892da2fe4ca649358b9404ca204b5a2d/demos/metropolis-hastings.html)를 기준으로 한다.
 
 ## 4. 시뮬레이터와 조작 방법
 
@@ -134,31 +134,18 @@ $$
 [demo:metropolis-hastings]
 
 | UI | 의미 |
-
 | --- | --- |
-
 | Iterations | 표시할 체인의 길이. 0부터 12,000까지 조절한다. |
-
 | 10 / 100 / 1,000 / 10,000 | 해당 반복 횟수까지의 표본을 표시한다. |
-
 | Proposal σ | 제안하는 이동의 크기. 2D에서는 각 좌표의 표준편차다. |
-
 | Next step / +100 | 각각 1단계 또는 100단계를 진행한다. |
-
 | Play / Pause | 체인을 자동으로 진행하거나 멈춘다. |
-
 | Speed | 화면에서 체인을 진행하는 속도. 체인의 표본값은 바꾸지 않는다. |
-
 | Reset | 같은 설정과 seed의 시작점으로 돌아간다. |
-
 | New random run | seed를 바꾸고 처음부터 시작한다. |
-
 | Samples | 기록된 상태의 수. 거절 때문에 반복된 상태도 포함한다. |
-
 | Acceptance rate | 지금까지 제안한 후보 중 채택된 비율이다. |
-
 | Current state | 현재 체인의 위치다. |
-
 | Last proposal | 마지막 후보의 채택/거절 여부와 그때의 α, u를 표시한다. |
 
 같은 분포·$\sigma$·seed에서는 Iterations를 늘려도 기존 체인이 유지된다. 100단계에서 1,000단계로 늘렸다가 다시 100단계로 돌아오면 같은 상태와 채택률을 볼 수 있다.
@@ -303,24 +290,17 @@ Mixing은 체인이 목표분포의 여러 영역을 얼마나 잘 오가며 탐
 다음은 **seed 2405, 10,000단계, 초기 구간 포함**으로 배포된 샘플러를 실행한 결과다. 표시되는 acceptance rate와 비교할 수 있다.
 
 | Demo | Proposal σ | Acceptance rate |
-
 | --- | --- | --- |
-
 | Multimodal 1D | 0.15 | 93.5% |
-
 | Multimodal 1D | 1.40 | 63.0% |
-
 | Multimodal 1D | 3.50 | 46.5% |
-
 | Banana 2D | 0.15 | 88.6% |
-
 | Banana 2D | 0.65 | 56.9% |
-
 | Banana 2D | 3.50 | 9.5% |
 
 이 숫자들은 특정 seed의 관찰값이며 권장 채택률이나 최적 설정이 아니다. New random run을 누르면 seed가 바뀌므로 수치도 달라진다.
 
-표본 수가 10,000이라고 해서 독립적인 표본 10,000개와 같은 정보를 얻었다고 볼 수도 없다. 추정하려는 양에 강한 양의 자기상관이 남아 있으면 같은 표본 수의 독립 표본에 비해 추정의 불확실성이 커질 수 있다. 실제 분석에서는 자기상관, 유효표본크기(effective sample size), 여러 초기 위치에서 시작한 체인 등을 함께 점검한다. 이 데모는 그러한 진단을 모두 제공하지 않으며, 그림의 모양만으로 수렴을 확정할 수는 없다. [Stan Reference Manual: 수렴과 유효표본크기]([https://mc-stan.org/docs/reference-manual/analysis.html](https://mc-stan.org/docs/reference-manual/analysis.html))
+표본 수가 10,000이라고 해서 독립적인 표본 10,000개와 같은 정보를 얻었다고 볼 수도 없다. 추정하려는 양에 강한 양의 자기상관이 남아 있으면 같은 표본 수의 독립 표본에 비해 추정의 불확실성이 커질 수 있다. 실제 분석에서는 자기상관, 유효표본크기(effective sample size), 여러 초기 위치에서 시작한 체인 등을 함께 점검한다. 이 데모는 그러한 진단을 모두 제공하지 않으며, 그림의 모양만으로 수렴을 확정할 수는 없다. [Stan Reference Manual: 수렴과 유효표본크기](https://mc-stan.org/docs/reference-manual/analysis.html)
 
 관찰할 때는 다음 세 가지를 함께 기록해 보자.
 
@@ -338,7 +318,7 @@ $$
 
 \pi(z)q(z'\mid z)\alpha(z,z')
 
-&=\min\left\pi(z)q(z'\mid z),\pi(z')q(z\mid z')\right
+&=\min\left\{\pi(z)q(z'\mid z),\pi(z')q(z\mid z')\right\} \\
 
 &=\pi(z')q(z\mid z')\alpha(z',z).
 

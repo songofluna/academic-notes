@@ -46,6 +46,18 @@ content:
               label: Generative Models
             - name: deep-learning
               label: Deep Learning
+      - name: course
+        label: Course (optional)
+        type: string
+        description: 'Use cs229, generative-models, deep-learning, or your own course name. Leave blank to use Category.'
+      - name: chapter
+        label: Chapter (optional)
+        type: string
+        description: 'Free text, e.g. Chapter 01. Introduction. No registered ID is required.'
+      - name: order
+        label: Reading order (optional)
+        type: number
+        description: 'Order within a chapter: 1, 2, 3. Empty values sort by title.'
       - name: summary
         label: Summary
         type: text
@@ -104,6 +116,8 @@ content:
     format: json
     fields:
       - { name: siteName, label: Site name, type: string }
+      - { name: authorName, label: Author display name, type: string }
+      - { name: affiliation, label: Affiliation (optional), type: string }
       - { name: introLabel, label: Intro label, type: string }
       - { name: introTitle, label: Korean heading, type: text }
       - { name: introDescription, label: Introduction, type: text }
