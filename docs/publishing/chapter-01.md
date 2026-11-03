@@ -5,7 +5,7 @@
 - Inspected: all 14 rendered pages on 2026-11-04.
 - Scope this pass: §§1.3–1.4, both on PDF p. 2, as two separate notes.
 - Existing §§1.1–1.2: `content/notes/newnote1.md`; preserve without rewriting.
-- Editorial workflow: source-led Korean explanations for first-year statistics students; add definitions/examples without changing the handwritten argument. Published AI-assisted drafts remain author-review-pending.
+- Editorial workflow: follow [the publishing guide](README.md). Keep prose proportionate to the handwritten source; include only necessary explanations. Published edited drafts remain author-review-pending. The concision revision below supersedes the initial expanded prose.
 
 ## Chapter plan
 
@@ -37,7 +37,7 @@ These observations are review flags, not silent corrections to published notes.
 - p. 10: “Total Variance distance” should be checked against the standard term “total variation distance.”
 - p. 13, §1.11 exercise: verify the density arguments and the direction of the Jacobian before transcribing.
 
-## Current pass
+## Initial publication — superseded prose
 
 ### Notes and provenance
 
@@ -71,3 +71,18 @@ These observations are review flags, not silent corrections to published notes.
 ### Next pass
 
 Start §1.5 on PDF p. 3: maximum likelihood, empirical negative log-likelihood, the Gaussian example and degenerate variance. Do not rewrite §§1.1–1.4. Author review of the two new drafts remains outstanding.
+
+
+## Concision revision — 2026-11-04
+
+- User approved revising and republishing both §§1.3–1.4 under the new, source-proportionate guide. Re-read `newnote1.md` and compared both revised drafts directly with PDF p. 2.
+- Restored the original section titles: **1.3 Learning a Distribution from Finite Samples** and **1.4 Density Estimation and Sample Generation**. Existing slugs and URLs are unchanged.
+- §1.3 retains finite i.i.d. observations, the LLN sample-average approximation, the empirical-distribution formula and point-mass meaning, sampling by selecting a training observation, and the goal of learning beyond that finite sample. Removed the weather example, variance derivation, generalized-learning discussion, duplicate-value worked example, table, diagram and resampling embed.
+- §1.4 retains density/log-density evaluation versus sampling, the original Gaussian affine transform and density formula, both computational procedures, pushforward meaning, and the brief general-generator/normalizing-flow connection. Removed extra numerical examples, log-density expansion, CDF derivation, preimage formalism, singular-generator example and diagram.
+- Each revised note has three subheadings, zero images and zero interactive embeds. The existing figure files, empirical sampler and shortcode remain available; no unrelated content or site code was deleted or edited.
+- Public prose no longer includes editorial/provenance reports. Both posts retain only the short `작성자 검토 전` notice. Provenance and review details remain here.
+- Prose counts: §1.3 **973** characters (previously 3,365); §1.4 **914** (previously 3,401). Count includes spaces and English terms, collapses whitespace, and excludes frontmatter, headings, review notice, display/inline math, image syntax and shortcode markers. Figures/experiments are not used to increase length.
+- Mathematical review: retained the i.i.d. and integrability conditions in one sentence, point-mass weights and duplicate handling, Gaussian scale restriction σ > 0 and variance σ², and the source's distinction between density evaluation and sampling. No unclear source item blocks these two sections.
+- Verification before publication: `npm run check` passed all 40 tests and built 6 notes. At desktop 1280 × 900 and mobile 390 × 844, §1.3 renders 16 MathJax containers (3 display formulas) and §1.4 renders 32 (5 display formulas), with zero math errors or page overflow. Table-of-contents links work. Both article bodies contain zero images and zero iframes. No runtime, CMS or deployment code changed. The earlier math counts and screenshots above describe the superseded version.
+- Publication of this revision: pending PR merge and live-page verification.
+- Next section remains §1.5 (PDF p. 3). Final author review of §§1.3–1.4 remains pending.
