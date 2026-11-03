@@ -201,14 +201,15 @@
     $('articles-count').textContent=all.length?`${found.length} ${found.length===1?'article':'articles'}`:'';
   }
   function inlineMd(raw) {
-    const code=[];
+    const code=[], math=[];
     let s=esc(raw).replace(/`([^`\n]+)`/g,(_,c)=>{code.push(`<code>${c}</code>`);return `⟦CODE${code.length-1}⟧`;});
+    // Protect inline TeX before Markdown emphasis can interpret its asterisks.
+    s=s.replace(/(?<!\\)\\\((.+?)\\\)|(?<!\\)\$([^$\n]+)\$/g,(_full,paren,dollar)=>{math.push(`\\(${paren ?? dollar}\\)`);return `⟦MATH${math.length-1}⟧`;});
     s=s.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g,(_full,alt,url)=>`<img loading="lazy" src="${esc(mediaUrl(url))}" alt="${alt}" class="article-img">`);
     s=s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,(_full,label,url)=>`<a href="${esc(safeUrl(url))}" target="${url.startsWith('#')?'_self':'_blank'}" rel="noopener noreferrer">${label}</a>`);
     s=s.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>');
     s=s.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g,'<em>$1</em>');
-    s=s.replace(/\$([^$\n]+)\$/g,(_full,expr)=>`\\(${expr}\\)`);
-    return s.replace(/⟦CODE(\d+)⟧/g,(_,i)=>code[Number(i)]||'');
+    return s.replace(/⟦MATH(\d+)⟧/g,(_,i)=>math[Number(i)]||'').replace(/⟦CODE(\d+)⟧/g,(_,i)=>code[Number(i)]||'');
   }
   function markdown(body) {
     const lines=String(body||'').replace(/\r\n/g,'\n').split('\n');
@@ -223,20 +224,22 @@
         if(i+1<lines.length)i++;
         html+=`<pre tabindex="0"><code class="language-${lang}">${esc(code.join('\n'))}</code></pre>`;continue;
       }
-      if(s.includes('$$')) {
+      if(s.includes('$$') || s.includes('\\[')) {
         // Display-math delimiters can be next to explanatory prose. Split the
         // prose out before sending only the equation to MathJax.
-        const marker=s.indexOf('$$');
+        const dollar=s.indexOf('$$'), bracket=s.indexOf('\\[');
+        const marker=dollar<0?bracket:bracket<0?dollar:Math.min(dollar,bracket);
+        const closing=marker===bracket?'\\]':'$$';
         const leading=s.slice(0,marker).trim();
         flushPara();flushList();
         if(leading)html+=`<p>${inlineMd(leading)}</p>`;
         const math=[];let trailing='';
-        const open=s.slice(marker+2), inlineEnd=open.indexOf('$$');
+        const open=s.slice(marker+2), inlineEnd=open.indexOf(closing);
         if(inlineEnd!==-1){math.push(open.slice(0,inlineEnd));trailing=open.slice(inlineEnd+2).trim();}
         else {
           if(open)math.push(open);
           while(i+1<lines.length){
-            const line=lines[++i],end=line.indexOf('$$');
+            const line=lines[++i],end=line.indexOf(closing);
             if(end!==-1){math.push(line.slice(0,end));trailing=line.slice(end+2).trim();break;}
             math.push(line);
           }
