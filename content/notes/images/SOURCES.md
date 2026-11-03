@@ -1,34 +1,36 @@
 # Chapter 5.7 figure sources
 
-The Markdown note uses local `images/` links. The build copies this directory to
-`dist/images/` so the same links work below `/academic-notes/` on GitHub Pages.
+All six image files are the exact captures supplied by the site owner, without
+cropping, redrawing, or other image changes. The first three were replaced with
+the subsequently supplied `1.jpg`, `2.jpg`, and `3.jpg`, as requested.
 
-## Figures from Pixel Recurrent Neural Networks
+The Markdown uses local `images/` links. The build copies this directory to
+`dist/images/` so these links also work below `/academic-notes/` on GitHub Pages.
 
-Aäron van den Oord, Nal Kalchbrenner, Koray Kavukcuoglu (2016).
-*Pixel Recurrent Neural Networks*. ICML, PMLR 48:1747–1756.
-[Publication](https://proceedings.mlr.press/v48/oord16.html),
-[original PDF](https://proceedings.mlr.press/v48/oord16.pdf).
-
-[PMLR publication agreement](https://proceedings.mlr.press/pmlr-license-agreement.html):
-[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
-The crops change only the framing, not the diagram contents.
-
-| File | Source | Treatment |
+| File | Supplied source | Content |
 | --- | --- | --- |
-| raster-order.png | Figure 2, left | Cropped from the original PDF, 300 dpi |
-| mask-a-b.png | Figure 2, right | Cropped from the original PDF, 300 dpi |
-| pixelcnn-blind-spot.png | Figure 4, left | Cropped from the original PDF, 300 dpi; shows PixelCNN connectivity, not the separate blind-spot diagram from the Gated PixelCNN paper |
-| diagonal-skewing.jpg | Figure 3 | User-supplied capture, unchanged |
+| raster-order.jpg | The Gradient, *Likelihood-based Generative Models I: Autoregressive Models* | Raster scan and zigzag ordering |
+| mask-a-b.jpg | [Minibatch AI, PixelCNN](https://minibatchai.com/2023/01/27/pixel-cnn.html) | RGB-channel Mask B only; the filename follows the requested naming convention |
+| pixelcnn-blind-spot.jpg | Francisco Ingham, *Day 5: Conditional Image Generation with PixelCNN Decoders* (Medium) | Figure 2 from van den Oord et al., *Conditional Image Generation with PixelCNN Decoders* (2016) |
+| row-lstm.jpg | 모두의연구소, *Pixel RNN to Pixel CNN++* | Complete Row LSTM slide |
+| diagonal-skewing.jpg | van den Oord et al., *Pixel Recurrent Neural Networks* (2016), Figure 3 | Original figure and caption, supplied as a capture |
+| diagonal-bilstm.jpg | 모두의연구소, *Pixel RNN to Pixel CNN++* | Complete Diagonal BiLSTM slide |
 
-## User-supplied lecture slides
+The two 모두의연구소 slides cite
+[Jaejun Yoo, PR12: PixelRNN](https://www.slideshare.net/thinkfactory/pr12-pixelrnn-jaejun-yoo).
 
-`row-lstm.jpg` and `diagonal-bilstm.jpg` are the exact images reattached by the
-site owner with an explicit request to use them unchanged. They are branded
-모두의연구소 and supplied under the title *Pixel RNN to Pixel CNN++*.
-The slides cite [Jaejun Yoo, PR12: PixelRNN](https://www.slideshare.net/thinkfactory/pr12-pixelrnn-jaejun-yoo).
+## License record
 
-The original paper is credited above for the paper diagrams embedded in these
-slides. A separate reuse license for the complete slide compositions was not
-confirmed; the paper's CC BY license is not asserted for the complete slides.
-No new license is granted for these user-supplied images by this repository.
+The original *Pixel Recurrent Neural Networks* paper is by Aäron van den Oord,
+Nal Kalchbrenner, and Koray Kavukcuoglu (2016), PMLR 48:1747–1756:
+[publication](https://proceedings.mlr.press/v48/oord16.html),
+[PDF](https://proceedings.mlr.press/v48/oord16.pdf).
+The [PMLR publication agreement](https://proceedings.mlr.press/pmlr-license-agreement.html)
+specifies [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); this supports
+the original Figure 3 shown in `diagonal-skewing.jpg`.
+
+An independent reuse license was not confirmed for the other supplied captures
+or for the complete lecture-slide compositions. They were specifically supplied
+and selected by the site owner for this note. Source attribution is not a claim
+of a verified reuse license, and the PMLR license is not extended to those files.
+No new license is granted for the supplied images by this repository.
