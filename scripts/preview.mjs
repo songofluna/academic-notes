@@ -24,6 +24,10 @@ const madeKernel=(await readFile(join(root,'demos/made-mask.mjs'),'utf8')).repla
 const madeDemo=(await readFile(join(root,'demos/made-mask-explorer.html'),'utf8'))
   .replace("import { madeMasks } from './made-mask.mjs';",()=>madeKernel);
 data+='\nwindow.MADE_DEMO_SRCDOC = '+JSON.stringify(madeDemo).replace(/</g,'\\u003c')+';\n';
+const pixelcnnKernel=(await readFile(join(root,'demos/pixelcnn-context.mjs'),'utf8')).replace(/^export /gm,'');
+const pixelcnnDemo=(await readFile(join(root,'demos/pixelcnn-blind-spot.html'),'utf8'))
+  .replace("import { pixelcnnContext } from './pixelcnn-context.mjs';",()=>pixelcnnKernel);
+data+='\nwindow.PIXELCNN_DEMO_SRCDOC = '+JSON.stringify(pixelcnnDemo).replace(/</g,'\\u003c')+';\n';
 const img=await readFile(join(root,'assets','hero-photo.webp'));
 const inlineImage='data:image/webp;base64,'+img.toString('base64');
 // site config references to /assets work in the packed HTML without companion files.
