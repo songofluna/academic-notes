@@ -15,7 +15,7 @@ Page numbers below are physical PDF pages, not a new outline. Only 2.1 is in the
 
 | Section | Handwritten heading | Pages | Status |
 | --- | --- | --- | --- |
-| 2.1 | Why graphical models? | 1 | Manuscript and PNG ready; replacement-image browser review and publication verification pending |
+| 2.1 | Why graphical models? | 1 | Published and public-page verified; author review pending |
 | 2.2 | Joint, Marginal and Conditional distribution | 1 | Marked “skip”; use the supplied lecture when this section is requested |
 | 2.3 | DAG (Directed Acyclic Graphs) | 1–2 | Not started |
 | 2.4 | Factorization of a Directed Graphical Model | 3 | Not started |
@@ -61,6 +61,9 @@ No interactive component is needed for this short introductory section. Later to
 - After the PNG replacement, the existing full check command passed all 59 tests and built 25 notes.
 - The replacement PNG was reviewed at 1280 px desktop width and in a 390 px browser iframe using the same built page. The image and math render correctly; the mobile document width and scroll width are both 390 px, the image renders at 350 px, and no MathJax errors are present. Figure labels and arrows remain legible. The temporary iframe harness is local QA only and is not published.
 - Target post: <https://songofluna.github.io/academic-notes/#/notes/gm-ch02-21>.
-- Deployment and public-page verification will be recorded after publication.
+- [PR #31](https://github.com/songofluna/academic-notes/pull/31) was squash-merged as `0d54832ed22ca3be29cf3330e4a5937e97e721b0`; its [Check website run](https://github.com/songofluna/academic-notes/actions/runs/41740503204) passed.
+- The [Deploy website run for the publication commit](https://github.com/songofluna/academic-notes/actions/runs/41740587473) completed successfully.
+- On 2026-11-04, the actual public post was inspected at desktop width and loaded in a 390 px browser iframe. The full text, review notice, eight rendered math containers and PNG were present. At mobile width, document and scroll width were both 390 px, the image rendered at 350 px, and MathJax reported no errors. The published PNG was downloaded and its SHA-256 matched the original above.
+- The merged source contains exactly the intended note, PNG and publishing record; uploaded files matched the locally verified versions byte-for-byte.
 
 The author's own review remains pending. The next section is 2.2 only when requested; it must be reconstructed from the supplied lecture because the handwritten source marks it “skip”.
