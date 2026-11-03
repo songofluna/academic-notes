@@ -3,7 +3,7 @@
 - Source: user-provided handwritten `Ch1 3.pdf`, 14 pages (PDF page numbers, not printed labels).
 - SHA-256: `8be87a5939c17ee2cad0013db2ad532ed2b2b49a314750ad4c22ead6af84410a`
 - Inspected: all 14 rendered pages on 2026-11-04.
-- Current pass: §1.8, publishing the author-supplied manuscript and two supplied figures. Earlier notes remain unchanged.
+- Current pass: §§1.9–1.10, publishing the author-supplied manuscripts as separate notes. Earlier notes remain unchanged.
 - Existing §§1.1–1.2: `content/notes/newnote1.md`; preserve without rewriting.
 - Editorial workflow: follow [the publishing guide](README.md). Keep prose proportionate to the handwritten source; include only necessary explanations. Published edited drafts remain author-review-pending. The concision revision below supersedes the initial expanded prose.
 
@@ -18,12 +18,12 @@
 | 1.6 | 4 | Forward KL and population/empirical likelihood | Published; author review pending |
 | 1.7 | 5–6 | Reverse KL, mode covering/seeking, support example | Published; author review pending |
 | 1.8 | 7–8 | Data-space score, Fisher divergence, Gaussian/mixture examples | Published author-supplied manuscript; review notice retained |
-| 1.9 | 9–10 | f-divergence, JS, total variation, Wasserstein comparison | Planned |
-| 1.10 | 11 | Explicit/implicit models and density existence | Planned |
+| 1.9 | 9–10 | f-divergence, JS, total variation, Wasserstein comparison | Author-supplied manuscript; publication prepared |
+| 1.10 | 11 | Explicit/implicit models and density existence | Author-supplied manuscript; publication prepared |
 | 1.11 | 12–13 | Latent variables, changes of variables, Jacobian examples | Planned |
 | 1.12 | 14 | Taxonomy of major generative-model families | Planned |
 
-The author paused the earlier request to write §§1.8–1.12 and supplied the §1.8 manuscript for publication only. Do not continue §§1.9–1.12 without further instruction.
+The author paused the earlier batch drafting request, then supplied §§1.8, 1.9 and 1.10 for publication. §§1.11–1.12 remain unstarted pending further instruction.
 
 ## Source review for future passes
 
@@ -158,3 +158,18 @@ Start §1.5 on PDF p. 3: maximum likelihood, empirical negative log-likelihood, 
 - Existing notes, images, CMS configuration, demos, design and deployment code are unchanged. No interactive component is added. §§1.9–1.12 remain unstarted pending the author's next instruction.
 - Publication: [PR #18](https://github.com/songofluna/academic-notes/pull/18), merged as `8fa8bcf94ed4b29c2817ea61a97219b35e504d4c`. The [PR check](https://github.com/songofluna/academic-notes/actions/runs/41693556852) and [GitHub Pages deployment](https://github.com/songofluna/academic-notes/actions/runs/41693752501) completed successfully. The uploaded branch tree was compared against the tested local tree and matched exactly, including both binary images.
 - Public verification on 2026-11-04 KST: the note renders all 89 formulas (36 display) without math errors at 1280 px and 390 px. Both attached figures load from the site's `/academic-notes/images/` paths at natural widths 1514 and 1550 px and fit the 350 px mobile body; no page overflow. The mobile ToC opens Definition 1.8.6. Desktop and mobile screenshots were saved. Publication does not change the author's retained review notice.
+
+
+## Sections 1.9–1.10 — author-supplied manuscripts, 2026-11-04
+
+- Separate notes: `gm-ch01-19.md` (1.9 f-Divergence and Other Distribution Distances) and `gm-ch01-110.md` (1.10 Explicit and Implicit Generative Models), at reading orders 19 and 20 after §1.8. Both retain the author's `작성자 검토 전` notice.
+- §1.9 uses the supplied text attachment. Only the two figure instruction blocks are replaced with the author's attached JPEGs, captions and source credits. The remaining body, both Markdown tables and all 134 TeX expressions are unchanged.
+- §1.10 uses the text pasted directly in the request. Preserved its prose, headings, mathematical quantities and examples. Restored display/inline delimiters, removed transport escapes on underscores/equals/less-than signs and line endings, and restored the differential spacing in the VAE and EBM integrals (`\,\mathrm d`). This is formatting repair, not a new derivation. It contains 39 TeX expressions, including 7 display formulas.
+- §1.9 Figure 1: the author's `1.9 figure1.jpeg`, visually matched against Lilian Weng's [From GAN to WGAN](https://lilianweng.github.io/posts/2017-08-20-gan/) four-panel KL/JS figure. The caption identifies the curves as integrands, not scalar divergence values.
+- §1.9 Figure 2: the author's `1.9 figure2.jpeg`, visually matched against the image indexed with Sunil Yadav's [Necessary Probability Concepts for Deep Learning: Part 2](https://medium.com/@sunil7545/kl-divergence-js-divergence-and-wasserstein-metric-in-deep-learning-995560752a53). The caption maps g, h, theta to the manuscript's P, Q, a.
+- Both uploaded JPEGs are copied byte-for-byte. Source credits are added; no open reuse license was verified or asserted. The figures are the files expressly provided by the author for this publication, not substituted web downloads.
+- Validation: `npm run check` passes all 40 tests and builds 12 notes. Desktop 1280 px and mobile 390 px previews render §1.9's 134 body math expressions (37 display formulas), both tables and both figures, and §1.10's 39 expressions (7 display formulas), with no MathJax errors or page-level horizontal overflow. §1.9's three math-bearing ToC entries also typeset correctly. The Next note link opens §1.10 from §1.9.
+- Existing posts, CMS, site runtime, demos, design and deployment code are unchanged. No interactive component is added, and §§1.11–1.12 are not started.
+- Source checksum (붙여넣은 텍스트.txt): SHA-256 `b58b040fb274d6854b0697ecfb255391199e061d6eb7c8783b822ceda0ae613b`.
+- Source checksum (ch01-19-js-divergence.jpeg): SHA-256 `48a69c9db2cf2b718417826a10911311a13f5f44109e387839aaec908e5956d0`.
+- Source checksum (ch01-19-disjoint-distributions.jpeg): SHA-256 `b0231da82dd6a46ab76191b2bb080a0f7c04f899a919d130c746769958101d36`.
