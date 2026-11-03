@@ -105,6 +105,9 @@
     const source='data-src="demos/metropolis-hastings.html"';
     return `<div class="mh-embed-wrap"><iframe class="mh-embed" data-mh-demo ${source} loading="lazy" title="Interactive Metropolis–Hastings sampler" referrerpolicy="same-origin" scrolling="no"></iframe></div>`;
   }
+  function empiricalDemoHtml() {
+    return '<div class="mh-embed-wrap"><iframe class="mh-embed empirical-embed" data-empirical-demo data-src="demos/empirical-distribution.html" loading="lazy" title="Interactive empirical distribution resampling" referrerpolicy="same-origin" scrolling="no"></iframe></div>';
+  }
   function experimentHtml(id='home') {
     const pre=id.replace(/[^a-z0-9-]/gi,'');
     return `<div class="demo" data-normal-demo="${pre}" aria-label="Compare two normal distributions">
@@ -119,9 +122,10 @@
       <div class="demo-footer"><button class="reset" type="button" data-reset-plot>Reset ↺</button></div></div>`;
   }
   function setupExperiments(scope=app) {
-    scope.querySelectorAll('[data-mh-demo][data-src]').forEach(frame=>{
+    scope.querySelectorAll('[data-mh-demo][data-src], [data-empirical-demo][data-src]').forEach(frame=>{
       const load=()=>{
-        if(window.MH_DEMO_SRCDOC)frame.srcdoc=window.MH_DEMO_SRCDOC;
+        const packed=frame.hasAttribute('data-mh-demo')?window.MH_DEMO_SRCDOC:window.EMPIRICAL_DEMO_SRCDOC;
+        if(packed)frame.srcdoc=packed;
         else frame.src=frame.dataset.src;
         frame.removeAttribute('data-src');
       };
@@ -247,6 +251,7 @@
       if(s==='---'||s==='***'){flushPara();flushList();html+='<hr>';continue;}
       if(/^\[demo:normal-kl\]$/i.test(s)){flushPara();flushList();html+=experimentHtml('article');continue;}
       if(/^\[demo:metropolis-hastings\]$/i.test(s)){flushPara();flushList();html+=mhDemoHtml();continue;}
+      if(/^\[demo:empirical-distribution\]$/i.test(s)){flushPara();flushList();html+=empiricalDemoHtml();continue;}
       const ul=s.match(/^[-*]\s+(.+)$/),ol=s.match(/^\d+\.\s+(.+)$/);
       if(ul||ol){flushPara();const type=ul?'ul':'ol';if(list.length&&type!==listType)flushList();listType=type;list.push((ul||ol)[1]);continue;}
       if(s.startsWith('>')){flushPara();flushList();const quote=[];while(i<lines.length&&lines[i].trim().startsWith('>')){quote.push(lines[i].trim().replace(/^>\s?/,''));i++;}i--;html+=`<blockquote><p>${inlineMd(quote.join(' '))}</p></blockquote>`;continue;}
@@ -408,8 +413,11 @@
   function dataUriToBlob(data){const [h,b64]=data.split(',');const mime=h.match(/data:(.*?);base64/)?.[1]||'image/webp';const raw=atob(b64);const arr=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)arr[i]=raw.charCodeAt(i);return new Blob([arr],{type:mime});}
   async function readFileAsText(file){return await file.text();}
   window.addEventListener('message',event=>{
-    if(event.origin!==window.location.origin || event.data?.type!=='academic-notes:mh-resize')return;
-    const frame=Array.from(document.querySelectorAll('iframe[data-mh-demo]')).find(el=>el.contentWindow===event.source);
+    if(event.origin!==window.location.origin)return;
+    const selectors={'academic-notes:mh-resize':'iframe[data-mh-demo]','academic-notes:empirical-resize':'iframe[data-empirical-demo]'};
+    const selector=selectors[event.data?.type];
+    if(!selector)return;
+    const frame=Array.from(document.querySelectorAll(selector)).find(el=>el.contentWindow===event.source);
     if(!frame)return;
     const height=Number(event.data.height);
     if(Number.isFinite(height) && height>0)frame.style.height=Math.min(10000,Math.ceil(height))+'px';
