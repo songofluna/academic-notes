@@ -25,6 +25,13 @@ These are limits to prevent expansion, not targets to fill. Shorter is appropria
 
 Write natural Korean explanatory paragraphs at an accessible first-year statistics level. Introduce symbols in context, connect equations to their meanings, and use English technical terms when helpful. Avoid reassurance, rhetorical announcements, contrast slogans, repeated bold text and bullet-point summaries. A short section generally needs no more than two or three meaningful subheadings. Do not append routine “key takeaways” or conclusions.
 
+## Korean and English terminology
+
+- Match the terminology in `content/notes/newnote1.md` (§§1.1–1.2), not just its paragraph style. Keep explanations in Korean.
+- Retain established Korean statistical terms such as 확률분포, 기댓값, 모수 and 정규분포. When introducing an English equivalent, use the same capitalization as the reference, e.g. 경험분포(Empirical Distribution), 표본평균(Sample Average), 점질량(Point Mass).
+- Use English for field-specific names and operations: Density Evaluation, Sampling, Pushforward, Jacobian Determinant and Normalizing Flow. Do not introduce literal or redundant translations such as 정규화 흐름(normalizing flow) or 푸시포워드(pushforward).
+- Use the chosen term consistently across headings and prose. Natural Korean explanations such as “밀도를 계산한다” remain appropriate; do not replace every ordinary Korean phrase with English. Check terminology against preceding notes before publication, without changing formulas or adding explanations.
+
 ## Figures and experiments
 
 Default to **zero figures and zero interactive components**. Add one only when it materially helps understanding that prose and equations cannot provide as well. Do not create extra topics or lengthy instructions to justify a widget.
