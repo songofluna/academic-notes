@@ -3,7 +3,7 @@
 - Source: user-provided handwritten `Ch1 3.pdf`, 14 pages (PDF page numbers, not printed labels).
 - SHA-256: `8be87a5939c17ee2cad0013db2ad532ed2b2b49a314750ad4c22ead6af84410a`
 - Inspected: all 14 rendered pages on 2026-11-04.
-- Current pass: §1.6 on PDF p. 4. Earlier §§1.1–1.5 remain unchanged.
+- Current pass: §1.7 on PDF pp. 5–6. Earlier §§1.1–1.6 remain unchanged.
 - Existing §§1.1–1.2: `content/notes/newnote1.md`; preserve without rewriting.
 - Editorial workflow: follow [the publishing guide](README.md). Keep prose proportionate to the handwritten source; include only necessary explanations. Published edited drafts remain author-review-pending. The concision revision below supersedes the initial expanded prose.
 
@@ -16,8 +16,8 @@
 | 1.4 | 2, lower half | Density evaluation, sampling, Gaussian pushforward | Published; author review pending |
 | 1.5 | 3 | MLE, empirical NLL, Gaussian example and degenerate case | Published; author review pending |
 | 1.6 | 4 | Forward KL and population/empirical likelihood | Published; author review pending |
-| 1.7 | 5–6 | Reverse KL, mode covering/seeking, support example | Next |
-| 1.8 | 7–8 | Data-space score, Fisher divergence, Gaussian/mixture examples | Planned |
+| 1.7 | 5–6 | Reverse KL, mode covering/seeking, support example | Written; author review pending |
+| 1.8 | 7–8 | Data-space score, Fisher divergence, Gaussian/mixture examples | Next |
 | 1.9 | 9–10 | f-divergence, JS, total variation, Wasserstein comparison | Planned |
 | 1.10 | 11 | Explicit/implicit models and density existence | Planned |
 | 1.11 | 12–13 | Latent variables, changes of variables, Jacobian examples | Planned |
@@ -30,8 +30,8 @@ Keep each future pass to one or two sections. For §1.8 and §1.11, one section 
 These observations are review flags, not silent corrections to published notes.
 
 - p. 4, §1.6: resolved in the section 1.6 record below. The original line mixed a finite sum and a population expectation; the note defines them separately and uses approximation rather than equality.
-- p. 5, §1.7: the reverse-KL figure is captioned “Mode Covering” although the discussion describes mode seeking. Reconcile explicitly with the author/source.
-- p. 6, §1.7.4: the first term appears as log 0 although the shown ratio is 1; recompute from the displayed distributions.
+- p. 5, §1.7: resolved in the section 1.7 record below. The Reverse KL figure describes Mode Seeking; its “Mode Covering” caption was inconsistent with both the diagram and surrounding prose.
+- p. 6, §1.7.4: resolved in the section 1.7 record below. The first probability ratio is 1, so the term is log 1 = 0, not log 0.
 - pp. 7–8, §1.8: log-score definitions need positive density on the domain; verify assumptions in the zero-divergence argument.
 - p. 9, §1.9: the reverse-KL substitution line has a suspicious extra factor; verify before publishing.
 - p. 10: “Total Variance distance” should be checked against the standard term “total variation distance.”
@@ -127,3 +127,17 @@ Start §1.5 on PDF p. 3: maximum likelihood, empirical negative log-likelihood, 
 - Next: §1.7 on PDF pp. 5–6. Reconcile the recorded mode-covering caption and log-ratio issue before drafting; do not silently extend or rewrite §1.6.
 - Publication: [PR #16](https://github.com/songofluna/academic-notes/pull/16), merged as `f7d1670961b337147b7148afb2d78c28a5ec52cc`. The [PR check](https://github.com/songofluna/academic-notes/actions/runs/41675845179) and [Pages deployment](https://github.com/songofluna/academic-notes/actions/runs/41676065214) completed successfully.
 - Public verification on 2026-11-04 KST: the note displays the correct title and all 31 MathJax expressions (7 display formulas), without math errors or page overflow. At 390 × 844 all display formulas fit their 350 px containers. The mobile ToC opens Proposition 1.6.2, and the public §1.5 next-note link opens §1.6. Desktop and mobile screenshots were saved. Existing note contents remain unchanged.
+
+## Section 1.7 — 2026-11-04
+
+- Note: `content/notes/gm-ch01-17.md` — [1.7 Reverse KL, Mode Covering and Mode Seeking](https://songofluna.github.io/academic-notes/#/notes/gm-ch01-17). Retains `작성자 검토 전`; publication is not author approval.
+- Visually re-read source PDF pp. 5–6 and confirmed the original PDF SHA-256 is unchanged. Preserved the order: Reverse KL definition, Remark 1.7.1 (zero-probability sets and the two directions), Example 1.7.2 (equal mixture of N(-3,1) and N(3,1), approximated by one Gaussian), Remark 1.7.3 (model capacity and global optimum caveat), Example 1.7.4 (P=(1/2,1/2,0), Q=(1/2,1/4,1/4)).
+- The author clarified that the supplied prose is a tone reference, not an outline template. The draft preserves the source order, connects the meaning of each formula to the next paragraph, and avoids first-person anecdotes or emotional commentary. The publishing guide now records this preference. Statistical terminology remains consistent with earlier notes; no previous article was rewritten.
+- Source corrections explicitly reported to the author during drafting: the right-hand diagram in Example 1.7.2 is Mode Seeking, not its handwritten Mode Covering caption; Example 1.7.4 starts with (1/2) log 1 = 0, not (1/2) log 0. The resulting forward discrete KL is (1/2) log 2; the reverse direction is infinite.
+- Necessary clarification: P(A) denotes the probability of a set; P << Q is a necessary condition for finite KL, not asserted sufficient. Explained the averaging distribution in Reverse KL, Gaussian variance notation, the nonzero tails of Gaussian densities, and the distinction between tendencies under a restricted model and universal guarantees. No new example, optimization proof or advanced inference method was introduced.
+- Prose: 2,767 characters including spaces and English after collapsing whitespace, excluding frontmatter, headings, review notice and all math. Three main subheadings; original remark/example numbering retained. Source comparison completed after drafting.
+- Verification reference: [Goodfellow, Bengio and Courville, Deep Learning, §3.13 and Figure 3.6](https://www.deeplearningbook.org/contents/prob.html) corroborates the directional comparison, separated-mode qualification and zero-term convention. This is an internal mathematical check; no external text or figure is reproduced.
+- Independent computation: exact rational ratios in Example 1.7.4 are 1 and 2; KL(P||Q)=0.3465735903 and Q(x3)>0 with P(x3)=0 implies KL(Q||P)=infinity. Gaussian quadrature gives Forward KL 0.4619946135 for N(0,10) versus 8.3107020670 for N(3,1); Reverse KL respectively 0.9379801910 versus 0.6892979330. Numerical searches from either mode give symmetric means ±2.984306 and standard deviation 1.023369 with Reverse KL 0.688768996. These validate the qualitative example, not a proof of global optimality; numerical results are not extra public content.
+- Figures and interactive components: none. The original diagram's comparison is explained in words alongside its unchanged distribution; no stock illustration or new simulator was added.
+- Validation: `npm run check` passes all 40 tests and builds 9 notes. Desktop at 1280 px and mobile at 390 × 844 render 49 MathJax expressions (7 display formulas), with zero math error nodes or page overflow. All mobile display formulas fit their 350 px containers. No browser JavaScript errors observed. Existing content, CMS, images, demo files, design and deployment code remain unchanged.
+- Next: §1.8, source PDF pp. 7–8. Check the recorded positivity/domain assumptions for the data-space score before drafting; do not extend §1.7 into that material.
