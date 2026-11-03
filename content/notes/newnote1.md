@@ -1,8 +1,13 @@
 ---
 slug: newnote1
-title: GM chapter1 1.1~1.2
+title: Chapter 01 · 1.1–1.2 Introduction to Deep Generative Models
 date: 2026-10-24
 category: generative
+course: generative-models
+chapter: Chapter 01. Introduction to Deep Generative Models
+order: 11
+summary: 실제 데이터 분포와 모델 분포를 구분하고, 생성모델의 학습 목표와 기본 표기법을 살펴본다.
+tags: Generative Models, Probability Distribution, Notation
 draft: false
 sample: false
 ---
