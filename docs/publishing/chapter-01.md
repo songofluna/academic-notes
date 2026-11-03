@@ -20,8 +20,8 @@
 | 1.8 | 7–8 | Data-space score, Fisher divergence, Gaussian/mixture examples | Published author-supplied manuscript; review notice retained |
 | 1.9 | 9–10 | f-divergence, JS, total variation, Wasserstein comparison | Published author-supplied manuscript; review notice retained |
 | 1.10 | 11 | Explicit/implicit models and density existence | Published author-supplied manuscript; review notice retained |
-| 1.11 | 12–13 | Latent variables, changes of variables, Jacobian examples | Author-supplied manuscript; publication prepared |
-| 1.12 | 14 | Taxonomy of major generative-model families | Author-supplied manuscript; publication prepared |
+| 1.11 | 12–13 | Latent variables, changes of variables, Jacobian examples | Published author-supplied manuscript; review notice retained |
+| 1.12 | 14 | Taxonomy of major generative-model families | Published author-supplied manuscript; review notice retained |
 
 The author paused the earlier batch drafting request, then supplied §§1.8, 1.9 and 1.10 for publication. The author subsequently supplied §§1.11–1.12 for publication.
 
@@ -182,3 +182,5 @@ Start §1.5 on PDF p. 3: maximum likelihood, empirical negative log-likelihood, 
 - Published as separate notes, preserving the supplied prose, formulas, section structure and author-review notices.
 - In §1.11, replaced the Figure 1.11-1 placeholder with the exact author-supplied JPEG and a concise caption. Its original source and reuse license were not verified; no attribution or license is asserted.
 - Existing notes and site functionality remain unchanged; no interactive component is added.
+- Publication: [PR #20](https://github.com/songofluna/academic-notes/pull/20), merged as `0e6974ffff7600ed88e667fe13c3511913331f81`; the [PR check](https://github.com/songofluna/academic-notes/actions/runs/41698440587) and [Pages deployment](https://github.com/songofluna/academic-notes/actions/runs/41698549974) succeeded.
+- Validation: `npm run check` passed 40 tests and built 14 notes. The tested local tree matched the uploaded branch. Public desktop and mobile pages render §1.11 (111 formulas) and §1.12 (63 formulas), without MathJax errors or page overflow; §1.11’s figure loads at its original width, and §1.12’s comparison table renders. One long §1.12 equation was split across lines without changing its meaning. The 1.11-to-1.12 link works. Review notices remain.
