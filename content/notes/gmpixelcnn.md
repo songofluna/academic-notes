@@ -6,10 +6,6 @@ category: generative
 draft: false
 sample: false
 ---
-
-
-# 5.7.1 PixelCNN
-
 ## 1. Why CNN for Autoregressive Image Modeling?
 
 이미지는 픽셀들이 이차원 격자 위에 배열된 데이터다. 각 픽셀의 값은 독립적으로 결정되기보다 주변 픽셀들과 밀접한 관계를 가진다.
@@ -18,7 +14,7 @@ sample: false
 
 Convolutional Neural Network(CNN)는 이러한 구조를 학습하기에 적합하다. 작은 필터(Filter)를 이미지 전체에 반복해서 적용하므로, 선이나 곡선과 같은 패턴을 여러 위치에서 포착할 수 있기 때문이다. 동일한 필터의 가중치를 서로 다른 위치에서 공유한다는 점도 중요하다.
 
-앞서 살펴본 NADE는 이미지를 일차원 벡터로 펼쳐 조건부분포를 모델링한다. NADE도 픽셀 사이의 관계를 학습할 수 있지만, 일반적인 완전연결층은 이미지의 이차원 이웃 관계를 구조적으로 활용하지 않는다. 반면 CNN은 **지역적 연결(Local Connectivity)** 과 **가중치 공유(Weight Sharing)** 를 통해 이미지의 공간 구조를 직접 반영한다.
+NADE는 이미지를 일차원 벡터로 펼쳐 조건부분포를 모델링한다. NADE도 픽셀 사이의 관계를 학습할 수 있지만, 일반적인 완전연결층은 이미지의 이차원 이웃 관계를 구조적으로 활용하지 않는다. 반면 CNN은 **지역적 연결(Local Connectivity)** 과 **가중치 공유(Weight Sharing)** 를 통해 이미지의 공간 구조를 직접 반영한다.
 
 그렇다면 CNN을 Autoregressive Model의 조건부분포 계산에 사용할 수 있을까?
 
@@ -28,7 +24,7 @@ $$
 
 p_\theta(x)=\prod_{r=1}^{H}\prod_{c=1}^{W}
 
-p_\theta\!\left(x_{r,c}\mid x_{<r,c}\right)
+p_\theta\left(x_{r,c}\mid x_{<r,c}\right)
 
 $$
 
@@ -82,7 +78,7 @@ $$
 
 이다. $\odot$는 원소별 곱(Element-wise Product)을 나타낸다. Mask에서 0인 위치의 가중치는 어떤 값을 학습하더라도 실제 Convolution에 기여하지 않는다.
 
-### 3.1 Mask A: 첫 번째 Layer
+### 3.1 Mask A
 
 $3\times3$ 필터에 적용하는 **Mask A**를 다음과 같이 정의하자.
 
@@ -92,9 +88,9 @@ M_A=
 
 \begin{bmatrix}
 
-1&1&1\\
+1&1&1
 
-1&0&0\\
+1&0&0
 
 0&0&0
 
@@ -108,15 +104,15 @@ $$
 
 h^{(1)}_{r,c}
 
-=f_\theta\!\left(x_{\mathcal N_A(r,c)}\right)
+=f_\theta\left(x_{\mathcal N_A(r,c)}\right)
 
 $$
 
 여기서 $\mathcal N_A(r,c)$는 Mask A가 허용하는 입력 위치의 집합이고, $h^{(1)}_{r,c}$는 그 위치의 픽셀들로 계산한 **Feature Vector**다.
 
-중요한 점은 $h^{(1)}_{r,c}$와 원본 픽셀 $x_{r,c}$가 서로 다른 대상이라는 것이다. 첫 번째 Layer에 Mask A를 적용했기 때문에 $h^{(1)}_{r,c}$에는 $x_{r,c}$의 값이 들어 있지 않다.
+중요한 점은 $h^{(1)}*{r,c}$와 원본 픽셀 $x*{r,c}$가 서로 다른 대상이라는 것이다. 첫 번째 Layer에 Mask A를 적용했기 때문에 $h^{(1)}*{r,c}$에는 $x*{r,c}$의 값이 들어 있지 않다.
 
-### 3.2 Mask B: 두 번째 Layer부터
+### 3.2 Mask B
 
 두 번째 Layer부터는 **Mask B**를 사용한다.
 
@@ -126,9 +122,9 @@ M_B=
 
 \begin{bmatrix}
 
-1&1&1\\
+1&1&1
 
-1&1&0\\
+1&1&0
 
 0&0&0
 
@@ -144,9 +140,9 @@ $$
 
 h^{(2)}_{r,c}
 
-=g_\theta\!\left(
+=g_\theta\left(
 
-\{h^{(1)}_{u,v}:(u,v)\in\mathcal N_B(r,c)\}
+h^{(1)}_{u,v}:(u,v)\in\mathcal N_B(r,c)
 
 \right)
 
@@ -154,7 +150,7 @@ $$
 
 여기서 $\mathcal N_B(r,c)$는 Mask B가 허용하는 위치의 집합이며, **현재 위치 $(r,c)$도 포함한다.**
 
-현재 위치의 $h^{(1)}_{r,c}$는 이미 과거 픽셀들만 이용해 계산되었으므로, 두 번째 Layer에서 이 Feature Vector를 사용해도 $x_{r,c}$가 유출되지 않는다. 다른 허용 위치의 Feature Vector 역시 그보다 앞선 픽셀로만 계산되어 있으므로 같은 원리가 적용된다.
+현재 위치의 $h^{(1)}*{r,c}$는 이미 과거 픽셀들만 이용해 계산되었으므로, 두 번째 Layer에서 이 Feature Vector를 사용해도 $x*{r,c}$가 유출되지 않는다. 다른 허용 위치의 Feature Vector 역시 그보다 앞선 픽셀로만 계산되어 있으므로 같은 원리가 적용된다.
 
 정리하면 Mask의 역할은 다음과 같다.
 
@@ -168,7 +164,7 @@ $$
 
 따라서 일반적인 PixelCNN에서는 **첫 번째 Masked Convolution에 Mask A를 적용하고, 이후의 Masked Convolution에는 Mask B를 적용**한다.
 
-## 4. Blind Spot: 허용된 과거 픽셀도 보지 못하는 문제
+## 4. Blind Spot
 
 Masked Convolution은 현재·미래 픽셀의 정보가 유출되는 것을 막는다. 하지만 반대로, **사용할 수 있는 과거 픽셀 중 일부에 정보 전달 경로가 존재하지 않는 문제**가 생길 수 있다. 이를 **Blind Spot**이라고 한다.
 
@@ -177,13 +173,9 @@ Masked Convolution은 현재·미래 픽셀의 정보가 유출되는 것을 막
 다음과 같은 예시를 생각하자.
 
 - 입력 이미지의 크기: $4\times5$
-
 - 예측할 Target Pixel: $(r,c)=(3,3)$
-
 - 첫 번째 Layer: $3\times3$ Mask A
-
 - 두 번째 Layer: $3\times3$ Mask B
-
 - 모든 좌표는 1부터 시작하고, 이미지 바깥쪽은 Padding 처리한다고 가정한다.
 
 Target은 세 번째 행, 세 번째 열이다. Raster-scan Order에서 Target보다 앞선 픽셀은 첫 번째·두 번째 행의 모든 픽셀과 세 번째 행의 첫 두 픽셀이다.
@@ -219,16 +211,13 @@ $$
 | $r=4$ | – | – | – | – | – |
 
 - **●**: Target의 예측에 정보를 전달할 수 있는 Raw Input Pixel
-
 - **○**: 과거 픽셀이지만 정보 전달 경로가 없는 위치(Blind Spot)
-
 - **T**: 예측할 Target Pixel $(3,3)$
-
 - **–**: 아직 생성되지 않은 미래 픽셀
 
 $(2,5)$는 Target보다 윗행에 있으므로 명백히 과거 픽셀이다. 그러나 이 두 Layer의 Masked Convolution을 거쳐서는 $(2,5)$의 정보가 $h^{(2)}_{3,3}$까지 전달되지 않는다.
 
-예를 들어 $h^{(1)}_{2,4}$는 같은 행에서 자신의 오른쪽에 있는 $x_{2,5}$를 참조할 수 없다. 또한 $h^{(1)}_{3,3}$는 바로 위쪽의 $x_{2,4}$까지 참조할 수 있지만, $x_{2,5}$는 $3\times3$ 범위 밖에 있다. 다른 허용 경로로도 $x_{2,5}$에 도달하지 못한다.
+예를 들어 $h^{(1)}*{2,4}$는 같은 행에서 자신의 오른쪽에 있는 $x*{2,5}$를 참조할 수 없다. 또한 $h^{(1)}*{3,3}$는 바로 위쪽의 $x*{2,4}$까지 참조할 수 있지만, $x_{2,5}$는 $3\times3$ 범위 밖에 있다. 다른 허용 경로로도 $x_{2,5}$에 도달하지 못한다.
 
 이것은 단순히 픽셀이 멀리 있어서 생기는 문제가 아니다. $(2,5)$는 두 개의 일반적인 $3\times3$ Convolution을 쌓았을 때의 공간적 범위 안에 있지만, **Mask의 방향 제약 때문에 연결 경로가 형성되지 않는다.**
 
@@ -243,7 +232,6 @@ Layer를 깊게 쌓으면 Receptive Field의 크기는 커지지만, 단순한 M
 이 문제를 해결하기 위해 **Gated PixelCNN**에서는 두 가지 Convolution 경로를 구분한다.
 
 - **Vertical Stack:** 현재 픽셀보다 위에 있는 행들의 정보를 처리한다.
-
 - **Horizontal Stack:** 현재 행에서 왼쪽 픽셀들의 정보를 처리한다.
 
 Vertical Stack에서 얻은 정보를 Horizontal Stack으로 전달하면, 이미 생성된 윗행의 정보와 현재 행 왼쪽의 정보를 함께 사용할 수 있다. 두 경로를 적절히 결합하되 미래 정보가 전달되지 않도록 설계하여 Blind Spot을 제거한다.
@@ -302,7 +290,7 @@ p_\theta(x_{r,c}=k\mid x_{<r,c})
 
 {\sum_{j=0}^{255}\exp(a_{r,c,j})},
 
-\qquad k\in\{0,\ldots,255\}
+\qquad k\in0,\ldots,255
 
 $$
 
@@ -347,11 +335,8 @@ $$
 생성은 Raster-scan Order에 따라 순차적으로 이루어진다.
 
 1. 첫 번째 픽셀을 $p_\theta(x_{1,1})$에서 Sampling한다.
-
 2. 생성된 픽셀을 조건으로 다음 픽셀의 분포 $p_\theta(x_{1,2}\mid x_{1,1})$를 계산한다.
-
 3. 새로운 픽셀을 Sampling한 뒤, 생성된 결과를 다시 모델에 입력한다.
-
 4. 마지막 픽셀까지 같은 과정을 반복한다.
 
 일반적으로 $i$번째 픽셀에서는
@@ -390,7 +375,6 @@ PixelCNN은 이미지의 공간 구조를 활용하면서 Autoregressive Factori
 
 ## References
 
-1. van den Oord, A., Kalchbrenner, N., & Kavukcuoglu, K. (2016). [*Pixel Recurrent Neural Networks*]([https://proceedings.mlr.press/v48/oord16.html](https://proceedings.mlr.press/v48/oord16.html)). ICML. — PixelCNN, Mask A/B, 학습과 생성 과정.
-
-2. van den Oord, A., Kalchbrenner, N., et al. (2016). [*Conditional Image Generation with PixelCNN Decoders*]([https://arxiv.org/abs/1606.05328](https://arxiv.org/abs/1606.05328)). NeurIPS. — Blind Spot과 Gated PixelCNN의 Vertical/Horizontal Stack.
+1. van den Oord, A., Kalchbrenner, N., & Kavukcuoglu, K. (2016). *[Pixel Recurrent Neural Networks]([https://proceedings.mlr.press/v48/oord16.html](https://proceedings.mlr.press/v48/oord16.html))*. ICML. — PixelCNN, Mask A/B, 학습과 생성 과정.
+2. van den Oord, A., Kalchbrenner, N., et al. (2016). *[Conditional Image Generation with PixelCNN Decoders]([https://arxiv.org/abs/1606.05328](https://arxiv.org/abs/1606.05328))*. NeurIPS. — Blind Spot과 Gated PixelCNN의 Vertical/Horizontal Stack.
 
