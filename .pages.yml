@@ -72,11 +72,10 @@ content:
         type: boolean
       - name: body
         label: Article (Markdown, LaTeX)
-        type: rich-text
-        description: Use Source mode for LaTeX ($...$ or $$...$$) so formatting is preserved.
+        type: code
+        description: 'Edit Markdown directly. Keep LaTeX backslashes as written; use \\ between matrix rows.'
         options:
           format: markdown
-          switcher: true
   - name: articles
     label: Articles
     type: collection
@@ -104,11 +103,10 @@ content:
       - { name: featured, label: Featured on home, type: boolean, default: false }
       - name: body
         label: Article (Markdown, LaTeX)
-        type: rich-text
-        description: Use Source mode for LaTeX ($...$ or $$...$$) and demo shortcodes.
+        type: code
+        description: 'Edit Markdown directly. Keep LaTeX backslashes as written; use \\ between matrix rows.'
         options:
           format: markdown
-          switcher: true
   - name: site
     label: Home / About settings
     type: file
