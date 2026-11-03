@@ -28,6 +28,10 @@ const pixelcnnKernel=(await readFile(join(root,'demos/pixelcnn-context.mjs'),'ut
 const pixelcnnDemo=(await readFile(join(root,'demos/pixelcnn-blind-spot.html'),'utf8'))
   .replace("import { pixelcnnContext } from './pixelcnn-context.mjs';",()=>pixelcnnKernel);
 data+='\nwindow.PIXELCNN_DEMO_SRCDOC = '+JSON.stringify(pixelcnnDemo).replace(/</g,'\\u003c')+';\n';
+const gatedPixelcnnKernel=(await readFile(join(root,'demos/gated-pixelcnn-kernel.mjs'),'utf8')).replace(/^export /gm,'');
+const gatedPixelcnnDemo=(await readFile(join(root,'demos/gated-pixelcnn-stacks.html'),'utf8'))
+  .replace("import { allowedContext, shiftExample } from './gated-pixelcnn-kernel.mjs';",()=>gatedPixelcnnKernel);
+data+='\nwindow.GATED_PIXELCNN_DEMO_SRCDOC = '+JSON.stringify(gatedPixelcnnDemo).replace(/</g,'\\u003c')+';\n';
 const img=await readFile(join(root,'assets','hero-photo.webp'));
 const inlineImage='data:image/webp;base64,'+img.toString('base64');
 // site config references to /assets work in the packed HTML without companion files.
