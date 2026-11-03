@@ -1,380 +1,478 @@
 ---
 slug: gmpixelcnn
-title: pixelCNN 리뷰
+title: pixelCNN, pixelRNN, Diagonal BiLSTM
 date: 2026-11-03
 category: generative
 draft: false
 sample: false
 ---
-## 1. Why CNN for Autoregressive Image Modeling?
 
-이미지는 픽셀들이 이차원 격자 위에 배열된 데이터다. 각 픽셀의 값은 독립적으로 결정되기보다 주변 픽셀들과 밀접한 관계를 가진다.
 
-예를 들어 손글씨 숫자 **8**의 한 픽셀이 검은색인지 흰색인지 예측한다고 하자. 해당 픽셀의 주변에서 검은 픽셀들이 곡선을 이루고 있다면, 그 픽셀 역시 획의 일부일 가능성이 높다. 반대로 흰 픽셀들이 이어지는 공간 안에 있다면 배경일 가능성이 높다. 이처럼 이미지에서는 이웃한 픽셀들의 **공간적 패턴(Spatial Pattern)** 이 중요한 정보를 제공한다.
+# 5.7 PixelRNN and PixelCNN
 
-Convolutional Neural Network(CNN)는 이러한 구조를 학습하기에 적합하다. 작은 필터(Filter)를 이미지 전체에 반복해서 적용하므로, 선이나 곡선과 같은 패턴을 여러 위치에서 포착할 수 있기 때문이다. 동일한 필터의 가중치를 서로 다른 위치에서 공유한다는 점도 중요하다.
+이미지 생성에도 Autoregressive Modeling을 적용할 수 있다. 문장을 단어 또는 토큰의 순서로 분해하듯, 이미지는 픽셀의 순서로 분해한다. **PixelCNN**과 **PixelRNN**은 이전에 관측한 픽셀을 조건으로 다음 픽셀의 확률분포를 계산하는 대표적인 모델이다.
 
-NADE는 이미지를 일차원 벡터로 펼쳐 조건부분포를 모델링한다. NADE도 픽셀 사이의 관계를 학습할 수 있지만, 일반적인 완전연결층은 이미지의 이차원 이웃 관계를 구조적으로 활용하지 않는다. 반면 CNN은 **지역적 연결(Local Connectivity)** 과 **가중치 공유(Weight Sharing)** 를 통해 이미지의 공간 구조를 직접 반영한다.
+이 절에서는 다음 세 가지 문제를 중심으로 두 모델을 살펴본다.
 
-그렇다면 CNN을 Autoregressive Model의 조건부분포 계산에 사용할 수 있을까?
+1. 이미지의 픽셀을 어떻게 Autoregressive하게 모델링하는가?
 
-이미지의 높이와 너비를 각각 $H$, $W$라고 하고, 픽셀을 위에서 아래로, 각 행에서는 왼쪽에서 오른쪽으로 정렬하자. 이 순서를 **Raster-scan Order**라고 한다. 이미지의 결합분포는 확률의 Chain Rule에 의해
+2. CNN에서 아직 생성하지 않은 픽셀의 정보를 차단하면서 조건부 확률을 어떻게 계산하는가?
 
-$$
+3. PixelCNN의 **Blind Spot** 문제를 PixelRNN, 특히 **Diagonal BiLSTM**에서는 어떻게 다루는가?
 
-p_\theta(x)=\prod_{r=1}^{H}\prod_{c=1}^{W}
+## 5.7.1 Autoregressive Image Modeling
 
-p_\theta\left(x_{r,c}\mid x_{<r,c}\right)
+### 이미지를 하나의 수열로 표현하기
 
-$$
+일반적으로 이미지는 높이와 너비를 가진 2차원 격자이다. 흑백 이미지라면 각 위치에 하나의 픽셀값이 있고, RGB 이미지라면 한 위치에 빨강(R), 초록(G), 파랑(B) 채널의 값이 있다.
 
-로 분해된다. 여기서 $x_{<r,c}$는 $(r,c)$보다 앞선 모든 픽셀, 즉 **이전 행의 모든 픽셀과 현재 행에서 왼쪽에 있는 픽셀들**을 의미한다.
+Autoregressive Model을 적용하려면 이 픽셀들에 **순서(Ordering)** 를 부여해야 한다. 가장 기본적인 방법은 **Raster Order**이다. 이미지의 왼쪽 위에서 시작하여 오른쪽으로 이동하고, 한 행이 끝나면 다음 행의 왼쪽에서 다시 시작한다.
 
-따라서 $(r,c)$의 조건부분포를 계산할 때는 $x_{<r,c}$만 사용해야 한다. 이 제약을 만족하도록 CNN을 수정한 모델이 **PixelCNN**이다.
-
-## 2. Why Ordinary Convolution Does Not Work
-
-일반적인 $3\times3$ Convolution은 현재 위치를 중심으로 주변 아홉 위치의 정보를 사용한다. $(r,c)$를 예측한다고 할 때 필터가 참조하는 영역은 다음과 같다.
-
-|  | 왼쪽 | 가운데 | 오른쪽 |
-
-| :--: | :--: | :--: | :--: |
-
-| **윗행** | 과거 | 과거 | 과거 |
-
-| **현재 행** | 과거 | **현재** | 미래 |
-
-| **아랫행** | 미래 | 미래 | 미래 |
-
-윗행의 오른쪽 픽셀은 현재 픽셀보다 먼저 생성되므로 사용할 수 있다. 반면 현재 위치의 픽셀 값 자체, 현재 행의 오른쪽 픽셀, 아랫행의 픽셀들은 아직 생성되지 않았으므로 사용할 수 없다.
-
-> **그림 1 — 일반 Convolution의 Information Leakage (추후 삽입)**  
-
-> $3\times3$ 필터가 Target Pixel뿐 아니라 아직 생성되지 않은 오른쪽·아랫쪽 픽셀까지 참조하는 상황을 보여준다.
-
-그런데 일반 Convolution은 이러한 순서를 구별하지 않는다. 현재 픽셀을 예측하는 과정에서 정답인 $x_{r,c}$나 미래 픽셀의 값이 입력으로 전달될 수 있다. 이를 **Information Leakage**라고 한다.
-
-Autoregressive Model에서는
+예를 들어 $3\times3$ 이미지의 픽셀을 다음과 같이 나열할 수 있다.
 
 $$
 
-p_\theta(x_{r,c}\mid x_{<r,c})
+\begin{pmatrix}
+
+ x_1 & x_2 & x_3\\
+
+ x_4 & x_5 & x_6\\
+
+ x_7 & x_8 & x_9
+
+\end{pmatrix}
 
 $$
 
-를 학습해야 한다. 미래 픽셀이나 예측하려는 픽셀 자체를 사용한다면 더 이상 의도한 조건부분포를 계산하는 것이 아니다.
-
-## 3. Masked Convolution
-
-PixelCNN은 **Masked Convolution**을 사용해 이 문제를 해결한다. 필터의 일부 가중치를 0으로 고정하여, 허용되지 않은 위치의 정보가 전달되지 않도록 하는 방식이다.
-
-Convolution Kernel을 $W$, 같은 크기의 이진 Mask를 $M$이라고 하면 실제 연산에 사용되는 가중치는
+이제 이미지 전체를 하나의 벡터로 표현한다.
 
 $$
 
-\widetilde W=W\odot M
+ x=(x_1,x_2,\ldots,x_D),\qquad D=H\times W
 
 $$
 
-이다. $\odot$는 원소별 곱(Element-wise Product)을 나타낸다. Mask에서 0인 위치의 가중치는 어떤 값을 학습하더라도 실제 Convolution에 기여하지 않는다.
+여기서 $H$와 $W$는 각각 이미지의 높이와 너비이며, $x_i$는 $i$번째 위치의 픽셀을 의미한다. 이 표기에서는 RGB 이미지의 경우에도 한 위치의 픽셀을 세 채널로 이루어진 벡터로 볼 수 있다.
 
-### 3.1 Mask A
+> **[그림 5.7-1 삽입 위치 — Raster Order]**
 
-$3\times3$ 필터에 적용하는 **Mask A**를 다음과 같이 정의하자.
+>
+
+> **추천 이미지:** $4\times4$ 픽셀 격자에 1부터 16까지 번호를 붙이고, 각 행을 왼쪽에서 오른쪽으로 읽은 뒤 다음 행으로 내려가는 화살표를 그린 그림. 아직 생성하지 않은 픽셀과 이미 생성한 픽셀을 서로 다른 색으로 표시하면 이후의 조건부 확률 설명과 연결하기 좋다.
+
+### Chain Rule을 이용한 확률분포 분해
+
+확률의 **Chain Rule**에 따르면, 이미지 전체의 결합확률분포는 다음과 같이 분해할 수 있다.
 
 $$
+
+\boxed{
+
+ p_\theta(x)
+
+ =\prod_{i=1}^{D}p_\theta(x_i\mid x_{<i})
+
+}
+
+$$
+
+여기서
+
+$$
+
+ x_{<i}=(x_1,\ldots,x_{i-1})
+
+$$
+
+는 Raster Order에서 $i$번째 픽셀보다 먼저 등장한 픽셀들을 의미한다. 첫 번째 픽셀의 경우 이전 픽셀이 없으므로 첫 번째 항은 $p_\theta(x_1)$이다.
+
+$3\times3$ 이미지의 다섯 번째 픽셀 $x_5$를 생성한다고 하자. 조건부 분포는
+
+$$
+
+ p_\theta(x_5\mid x_1,x_2,x_3,x_4)
+
+$$
+
+이다. $x_5$를 생성할 때는 첫 번째 행의 세 픽셀과 두 번째 행의 첫 픽셀만 사용할 수 있다. $x_6,\ldots,x_9$는 아직 생성되지 않았으므로 조건에 포함할 수 없다.
+
+실제 생성 과정에서는 모델이 이 조건부 분포를 예측하고, 그 분포에서 $x_5$를 하나 뽑는다. 같은 과정을 반복하면 이미지 전체가 완성된다.
+
+$$
+
+\begin{aligned}
+
+ x_1 &\sim p_\theta(x_1),\\
+
+ x_2 &\sim p_\theta(x_2\mid x_1),\\
+
+ &\ \vdots\\
+
+ x_D &\sim p_\theta(x_D\mid x_{<D}).
+
+\end{aligned}
+
+$$
+
+즉, 이미지는 **픽셀 하나씩 조건부 확률분포에서 샘플링한 결과**이다.
+
+### RGB 채널에 대한 Chain Rule
+
+RGB 이미지에서는 픽셀 하나도 세 개의 채널로 이루어져 있다.
+
+$$
+
+ x_i=(x_{i,R},x_{i,G},x_{i,B})
+
+$$
+
+따라서 픽셀 $x_i$의 조건부 분포를 채널 단위로 한 번 더 분해할 수 있다.
+
+$$
+
+\boxed{
+
+\begin{aligned}
+
+ p_\theta(x_i\mid x_{<i})
+
+ &=p_\theta(x_{i,R}\mid x_{<i})\\
+
+ &\quad\times p_\theta(x_{i,G}\mid x_{<i},x_{i,R})\\
+
+ &\quad\times p_\theta(x_{i,B}\mid x_{<i},x_{i,R},x_{i,G}).
+
+\end{aligned}
+
+}
+
+$$
+
+이 식은 각 픽셀의 R, G, B 값을 순서대로 생성할 수 있음을 뜻한다. 먼저 이전 픽셀들로부터 빨간색 채널을 생성하고, 이어서 생성한 빨간색 값까지 고려해 초록색 채널을 생성한다. 마지막으로 빨간색과 초록색 값을 모두 고려해 파란색 채널을 생성한다.
+
+여기까지는 **확률분포를 어떻게 분해할 것인가**에 관한 이야기이다. 다음 문제는 이 조건부 분포들을 어떤 신경망 구조로 계산할 것인가이다.
+
+---
+
+## 5.7.2 PixelCNN: Masked Convolution
+
+### 일반적인 CNN을 그대로 사용할 수 없는 이유
+
+CNN은 주변 픽셀들을 함께 살펴보는 **Convolution** 연산을 수행한다. 일반적인 $3\times3$ Convolution에서는 한 픽셀의 출력을 계산할 때 그 픽셀의 위·아래·왼쪽·오른쪽에 있는 픽셀들이 모두 사용될 수 있다.
+
+하지만 Autoregressive Modeling에서는 Raster Order를 따라 **미래 픽셀의 정보를 사용해서는 안 된다.** 예를 들어 $x_5$를 예측하면서 오른쪽 픽셀 $x_6$을 참조한다면, 아직 생성하지 않은 값을 미리 보고 정답을 예측하는 셈이다.
+
+PixelCNN은 이를 방지하기 위해 **Masked Convolution**을 사용한다. Convolution Kernel의 일부 위치에 0을 곱해, 현재 픽셀의 예측에 허용되지 않는 방향의 정보가 전달되지 않도록 한다.
+
+### Mask A와 Mask B
+
+현재 위치가 $3\times3$ Kernel의 가운데라고 가정하자. 필기에서 정의한 두 종류의 Mask는 다음과 같다.
+
+$$
+
+\boxed{
 
 M_A=
 
-\begin{bmatrix}
+\begin{pmatrix}
 
-1&1&1
+1&1&1\\
 
-1&0&0
+1&0&0\\
 
 0&0&0
 
-\end{bmatrix}
+\end{pmatrix},
 
-$$
-
-1인 위치는 과거 픽셀을, 0인 위치는 현재 픽셀 또는 미래 픽셀을 의미한다. 따라서 첫 번째 Layer에서는 현재 픽셀의 값을 직접 사용할 수 없다.
-
-$$
-
-h^{(1)}_{r,c}
-
-=f_\theta\left(x_{\mathcal N_A(r,c)}\right)
-
-$$
-
-여기서 $\mathcal N_A(r,c)$는 Mask A가 허용하는 입력 위치의 집합이고, $h^{(1)}_{r,c}$는 그 위치의 픽셀들로 계산한 **Feature Vector**다.
-
-중요한 점은 $h^{(1)}*{r,c}$와 원본 픽셀 $x*{r,c}$가 서로 다른 대상이라는 것이다. 첫 번째 Layer에 Mask A를 적용했기 때문에 $h^{(1)}*{r,c}$에는 $x*{r,c}$의 값이 들어 있지 않다.
-
-### 3.2 Mask B
-
-두 번째 Layer부터는 **Mask B**를 사용한다.
-
-$$
+\qquad
 
 M_B=
 
-\begin{bmatrix}
+\begin{pmatrix}
 
-1&1&1
+1&1&1\\
 
-1&1&0
+1&1&0\\
 
 0&0&0
 
-\end{bmatrix}
+\end{pmatrix}
+
+}
 
 $$
 
-Mask A와의 차이는 가운데 위치가 1이라는 것이다.
+Mask의 숫자 **1은 해당 위치의 연결을 허용한다**는 뜻이고, **0은 연결을 차단한다**는 뜻이다. 실제 Convolution에서는 Kernel의 가중치 $W$에 Mask $M$을 원소별로 곱한 $W\odot M$을 사용한다.
 
-처음에는 현재 위치를 허용하면 Information Leakage가 발생할 것처럼 보일 수 있다. 그러나 두 번째 Layer의 입력은 원본 이미지 $x$가 아니라 첫 번째 Layer에서 계산한 Feature Map $h^{(1)}$이다.
+두 Mask의 차이는 가운데 원소 하나이다.
+
+- **Mask A:** 가운데가 0이다. 첫 번째 Layer에서 사용하며, 현재 예측할 **원본 픽셀값**을 직접 참조하지 못하게 한다.
+
+- **Mask B:** 가운데가 1이다. 이후 Layer에서 사용한다. 앞선 Layer가 이미 과거 픽셀만 이용해 만든 **Hidden Feature**이므로 현재 위치의 Hidden Feature를 참조하는 것은 허용된다.
+
+Mask A에서 가운데를 0으로 두는 이유는 데이터 누출(Data Leakage)을 막기 위해서다. 예를 들어 이미지의 중앙 픽셀이 0인지 1인지 예측하는 문제에서, 모델이 그 픽셀값을 입력으로 직접 받아버리면 조건부 분포를 학습할 필요가 없어진다.
+
+반면 Mask B가 참조하는 가운데 값은 원본 픽셀값이 아니다. 첫 번째 Masked Convolution을 통과하면서 이미 허용된 과거 정보만 담도록 구성된 표현이다.
+
+> **[그림 5.7-2 삽입 위치 — Mask A와 Mask B 비교]**
+
+>
+
+> **추천 이미지:** $3\times3$ Kernel을 나란히 놓고 허용된 위치(1)는 연한 초록색, 차단된 위치(0)는 회색으로 표시한다. 가운데 칸에는 강조 테두리를 넣고, Mask A는 `현재 Raw Pixel 차단`, Mask B는 `현재 Hidden Feature 사용`이라고 주석을 단다. 마스크가 적용되는 기준 픽셀은 두 그림에서 같은 위치여야 한다.
+
+### Masked Convolution과 조건부 확률
+
+PixelCNN은 여러 Masked Convolution Layer를 쌓아 이전 픽셀들의 정보를 모으고, 각 위치에서 해당 픽셀의 조건부 분포를 예측한다.
+
+예를 들어 흑백 이미지의 픽셀값이 0과 1뿐이라면, 다섯 번째 픽셀에 대해 모델은
 
 $$
 
-h^{(2)}_{r,c}
+ p_\theta(x_5=1\mid x_1,x_2,x_3,x_4)
 
-=g_\theta\left(
+$$
 
-h^{(1)}_{u,v}:(u,v)\in\mathcal N_B(r,c)
+같은 조건부 확률을 계산할 수 있다. 픽셀값이 $0,1,\ldots,255$ 중 하나라면, 출력은 해당 256개 값에 대한 확률분포가 될 수도 있다.
+
+학습 시에는 실제 이미지 전체가 주어져 있으므로 모든 위치의 조건부 분포를 Masked Convolution으로 함께 계산할 수 있다. 다만 **이미지를 새로 생성할 때는** 이전에 생성한 픽셀의 값이 필요하기 때문에 Raster Order에 따라 순차적으로 샘플링해야 한다.
+
+### Blind Spot 문제
+
+Mask를 사용한다고 해서 모든 과거 픽셀의 정보를 충분히 활용할 수 있는 것은 아니다.
+
+**Blind Spot**은 Raster Order상으로는 과거에 속하지만, 신경망의 계산 경로(Computational Path)가 연결되지 않아 현재 위치의 예측에 영향을 주지 못하는 영역을 의미한다.
+
+예를 들어 현재 픽셀의 오른쪽 위에 위치한 픽셀은 이전 행에 있으므로 이미 생성된 과거 픽셀이다. 그러나 Masked Convolution을 여러 층 쌓았을 때 연결 가능한 경로가 제한되면, 이러한 과거 픽셀 중 일부는 현재 위치까지 정보를 전달하지 못할 수 있다.
+
+따라서 **미래 정보를 차단하는 것**과 **사용 가능한 과거 정보를 모두 활용하는 것**은 서로 다른 문제이다.
+
+> **[그림 5.7-3 삽입 위치 — PixelCNN Blind Spot]**
+
+>
+
+> **추천 이미지:** 중앙의 예측 대상 픽셀을 표시하고, Raster Order에서 이미 생성된 영역 전체와 실제 Masked Convolution의 Receptive Field를 서로 다른 색으로 나타낸다. **과거 영역이면서 Receptive Field에는 포함되지 않는 부분**을 별도 색상으로 강조해 `Blind Spot`이라고 표시한다. 특히 대상 픽셀의 오른쪽 위에 생기는 누락 영역이 드러나도록 그리는 것이 좋다.
+
+---
+
+## 5.7.3 PixelRNN: Row LSTM
+
+### 행 단위 Hidden State
+
+PixelRNN은 이미지의 공간적 의존성을 RNN 구조로 모델링한다. 이 중 **Row LSTM**은 한 행을 하나의 처리 단위로 삼아, 이전 행에서 계산한 정보를 다음 행으로 전달한다.
+
+이미지의 $r$번째 행에 있는 Hidden State들을 다음과 같이 묶어 표현하자.
+
+$$
+
+H_r=(h_{r,1},h_{r,2},\ldots,h_{r,W})
+
+$$
+
+여기서 $h_{r,c}$는 $r$번째 행, $c$번째 열에 대응하는 Hidden State이며, $W$는 이미지의 너비이다.
+
+필기의 Row LSTM 계산을 추상적으로 쓰면 다음과 같다.
+
+$$
+
+\boxed{
+
+H_r=\operatorname{RowLSTM}(H_{r-1},X_r)
+
+}
+
+$$
+
+$X_r$는 현재 행의 입력 표현을 뜻한다. 실제 구현에서는 Autoregressive 조건을 지키도록 입력에 적절한 Mask나 Shift를 적용해야 한다.
+
+이 식은 현재 행의 Hidden State를 계산할 때 **이전 행의 Hidden State와 현재 행에서 허용된 입력 정보**를 사용한다는 뜻이다. Row LSTM은 열 방향으로도 Convolution을 활용하므로, 이전 행의 같은 열뿐 아니라 이웃한 열의 정보도 현재 Hidden State 계산에 전달할 수 있다.
+
+### $3\times3$ 이미지의 예시
+
+다음과 같은 이진 이미지에서 가운데 픽셀을 예측한다고 하자.
+
+$$
+
+X=
+
+\begin{pmatrix}
+
+1&0&1\\
+
+0&?&?\\
+
+?&?&?
+
+\end{pmatrix}
+
+$$
+
+Raster Order상 현재 생성할 픽셀은 $x_{2,2}$이다. 첫 번째 행의 세 픽셀과 두 번째 행의 첫 번째 픽셀은 이미 알려져 있다.
+
+따라서 목표는 다음 조건부 확률을 계산하는 것이다.
+
+$$
+
+p_\theta\!\left(
+
+ x_{2,2}=0
+
+ \mid x_{1,1}=1,\,x_{1,2}=0,\,x_{1,3}=1,\,x_{2,1}=0
 
 \right)
 
 $$
 
-여기서 $\mathcal N_B(r,c)$는 Mask B가 허용하는 위치의 집합이며, **현재 위치 $(r,c)$도 포함한다.**
-
-현재 위치의 $h^{(1)}*{r,c}$는 이미 과거 픽셀들만 이용해 계산되었으므로, 두 번째 Layer에서 이 Feature Vector를 사용해도 $x*{r,c}$가 유출되지 않는다. 다른 허용 위치의 Feature Vector 역시 그보다 앞선 픽셀로만 계산되어 있으므로 같은 원리가 적용된다.
-
-정리하면 Mask의 역할은 다음과 같다.
-
-| 구분 | 현재 위치 사용 | 이유 |
-
-|---|---|---|
-
-| **Mask A** | 불가능 | 첫 번째 Layer의 입력은 실제 픽셀 값이기 때문 |
-
-| **Mask B** | 가능 | 이후 Layer의 입력은 인과적 제약을 만족하는 Feature Vector이기 때문 |
-
-따라서 일반적인 PixelCNN에서는 **첫 번째 Masked Convolution에 Mask A를 적용하고, 이후의 Masked Convolution에는 Mask B를 적용**한다.
-
-## 4. Blind Spot
-
-Masked Convolution은 현재·미래 픽셀의 정보가 유출되는 것을 막는다. 하지만 반대로, **사용할 수 있는 과거 픽셀 중 일부에 정보 전달 경로가 존재하지 않는 문제**가 생길 수 있다. 이를 **Blind Spot**이라고 한다.
-
-### 4.1 두 개의 Masked Convolution Layer
-
-다음과 같은 예시를 생각하자.
-
-- 입력 이미지의 크기: $4\times5$
-- 예측할 Target Pixel: $(r,c)=(3,3)$
-- 첫 번째 Layer: $3\times3$ Mask A
-- 두 번째 Layer: $3\times3$ Mask B
-- 모든 좌표는 1부터 시작하고, 이미지 바깥쪽은 Padding 처리한다고 가정한다.
-
-Target은 세 번째 행, 세 번째 열이다. Raster-scan Order에서 Target보다 앞선 픽셀은 첫 번째·두 번째 행의 모든 픽셀과 세 번째 행의 첫 두 픽셀이다.
-
-이제 두 번째 Layer의 $h^{(2)}_{3,3}$이 어떤 첫 번째 Layer의 Feature Vector를 참조하는지 확인하자. Mask B에 의해 다음 다섯 위치가 허용된다.
+필기의 그림에서는 이전 행의 Hidden State
 
 $$
 
-h^{(1)}_{2,2},\quad
-
-h^{(1)}_{2,3},\quad
-
-h^{(1)}_{2,4},\quad
-
-h^{(1)}_{3,2},\quad
-
-h^{(1)}_{3,3}
+h_{1,1},\quad h_{1,2},\quad h_{1,3}
 
 $$
 
-각 Feature Vector는 다시 Mask A가 허용하는 Raw Input Pixel만 참조한다. 이러한 경로를 모두 추적하면 실제로 Target의 예측에 도달할 수 있는 원본 픽셀은 아래와 같다.
+로부터 현재 위치의 Hidden State $h_{2,2}$로 정보가 전달되는 모습을 보여준다. 각 Hidden State는 해당 위치까지 모인 정보를 압축한 표현이므로, 여러 위치의 정보를 다음 행으로 전달하는 데 사용할 수 있다.
 
-|  | $c=1$ | $c=2$ | $c=3$ | $c=4$ | $c=5$ |
+$h_{2,2}$를 계산한 뒤 모델은 이를 이용해 가운데 픽셀에 대한 조건부 분포를 예측하고, 예를 들어 $x_{2,2}=0$을 샘플링할 수 있다.
 
-|---|:---:|:---:|:---:|:---:|:---:|
+> **[그림 5.7-4 삽입 위치 — Row LSTM의 Hidden State 전달]**
 
-| $r=1$ | ● | ● | ● | ● | ● |
+>
 
-| $r=2$ | ● | ● | ● | ● | **○** |
+> **추천 이미지:** 왼쪽에는 $3\times3$ 이진 이미지`1 0 1 / 0 ? ? / ? ? ?`)를 두고 현재 예측할 $(2,2)$ 위치를 테두리로 강조한다. 오른쪽에는 $h_{1,1},h_{1,2},h_{1,3}$에서 $h_{2,2}$로 향하는 화살표를 그린다. 이후 행으로 정보가 전달되는 방향도 함께 표시한다. 첨부 필기의 손그림을 깨끗하게 다시 그린 형태가 적합하다.
 
-| $r=3$ | ● | ● | **T** | – | – |
+Row LSTM은 과거 행의 정보를 Recurrent Hidden State에 누적한다는 점에서 단순히 국소적인 Convolution을 적용하는 것과 다르다. 다만 행 단위의 정보 전달만으로 모든 방향의 과거 정보를 완전히 활용하는 것은 별개의 문제이다. 이를 더 적극적으로 다루는 구조가 **Diagonal BiLSTM**이다.
 
-| $r=4$ | – | – | – | – | – |
+---
 
-- **●**: Target의 예측에 정보를 전달할 수 있는 Raw Input Pixel
-- **○**: 과거 픽셀이지만 정보 전달 경로가 없는 위치(Blind Spot)
-- **T**: 예측할 Target Pixel $(3,3)$
-- **–**: 아직 생성되지 않은 미래 픽셀
+## 5.7.4 Diagonal BiLSTM
 
-$(2,5)$는 Target보다 윗행에 있으므로 명백히 과거 픽셀이다. 그러나 이 두 Layer의 Masked Convolution을 거쳐서는 $(2,5)$의 정보가 $h^{(2)}_{3,3}$까지 전달되지 않는다.
+### 대각선 방향의 정보 전달
 
-예를 들어 $h^{(1)}*{2,4}$는 같은 행에서 자신의 오른쪽에 있는 $x*{2,5}$를 참조할 수 없다. 또한 $h^{(1)}*{3,3}$는 바로 위쪽의 $x*{2,4}$까지 참조할 수 있지만, $x_{2,5}$는 $3\times3$ 범위 밖에 있다. 다른 허용 경로로도 $x_{2,5}$에 도달하지 못한다.
+Row LSTM이 행 단위로 정보를 전달한다면, **Diagonal BiLSTM**은 이미지를 대각선 방향으로 처리한다.
 
-이것은 단순히 픽셀이 멀리 있어서 생기는 문제가 아니다. $(2,5)$는 두 개의 일반적인 $3\times3$ Convolution을 쌓았을 때의 공간적 범위 안에 있지만, **Mask의 방향 제약 때문에 연결 경로가 형성되지 않는다.**
+다음 $3\times3$ 격자를 생각하자.
 
-> **Interactive Component (추후 구현)**  
+$$
 
-> $4\times5$ 이미지에서 Target을 $(3,3)$으로 고정한다. 첫 번째 Layer의 Mask A, 두 번째 Layer의 Mask B를 순서대로 표시하고, 두 번째 Layer의 Target에서 역방향으로 Raw Input까지 연결 경로를 추적한다. 도달 가능한 픽셀과 Blind Spot $(2,5)$를 서로 다른 표시로 구분한다.
+\begin{pmatrix}
 
-### 4.2 Blind Spot을 해결하려면?
+A&B&C\\
 
-Layer를 깊게 쌓으면 Receptive Field의 크기는 커지지만, 단순한 Masked Convolution을 반복하는 것만으로는 특정 방향의 구조적 Blind Spot이 남을 수 있다.
+D&E&F\\
 
-이 문제를 해결하기 위해 **Gated PixelCNN**에서는 두 가지 Convolution 경로를 구분한다.
+G&H&I
 
-- **Vertical Stack:** 현재 픽셀보다 위에 있는 행들의 정보를 처리한다.
-- **Horizontal Stack:** 현재 행에서 왼쪽 픽셀들의 정보를 처리한다.
+\end{pmatrix}
 
-Vertical Stack에서 얻은 정보를 Horizontal Stack으로 전달하면, 이미 생성된 윗행의 정보와 현재 행 왼쪽의 정보를 함께 사용할 수 있다. 두 경로를 적절히 결합하되 미래 정보가 전달되지 않도록 설계하여 Blind Spot을 제거한다.
+$$
 
-이는 원래 PixelCNN의 Mask A/B 원리와 구분되는 **개선된 구조**다.
+왼쪽 위에서 오른쪽 아래로 진행하면서, 같은 반대각선(Anti-diagonal)에 속하는 위치들을 묶으면 다음과 같다.
 
-## 5. PixelCNN Architecture
+$$
 
-PixelCNN은 여러 개의 Masked Convolution Layer를 쌓아, 각 위치에서 다음 픽셀의 **조건부 확률분포(Conditional Probability Distribution)** 를 출력한다.
+\begin{aligned}
 
-기본적인 구조는 다음과 같이 정리할 수 있다.
+\mathcal G_1&=\{A\},\\
 
-```text
+\mathcal G_2&=\{B,D\},\\
 
-Input Image (H × W)
+\mathcal G_3&=\{C,E,G\},\\
 
-        ↓
+\mathcal G_4&=\{F,H\},\\
 
-Masked Convolution — Mask A
+\mathcal G_5&=\{I\}.
 
-        ↓
+\end{aligned}
 
-Nonlinearity
+$$
 
-        ↓
+이처럼 같은 대각선 위의 위치들은 함께 처리하고, 대각선들 사이에는 Recurrent하게 정보를 전달하도록 구성할 수 있다. 한 대각선의 픽셀 수가 여러 개이므로, 이를 하나씩 순차 처리하는 대신 **같은 대각선에 속한 위치들을 병렬로 계산**하는 것이 핵심이다.
 
-Masked Convolution — Mask B
+### Skewing: 대각선을 열로 정렬하기
 
-        ↓
+대각선 단위 계산을 효율적으로 수행하기 위해 **Skewing** 연산을 사용한다. 각 행을 그 행의 번호에 따라 오른쪽으로 이동시켜, 같은 반대각선에 있던 원소들을 같은 열에 정렬하는 방식이다.
 
-   (반복 / Residual Blocks)
-
-        ↓
-
-  1 × 1 Convolution
-
-        ↓
-
-       Logits
-
-        ↓
-
-Softmax (각 픽셀의 조건부분포)
+예를 들어 원래의 $3\times3$ 배열이
 
 ```
 
-첫 번째 Layer에서는 Mask A로 현재 픽셀을 차단하고, 이후 Layer에서는 Mask B를 사용해 과거 정보를 결합한다. $1\times1$ Convolution은 같은 공간 위치의 Feature Channel만 결합하므로, 앞에서 유지한 인과적 제약을 깨지 않는다. 일반적인 PixelCNN은 픽셀의 공간적 위치를 유지하며 처리하므로, 해상도를 줄이는 Pooling을 사용하지 않는다.
+A B C
 
-예를 들어 각 픽셀이 $0,1,\ldots,255$ 중 하나의 밝기 값을 갖는 8-bit Grayscale Image라면, 각 위치에서 256개의 Logit을 출력하고 Softmax를 적용할 수 있다.
+D E F
 
-$$
+G H I
 
-p_\theta(x_{r,c}=k\mid x_{<r,c})
+```
 
-=\frac{\exp(a_{r,c,k})}
+였다면 Skewing을 적용한 배열은 다음과 같다. 점`·`)은 계산을 위한 빈 위치이다.
 
-{\sum_{j=0}^{255}\exp(a_{r,c,j})},
+```
 
-\qquad k\in0,\ldots,255
+A B C · ·
 
-$$
+· D E F ·
 
-$a_{r,c,k}$는 픽셀 $(r,c)$의 값이 $k$일 때에 대응하는 Logit이다. 이는 단일한 픽셀 값을 바로 출력하는 것이 아니라, **가능한 픽셀 값 전체에 대한 확률분포를 출력한다**는 의미다.
+· · G H I
 
-흑백 값이 $0$ 또는 $1$뿐인 Binarized Image라면 각 위치에서 Bernoulli 분포의 모수 하나를 예측하고 Sigmoid를 사용할 수도 있다.
+```
 
-원래 PixelCNN 논문에서는 첫 Layer에 $7\times7$ Mask A, 이후 Residual Block 등에 $3\times3$ Mask B를 사용하고, 마지막에 $1\times1$ Convolution과 출력 분포를 구성했다. 여기서는 Mask의 작동 원리를 설명하기 위해 $3\times3$ 필터 두 개를 사용한 단순화된 구조를 먼저 살펴보았다.
+이제 $B$와 $D$, $C$와 $E$와 $G$, $F$와 $H$가 각각 같은 열에 놓인다.
 
-## 6. Training vs. Generation
-
-PixelCNN은 학습할 때와 새로운 이미지를 생성할 때 계산 방식에 중요한 차이가 있다.
-
-### 6.1 Training: 모든 픽셀의 조건부분포를 병렬 계산
-
-학습에서는 완성된 실제 이미지 $x$가 주어진다. 이 이미지를 모델에 한 번 입력하면, Masked Convolution에 의해 각 위치가 **자신보다 앞선 픽셀만 사용하도록 제한된 상태에서** 모든 위치의 조건부분포를 동시에 계산할 수 있다.
-
-이미지 한 장에 대한 Negative Log-Likelihood(NLL)는
+일반적인 $n\times n$ 이미지에서는 $r$번째 행을 오른쪽으로 $r-1$칸 이동한다. 따라서 배열의 크기는 다음과 같이 변한다.
 
 $$
 
-\mathcal L(\theta;x)
+\boxed{
 
-=-\log p_\theta(x)
+ n\times n\quad\longrightarrow\quad n\times(2n-1)
 
-=-\sum_{r=1}^{H}\sum_{c=1}^{W}
-
-\log p_\theta(x_{r,c}\mid x_{<r,c})
+}
 
 $$
 
-이다. 여러 학습 이미지에 대해서는 이 손실을 평균하여 최소화한다.
+행의 수는 유지되지만, 오른쪽으로 이동한 부분을 담기 위해 열의 수가 늘어나는 것이다. 이렇게 정렬하면 같은 대각선에 속하는 위치들을 병렬로 처리하기 쉬워진다.
 
-여기서 실제 이미지의 픽셀을 입력으로 사용하더라도 Information Leakage가 발생하지 않는다. 각 위치의 예측 결과로 정답인 현재 픽셀이나 미래 픽셀의 값이 전달되지 않도록 Mask가 제한하기 때문이다.
+필기에 첨부한 강의 슬라이드에서는 이 변환과 함께 **$2\times1$ Convolution Kernel**을 사용한다고 설명한다. 이는 Skewing된 배열에서 인접한 행의 정보가 연결되도록 처리하는 구조이다.
 
-따라서 PixelCNN은 순차적인 확률분포를 모델링하지만 **Training 단계에서는 모든 픽셀 위치의 조건부분포를 병렬로 계산**할 수 있다.
+> **[그림 5.7-5 삽입 위치 — Diagonal Skewing]**
 
-### 6.2 Generation: 픽셀을 하나씩 Sampling
+>
 
-새로운 이미지를 생성할 때는 완성된 이미지가 주어져 있지 않다. 따라서 아직 생성되지 않은 픽셀의 실제 값을 입력할 수 없다.
+> **추천 이미지:** 원본 필기 두 번째 이미지에 포함된 강의 슬라이드의 *`Parallelized by skew operation`** 도식. 왼쪽은 $n\times n$ 격자, 오른쪽은 $n\times(2n-1)$ 격자이며, 각 행이 오른쪽으로 이동하여 대각선 원소가 수직으로 정렬되는 모습을 보여준다. 게시용으로는 슬라이드를 그대로 캡처하는 대신 같은 원리의 그림을 새로 그리는 것이 더 선명하다. 오른쪽 그림에 $2\times1$ Kernel이 적용되는 위치를 추가해도 좋다.
 
-생성은 Raster-scan Order에 따라 순차적으로 이루어진다.
+### Bidirectional 계산과 미래 정보 차단
 
-1. 첫 번째 픽셀을 $p_\theta(x_{1,1})$에서 Sampling한다.
-2. 생성된 픽셀을 조건으로 다음 픽셀의 분포 $p_\theta(x_{1,2}\mid x_{1,1})$를 계산한다.
-3. 새로운 픽셀을 Sampling한 뒤, 생성된 결과를 다시 모델에 입력한다.
-4. 마지막 픽셀까지 같은 과정을 반복한다.
+**BiLSTM(Bidirectional LSTM)** 은 정보를 한 방향으로 전달하는 LSTM과 반대 방향으로 전달하는 LSTM을 함께 사용한다.
 
-일반적으로 $i$번째 픽셀에서는
+Diagonal BiLSTM에서는 대각선 방향의 정보를 양쪽에서 모아, 더 넓은 과거 문맥을 반영하려 한다. 하지만 Autoregressive Model에서는 양방향 처리를 그대로 결합할 수 없다.
+
+예를 들어 오른쪽에서 왼쪽으로 처리한 Hidden State를 현재 픽셀의 예측에 그대로 사용하면, 현재 행에서 **아직 생성하지 않은 오른쪽 픽셀의 정보**가 포함될 수 있다. 이는 조건부 확률 $p_\theta(x_i\mid x_{<i})$의 정의에 위배된다.
+
+이 문제를 막기 위해 필기의 Diagonal BiLSTM에서는 **오른쪽에서 왼쪽으로 계산한 Output Map을 한 행 아래로 Shift한 뒤**, 왼쪽에서 오른쪽으로 계산한 Output Map과 합친다.
+
+한 행 아래로 옮기는 이유는 오른쪽에서 왼쪽으로 모은 정보가 **현재 행이 아니라 이전 행의 정보**로만 사용되게 하기 위해서다. 이전 행의 픽셀들은 Raster Order상 모두 과거에 속하므로, 이 방식으로 미래 픽셀의 정보가 예측에 섞이지 않도록 한다.
+
+> **[그림 5.7-6 삽입 위치 — Diagonal BiLSTM의 양방향 정보 결합]**
+
+>
+
+> **추천 이미지:** 왼쪽에는 왼쪽→오른쪽 방향으로 계산한 Feature Map, 가운데에는 오른쪽→왼쪽 방향으로 계산한 Feature Map, 오른쪽에는 두 정보를 합친 Map을 배치한다. 가운데 Map을 **한 행 아래로 Shift**하는 화살표를 강조한다. 현재 예측할 픽셀의 오른쪽에 있는 미래 정보가 결합 후에도 전달되지 않는다는 것을 색상으로 표시한다.
+
+Diagonal BiLSTM의 핵심은 **대각선 방향으로 넓은 공간적 의존성을 학습하면서도, 이미 생성된 픽셀만 사용한다는 Autoregressive 조건을 유지하는 것**이다.
+
+---
+
+## 정리
+
+PixelCNN과 PixelRNN은 모두 이미지의 결합확률분포를 픽셀별 조건부 확률분포의 곱으로 분해한다.
 
 $$
 
-x_i\sim p_\theta(x_i\mid x_1,\ldots,x_{i-1})
+p_\theta(x)=\prod_{i=1}^{D}p_\theta(x_i\mid x_{<i})
 
 $$
 
-을 수행한다. 여기서 분포의 조건은 이전에 **실제로 Sampling한 값**들이다.
+차이는 이 조건부 분포를 계산하는 방식에 있다. PixelCNN은 **Masked Convolution**으로 미래 픽셀의 접근을 차단하고, PixelRNN은 **Recurrent Hidden State**를 통해 과거 픽셀의 정보를 전달한다. Diagonal BiLSTM은 대각선 방향의 처리와 Skewing을 이용해 더 넓은 공간적 의존성을 효율적으로 다룬다.
 
-학습과 생성의 차이를 비교하면 다음과 같다.
-
-|  | Training | Generation |
-
-|---|---|---|
-
-| 입력 | 완성된 실제 이미지 | 지금까지 생성한 픽셀 |
-
-| 조건부분포 계산 | 모든 위치에서 병렬 수행 가능 | 생성 순서에 따라 반복 |
-
-| 픽셀 값 | 데이터셋의 정답 사용 | 모델 분포에서 Sampling |
-
-| 목적 | NLL 최소화 | 새로운 이미지 생성 |
-
-PixelCNN의 장점 중 하나는 Convolution을 이용해 Training을 병렬화할 수 있다는 점이다. 반면 Generation에서는 이전에 생성한 픽셀이 다음 픽셀의 조건이 되기 때문에, **픽셀을 생성하는 순서 자체는 병렬화할 수 없다.** 구현에 따라 중간 계산을 재사용할 수는 있지만, 순차적인 의존성은 유지된다.
-
-## 7. Summary
-
-PixelCNN은 이미지의 공간 구조를 활용하면서 Autoregressive Factorization을 만족하도록 설계한 CNN 기반 생성모델이다.
-
-일반적인 Convolution은 현재·미래 픽셀의 정보를 사용할 수 있으므로 그대로 적용할 수 없지만, **첫 번째 Layer의 Mask A와 이후 Layer의 Mask B**를 통해 인과적 제약을 유지할 수 있다. 다만 기본 Masked Convolution에는 일부 과거 픽셀의 정보를 활용하지 못하는 **Blind Spot**이 존재하며, 이를 해결하기 위한 방법 중 하나가 Vertical Stack과 Horizontal Stack을 결합한 Gated PixelCNN이다.
-
-학습 시에는 모든 픽셀의 조건부분포를 병렬로 계산할 수 있지만, 실제 이미지를 생성할 때는 픽셀을 순서대로 Sampling해야 한다.
-
-## References
-
-1. van den Oord, A., Kalchbrenner, N., & Kavukcuoglu, K. (2016). *[Pixel Recurrent Neural Networks]([https://proceedings.mlr.press/v48/oord16.html](https://proceedings.mlr.press/v48/oord16.html))*. ICML. — PixelCNN, Mask A/B, 학습과 생성 과정.
-2. van den Oord, A., Kalchbrenner, N., et al. (2016). *[Conditional Image Generation with PixelCNN Decoders]([https://arxiv.org/abs/1606.05328](https://arxiv.org/abs/1606.05328))*. NeurIPS. — Blind Spot과 Gated PixelCNN의 Vertical/Horizontal Stack.
+두 모델에서 공통으로 지켜야 할 원칙은 **현재 픽셀을 예측할 때 이미 생성된 픽셀의 정보만 사용해야 한다**는 것이다. 이 제약을 지키면서 얼마나 많은 과거 정보를 활용할 수 있는지가 모델 구조를 이해하는 중요한 기준이 된다.
 
