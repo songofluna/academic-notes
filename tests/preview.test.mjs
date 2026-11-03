@@ -43,4 +43,10 @@ test('portable preview preserves JavaScript/LaTeX dollars and embeds a working M
   const empiricalModule=empirical.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
   const empiricalCheck=spawnSync(process.execPath,['--check','--input-type=module'],{input:empiricalModule,encoding:'utf8'});
   assert.equal(empiricalCheck.status,0,empiricalCheck.stderr);
+  const made=context.window.MADE_DEMO_SRCDOC;
+  assert.match(made,/function madeMasks/);
+  assert.doesNotMatch(made,/import .* from '\.\/made-mask\.mjs'/);
+  const madeModule=made.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
+  const madeCheck=spawnSync(process.execPath,['--check','--input-type=module'],{input:madeModule,encoding:'utf8'});
+  assert.equal(madeCheck.status,0,madeCheck.stderr);
 });

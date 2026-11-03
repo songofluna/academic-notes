@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MADE Mask Explorer</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#fff;color:#303830;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:780px;margin:0 auto;padding:12px 2px}h1{font-size:22px;font-weight:600;letter-spacing:-.025em;margin:0 0 18px}button,select{font:inherit;background:#fff;color:inherit;border:1px solid #cbd3c6;border-radius:0;min-height:44px}button{cursor:pointer;padding:7px 16px}button:hover{background:#f4f7f0}button[aria-pressed=true]{background:#e5efd9;border-color:#62863f;color:#365222;font-weight:600}button:focus-visible,select:focus-visible{outline:2px solid #62863f;outline-offset:3px}.outputs{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.label{color:#687064;font-size:13px;margin-right:5px}.degrees{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}.degrees label{display:flex;align-items:center;gap:7px}.degrees select{padding:6px 10px;min-width:56px}.degrees button{margin-left:auto;font-size:13px;padding:6px 12px}.legend{display:flex;gap:20px;color:#70766b;font-size:12px;margin:16px 0 0}.legend span{display:flex;align-items:center;gap:7px}.legend i{display:inline-block;width:22px;border-top:2px solid #cdd4c7}.legend .active{border-color:#5e833c;border-top-width:3px}svg{display:block;width:100%;height:auto;margin:0}svg text{font-family:inherit;fill:#3a4434}svg .layer{font-size:16px;fill:#777f70}svg .node{fill:#fff;stroke:#b6c0ae;stroke-width:1.5}svg .selected-node{fill:#edf4e5;stroke:#5e833c;stroke-width:2.5}svg .active-node{stroke:#5e833c;fill:#f4f8ee}svg .edge{stroke:#cdd4c7;stroke-width:1.5}svg .edge-active{stroke:#5e833c;stroke-width:3}.inputs{border-top:1px solid #e2e7dd;padding:12px 0;margin:0;font-size:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.inputs strong{font-weight:600;color:#42632c}.matrices{display:grid;grid-template-columns:1fr 1fr;gap:24px;border-top:1px solid #e2e7dd;padding-top:16px}table{border-collapse:collapse;width:100%;font-size:14px;text-align:center;font-variant-numeric:tabular-nums}caption{text-align:left;font-size:14px;font-weight:600;padding-bottom:10px}th{font-size:12px;font-weight:400;color:#6a7362}td,th{height:33px;padding:4px}td{color:#9ba195;border:1px solid #e3e8de}td.allowed{background:#f2f6ed;color:#5a694d}td.active{background:#e0edcf;color:#2c4e15;font-weight:700;outline:1px solid #86a465;outline-offset:-1px}.selected-row th{font-weight:700;color:#365222}@media(max-width:440px){h1{font-size:20px}.outputs{gap:6px}.outputs button{padding:7px 13px}.degrees{gap:8px}.degrees .label{width:100%}.degrees label{gap:5px}.degrees button{padding:6px 9px}.matrices{gap:14px}td,th{padding:3px;height:32px}}
+</style>
+</head>
+<body>
+<main>
+<h1>MADE Mask Explorer</h1>
+<div class="outputs" role="group" aria-label="Select output"><span class="label">Output</span><button type="button" data-output="1" aria-pressed="false">α₁</button><button type="button" data-output="2" aria-pressed="false">α₂</button><button type="button" data-output="3" aria-pressed="true">α₃</button><button type="button" data-output="4" aria-pressed="false">α₄</button></div>
+<div class="degrees"><span class="label">Degree</span><label>h₁ <select aria-label="Degree of h1"><option selected>1</option><option>2</option><option>3</option></select></label><label>h₂ <select aria-label="Degree of h2"><option>1</option><option selected>2</option><option>3</option></select></label><label>h₃ <select aria-label="Degree of h3"><option>1</option><option>2</option><option selected>3</option></select></label><button type="button" id="reset">Reset</button></div>
+<div class="legend"><span><i></i>Allowed</span><span><i class="active"></i>Selected path</span></div>
+<svg id="network" viewBox="0 0 600 300" role="img" aria-label="MADE connectivity"></svg>
+<p class="inputs" aria-live="polite" aria-atomic="true"><span id="inputs-label">Inputs → α₃</span><strong id="inputs">x₁, x₂</strong></p>
+<div class="matrices"><div id="input-mask"></div><div id="output-mask"></div></div>
+</main>
+<script type="module">
+import { madeMasks } from './made-mask.mjs';
+const $ = id => document.getElementById(id);
+const controls = [...document.querySelectorAll('select')];
+const subs = ['₀','₁','₂','₃','₄'];
+let selected = 3;
+const label = (prefix, i) => prefix + subs[i];
+const reportSize = () => parent.postMessage({type:'academic-notes:made-resize',height:Math.ceil(document.querySelector('main').getBoundingClientRect().height)},location.origin==='null'?'*':location.origin);
+function render() {
+  const degrees = controls.map(el => Number(el.value));
+  const state = madeMasks(degrees, selected);
+  const activeHidden = new Set(state.paths.map(p => p.hidden));
+  document.querySelectorAll('[data-output]').forEach(el => el.setAttribute('aria-pressed',String(Number(el.dataset.output)===selected)));
+  let edges = [];
+  state.input.forEach((row,k) => row.forEach((allowed,j) => {
+    if(allowed) edges.push({x1:80,y1:70+j*62,x2:300,y2:101+k*62,active:activeHidden.has(k+1),from:`x${j+1}`,to:`h${k+1}`});
+  }));
+  state.output.forEach((row,i) => row.forEach((allowed,k) => {
+    if(allowed) edges.push({x1:300,y1:101+k*62,x2:520,y2:70+i*62,active:i+1===selected,from:`h${k+1}`,to:`a${i+1}`});
+  }));
+  const lines = edges.sort((a,b)=>Number(a.active)-Number(b.active)).map(e=>`<line x1="${e.x1}" y1="${e.y1}" x2="${e.x2}" y2="${e.y2}" class="${e.active?'edge-active':'edge'}" data-from="${e.from}" data-to="${e.to}"/>`).join('');
+  const node = (x,y,text,kind,detail='') => `<circle cx="${x}" cy="${y}" r="23" class="node ${kind}"/><text x="${x}" y="${y+7}" text-anchor="middle" font-size="23">${text}</text>${detail?`<text x="${x+35}" y="${y+5}" font-size="15">${detail}</text>`:''}`;
+  const nodes = Array.from({length:4},(_,j)=>node(80,70+j*62,label('x',j+1),state.inputs.includes(j+1)?'active-node':'')).join('')
+    + degrees.map((m,k)=>node(300,101+k*62,label('h',k+1),activeHidden.has(k+1)?'active-node':'',`m=${m}`)).join('')
+    + Array.from({length:4},(_,i)=>node(520,70+i*62,label('α',i+1),i+1===selected?'selected-node':'')).join('');
+  $('network').innerHTML = `<text class="layer" x="80" y="25" text-anchor="middle">Input</text><text class="layer" x="300" y="25" text-anchor="middle">Hidden</text><text class="layer" x="520" y="25" text-anchor="middle">Output</text>${lines}${nodes}`;
+  const inputs = state.inputs.map(j=>label('x',j)).join(', ') || 'None';
+  $('inputs-label').textContent = `Inputs → ${label('α',selected)}`;
+  $('inputs').textContent = inputs;
+  $('network').setAttribute('aria-label',`${label('α',selected)}: reachable inputs ${inputs}. Hidden degrees ${degrees.join(', ')}.`);
+  function matrix(rows, id, name, rowPrefix, colPrefix, active) {
+    $(id).innerHTML = `<table aria-label="${name}"><caption>${name}</caption><thead><tr><th></th>${rows[0].map((_,j)=>`<th scope="col">${label(colPrefix,j+1)}</th>`).join('')}</tr></thead><tbody>${rows.map((row,i)=>`<tr class="${id==='output-mask'&&i+1===selected?'selected-row':''}"><th scope="row">${label(rowPrefix,i+1)}</th>${row.map((v,j)=>`<td class="${active(i,j)?'active':v?'allowed':''}">${v}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  }
+  matrix(state.input,'input-mask','Input Mask','h','x',(k,j)=>Boolean(state.input[k][j]&&activeHidden.has(k+1)));
+  matrix(state.output,'output-mask','Output Mask','α','h',(i,k)=>Boolean(state.output[i][k]&&i+1===selected));
+  requestAnimationFrame(reportSize);
+}
+document.querySelectorAll('[data-output]').forEach(el=>el.addEventListener('click',()=>{selected=Number(el.dataset.output);render();}));
+controls.forEach(el=>el.addEventListener('change',render));
+$('reset').addEventListener('click',()=>{controls.forEach((el,k)=>el.value=String(k+1));selected=3;render();});
+new ResizeObserver(reportSize).observe(document.querySelector('main'));
+render();
+</script>
+</body>
+</html>
