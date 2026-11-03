@@ -87,3 +87,11 @@ Start §1.5 on PDF p. 3: maximum likelihood, empirical negative log-likelihood, 
 - Publication of this revision: [PR #13](https://github.com/songofluna/academic-notes/pull/13), merged as `32ca2042204f5968c132f2203dff37531d1d6086`. The [PR check](https://github.com/songofluna/academic-notes/actions/runs/41668425760) and [Pages deployment](https://github.com/songofluna/academic-notes/actions/runs/41668544015) completed successfully.
 - Public verification on 2026-11-04 KST: both unchanged note URLs display the revised titles and concise text. Desktop at 1470 px and mobile at 390 × 844 render 16/32 MathJax containers (3/5 display formulas), with zero math error nodes or page overflow. All mobile display formulas fit their 350 px containers. Desktop ToC navigation works; mobile screenshots show the complete articles and no broken formulas. No browser JavaScript errors were observed. A hard refresh was needed for one browser's cached pre-revision site data; the deployed source and refreshed pages agree.
 - Next section remains §1.5 (PDF p. 3). Final author review of §§1.3–1.4 remains pending.
+
+
+## Terminology revision — 2026-11-04
+
+- Compared §§1.3–1.4 against the author's §§1.1–1.2 reference. Standardized Density Evaluation and Sampling, retained Normalizing Flow and Pushforward in English, and aligned the capitalization of first-use statistical terms (Sample Average, Empirical Distribution, Point Mass).
+- The change is limited to terminology and the corresponding publishing guide. Mathematical expressions, explanations, note URLs, the original §§1.1–1.2, and unrelated site content are preserved. Author review remains pending; the next section remains §1.5.
+- Validation before publication: all 40 `npm run check` tests pass; all 16/32 mathematical expressions in §§1.3/1.4 are byte-for-byte unchanged.
+- Browser preview: section 1.4 displays the revised terminology, 32 MathJax expressions without errors, and a working ToC; at 390 px the text and formulas remain within the page width.
