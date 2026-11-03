@@ -49,4 +49,10 @@ test('portable preview preserves JavaScript/LaTeX dollars and embeds a working M
   const madeModule=made.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
   const madeCheck=spawnSync(process.execPath,['--check','--input-type=module'],{input:madeModule,encoding:'utf8'});
   assert.equal(madeCheck.status,0,madeCheck.stderr);
+  const pixelcnn=context.window.PIXELCNN_DEMO_SRCDOC;
+  assert.match(pixelcnn,/function pixelcnnContext/);
+  assert.doesNotMatch(pixelcnn,/import .* from '\.\/pixelcnn-context\.mjs'/);
+  const pixelcnnModule=pixelcnn.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
+  const pixelcnnCheck=spawnSync(process.execPath,['--check','--input-type=module'],{input:pixelcnnModule,encoding:'utf8'});
+  assert.equal(pixelcnnCheck.status,0,pixelcnnCheck.stderr);
 });

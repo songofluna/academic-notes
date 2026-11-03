@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PixelCNN Blind Spot Explorer</title>
+<style>
+*{box-sizing:border-box}body{margin:0;color:#303830;background:#fff;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:680px;margin:auto;padding:12px 2px}h1{font-size:22px;font-weight:600;letter-spacing:-.025em;margin:0 0 16px}.controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.controls label{display:flex;align-items:center;gap:9px;color:#687064;font-size:13px}.controls input{width:150px;accent-color:#65863f;min-height:44px;cursor:pointer}.controls output{min-width:12px;color:#303830;font-variant-numeric:tabular-nums}.controls button{margin-left:auto;min-height:44px;font:inherit;font-size:13px;border:1px solid #cbd3c6;background:white;color:inherit;padding:7px 12px;cursor:pointer}.kernel{font-size:12px;color:#79816f;margin:12px 0 0}.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;width:min(100%,365px);margin:20px auto}.pixel{display:flex;align-items:center;justify-content:center;aspect-ratio:1;min-height:44px;font:500 20px Georgia,serif;cursor:pointer;background:#f1f2ef;color:#8b9185;border:1px solid #dce1d6;position:relative}.pixel.reachable{background:#dceacb;color:#365222;border-color:#8aa76b}.pixel.blind{background:repeating-linear-gradient(135deg,#e6e8e2 0,#e6e8e2 3px,#fff 3px,#fff 9px);color:#4b5443;border-color:#8d9584}.pixel.beyond{background:#fff;color:#5a6351;border:1px dashed #a8b39a}.pixel.current{background:#fff;color:#26371c;border:3px solid #4f6b33;font-weight:700}.pixel.current::after{content:"";position:absolute;bottom:6px;width:4px;height:4px;background:#4f6b33;border-radius:50%}.pixel:hover{outline:1px solid #678745;outline-offset:1px}button:focus-visible,input:focus-visible{outline:2px solid #62863f;outline-offset:3px}.legend{display:flex;justify-content:center;gap:12px 18px;flex-wrap:wrap;color:#68705f;font-size:12px;margin:0 0 20px}.legend span{display:flex;align-items:center;gap:6px}.swatch{display:inline-block;width:14px;height:14px;border:1px solid #dce1d6;background:#f1f2ef}.swatch.reachable{background:#dceacb;border-color:#8aa76b}.swatch.blind{background:repeating-linear-gradient(135deg,#dce0d4 0,#dce0d4 2px,#fff 2px,#fff 6px);border-color:#8d9584}.swatch.beyond{background:white;border:1px dashed #a8b39a}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;border-top:1px solid #e2e7dd;padding-top:14px;margin:0}.stats dt{color:#77806d;font-size:12px}.stats dd{margin:5px 0 0;font-size:20px;font-variant-numeric:tabular-nums}.selection{font-size:13px;color:#68705f;margin:0 0 8px}.selection strong{color:#365222}.blind-list{border-top:1px solid #e2e7dd;margin:16px 0 0;padding-top:12px;font-size:13px;color:#68705f}.blind-list output{color:#424d36;margin-left:8px}@media(max-width:440px){h1{font-size:19px}.controls{gap:8px}.controls input{width:130px}.grid{gap:6px}.pixel{font-size:19px}.legend{gap:9px 14px}.stats dt{font-size:11px}.stats dd{font-size:18px}}
+</style>
+</head>
+<body>
+<main>
+<h1>PixelCNN Blind Spot Explorer</h1>
+<div class="controls"><label for="layers">Layers <input id="layers" type="range" min="1" max="8" step="1" value="3"><output id="layer-count" for="layers">3</output></label><button id="reset" type="button">Reset</button></div>
+<p class="kernel">Kernel 3 × 3 · <span id="masks">A → B → B</span></p>
+<div id="grid" class="grid" role="group" aria-label="Select current pixel"></div>
+<div class="legend"><span><i class="swatch reachable"></i>Reachable</span><span><i class="swatch blind"></i>Blind spot</span><span><i class="swatch beyond"></i>Beyond depth</span><span><i class="swatch"></i>Future</span></div>
+<p class="selection">Current pixel <strong id="current">q · (4, 2)</strong></p>
+<dl class="stats" aria-live="polite" aria-atomic="true"><div><dt>Reachable / past</dt><dd id="reachable"></dd></div><div><dt>Blind spots</dt><dd id="blind"></dd></div><div><dt>Beyond depth</dt><dd id="beyond"></dd></div></dl>
+<p class="blind-list">Blind spots <output id="blind-list"></output></p>
+</main>
+<script type="module">
+import { pixelcnnContext } from './pixelcnn-context.mjs';
+const $=id=>document.getElementById(id);
+const name=i=>String.fromCharCode(97+i);
+let target=16;
+const reportSize=()=>parent.postMessage({type:'academic-notes:pixelcnn-resize',height:Math.ceil(document.querySelector('main').getBoundingClientRect().height)},location.origin==='null'?'*':location.origin);
+for(let i=0;i<25;i++) {
+  const button=document.createElement('button');
+  button.type='button';button.className='pixel';button.textContent=name(i);button.dataset.pixel=i;
+  button.addEventListener('click',()=>{target=i;render();});
+  $('grid').append(button);
+}
+function render() {
+  const layers=Number($('layers').value),state=pixelcnnContext(target,layers);
+  $('layer-count').textContent=layers;
+  $('masks').textContent=layers===1?'A':`A → B × ${layers-1}`;
+  $('current').textContent=`${name(target)} · (${Math.floor(target/5)+1}, ${target%5+1})`;
+  $('reachable').textContent=`${state.reachable.length} / ${target}`;
+  $('blind').textContent=state.blind.length;
+  $('beyond').textContent=state.beyondDepth.length;
+  $('blind-list').textContent=state.blind.map(name).join(', ')||'None';
+  $('grid').querySelectorAll('button').forEach((button,i)=>{
+    const kind=i===target?'current':state.reachable.includes(i)?'reachable':state.blind.includes(i)?'blind':state.beyondDepth.includes(i)?'beyond':'future';
+    const status={current:'Current',reachable:'Reachable',blind:'Blind spot',beyond:'Beyond depth',future:'Future'}[kind];
+    button.className=`pixel ${kind}`;
+    button.setAttribute('aria-pressed',String(i===target));
+    button.setAttribute('aria-label',`Pixel ${name(i)}, row ${Math.floor(i/5)+1}, column ${i%5+1}: ${status}`);
+    button.title=`${name(i)}: ${status}`;
+  });
+  requestAnimationFrame(reportSize);
+}
+$('layers').addEventListener('input',render);
+$('reset').addEventListener('click',()=>{target=16;$('layers').value='3';render();});
+new ResizeObserver(reportSize).observe(document.querySelector('main'));
+render();
+</script>
+</body>
+</html>
