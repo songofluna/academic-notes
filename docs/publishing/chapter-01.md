@@ -3,7 +3,7 @@
 - Source: user-provided handwritten `Ch1 3.pdf`, 14 pages (PDF page numbers, not printed labels).
 - SHA-256: `8be87a5939c17ee2cad0013db2ad532ed2b2b49a314750ad4c22ead6af84410a`
 - Inspected: all 14 rendered pages on 2026-11-04.
-- Current pass: §1.5 on PDF p. 3. Earlier §§1.3–1.4 on p. 2 are recorded below and remain unchanged.
+- Current pass: §1.6 on PDF p. 4. Earlier §§1.1–1.5 remain unchanged.
 - Existing §§1.1–1.2: `content/notes/newnote1.md`; preserve without rewriting.
 - Editorial workflow: follow [the publishing guide](README.md). Keep prose proportionate to the handwritten source; include only necessary explanations. Published edited drafts remain author-review-pending. The concision revision below supersedes the initial expanded prose.
 
@@ -15,8 +15,8 @@
 | 1.3 | 2, upper half | Finite samples, empirical distribution, resampling | Published; author review pending |
 | 1.4 | 2, lower half | Density evaluation, sampling, Gaussian pushforward | Published; author review pending |
 | 1.5 | 3 | MLE, empirical NLL, Gaussian example and degenerate case | Published; author review pending |
-| 1.6 | 4 | Forward KL and population/empirical likelihood | Next |
-| 1.7 | 5–6 | Reverse KL, mode covering/seeking, support example | Planned |
+| 1.6 | 4 | Forward KL and population/empirical likelihood | Written; author review pending |
+| 1.7 | 5–6 | Reverse KL, mode covering/seeking, support example | Next |
 | 1.8 | 7–8 | Data-space score, Fisher divergence, Gaussian/mixture examples | Planned |
 | 1.9 | 9–10 | f-divergence, JS, total variation, Wasserstein comparison | Planned |
 | 1.10 | 11 | Explicit/implicit models and density existence | Planned |
@@ -29,7 +29,7 @@ Keep each future pass to one or two sections. For §1.8 and §1.11, one section 
 
 These observations are review flags, not silent corrections to published notes.
 
-- p. 4, §1.6: the population NLL line mixes a finite sum and an expectation. Separate population and empirical definitions when drafting.
+- p. 4, §1.6: resolved in the section 1.6 record below. The original line mixed a finite sum and a population expectation; the note defines them separately and uses approximation rather than equality.
 - p. 5, §1.7: the reverse-KL figure is captioned “Mode Covering” although the discussion describes mode seeking. Reconcile explicitly with the author/source.
 - p. 6, §1.7.4: the first term appears as log 0 although the shown ratio is 1; recompute from the displayed distributions.
 - pp. 7–8, §1.8: log-score definitions need positive density on the domain; verify assumptions in the zero-divergence argument.
@@ -111,3 +111,17 @@ Start §1.5 on PDF p. 3: maximum likelihood, empirical negative log-likelihood, 
 - Next: §1.6, PDF p. 4. Resolve the recorded population/empirical NLL notation issue when drafting that section; do not expand it into §1.5.
 - Publication: [PR #15](https://github.com/songofluna/academic-notes/pull/15), merged as `c901fe84563f1c953440cbf3f7db96e407482d6e`. The [PR check](https://github.com/songofluna/academic-notes/actions/runs/41673868369) and [Pages deployment](https://github.com/songofluna/academic-notes/actions/runs/41674076402) completed successfully.
 - Public verification on 2026-11-04 KST: the new note URL renders its correct title and all 35 math expressions (12 display formulas), with no MathJax errors. At 390 px all display formulas fit their 350 px containers and the page has no horizontal overflow. The mobile ToC scrolls to Example 1.5.2, and the public §1.4 next-note link opens §1.5. Desktop/mobile screenshots were saved. No image or interactive embed was added.
+
+
+## Section 1.6 — 2026-11-04
+
+- Note: `content/notes/gm-ch01-16.md` — [1.6 Forward KL-Divergence and Its Connection to MLE](https://songofluna.github.io/academic-notes/#/notes/gm-ch01-16). Retains `작성자 검토 전`; author approval remains pending.
+- Re-read the rendered source PDF p. 4 and confirmed its SHA-256 is unchanged. Preserved Definition 1.6.1, Proposition 1.6.2 and Remark 1.6.3 in their original order, including the KL direction, entropy decomposition, population optimizer equivalence, empirical approximation and finite-sample caution.
+- Explicit source correction (also reported to the author during drafting): the handwritten Population NLL line equated a finite negative sum with a population expectation. The note defines Population NLL as the expectation, Empirical NLL as the negative sample average, and relates them by approximation. This corrects notation without changing the source's argument.
+- Clarifications needed for correctness: the zero-probability support condition concerns a set with positive P probability, not an isolated density value; the continuous entropy is Differential Entropy; decomposition assumes finite relevant expectations. The LLN statement is for fixed theta under i.i.d./integrability conditions, not a claim that finite-sample minimizers exactly optimize population KL. The empirical-KL caution is explained for a continuous-density model, where its probability of the finite observed-point set is zero but the empirical measure assigns probability one.
+- Source fidelity review: prose is 1,480 characters including spaces and English terms after collapsing whitespace, excluding frontmatter, headings, review notice and all math. Three subheadings. No additional example, Reverse KL discussion or consistency proof was introduced. Terminology follows §§1.1–1.5.
+- Verification sources: [Strimmer, likelihood lecture §7.2](https://strimmerlab.github.io/publications/lecture-notes/MATH27720-stats2/07-likelihood1.html) for the population/empirical distinction and entropy decomposition; [Chizat, maximum likelihood lecture §2.2](https://www.di.ens.fr/~fbach/mlclass/lecture5.pdf) for risk definitions and the absolute-continuity condition. These support mathematical review; no external figure or text is reproduced.
+- Independent checks: Gaussian KL = Population NLL − Differential Entropy at 75 parameter pairs, maximum residual 1.78e−15; asymmetric KL checked separately on a two-point distribution. These checks are not extra examples in the public note.
+- Validation: `npm run check` passes all 40 tests and builds 8 notes. Desktop and 390 × 844 mobile render 31 MathJax expressions (7 display formulas) without errors or page overflow; all mobile display formulas fit 350 px. The KL proof uses explicit line breaks. Mobile ToC and the §1.5 → §1.6 reading link work; no browser JavaScript errors observed.
+- Figures and interactive components: none. The derivation is fully expressed by the text and equations; no new experiment was proposed or implemented. Existing notes, figures, demos, CMS and site code remain unchanged.
+- Next: §1.7 on PDF pp. 5–6. Reconcile the recorded mode-covering caption and log-ratio issue before drafting; do not silently extend or rewrite §1.6.
