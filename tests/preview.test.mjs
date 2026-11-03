@@ -55,4 +55,11 @@ test('portable preview preserves JavaScript/LaTeX dollars and embeds a working M
   const pixelcnnModule=pixelcnn.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
   const pixelcnnCheck=spawnSync(process.execPath,['--check','--input-type=module'],{input:pixelcnnModule,encoding:'utf8'});
   assert.equal(pixelcnnCheck.status,0,pixelcnnCheck.stderr);
+  const gated=context.window.GATED_PIXELCNN_DEMO_SRCDOC;
+  assert.match(gated,/function shiftExample/);
+  assert.doesNotMatch(gated,/import .* from '\.\/gated-pixelcnn-kernel\.mjs'/);
+  const gatedModule=gated.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
+  const gatedCheck=spawnSync(process.execPath,['--check','--input-type=module'],{input:gatedModule,encoding:'utf8'});
+  assert.equal(gatedCheck.status,0,gatedCheck.stderr);
+
 });

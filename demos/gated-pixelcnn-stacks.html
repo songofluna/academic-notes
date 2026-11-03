@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Two-Stack &amp; Shift Explorer</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#fff;color:#303830;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:720px;margin:auto;padding:12px 2px}h1{font-size:22px;font-weight:600;letter-spacing:-.025em;margin:0 0 16px}h2{font-size:16px;font-weight:600;margin:0 0 10px}button{font:inherit;color:inherit;background:#fff;border:1px solid #d9dfd3;min-height:44px;padding:7px 12px;cursor:pointer}button:focus-visible{outline:2px solid #65863f;outline-offset:3px}.toolbar,.modes{display:flex;gap:6px;flex-wrap:wrap}.toolbar{margin-bottom:16px}.toolbar button[aria-pressed=true],.modes button[aria-pressed=true]{background:#e4eed8;border-color:#819d64;color:#385124}.toolbar #reset{margin-left:auto}.modes button{flex:1;font-size:13px}.label,.selection{font-size:13px;color:#6d7565;margin:12px 0}.selection strong{color:#365222}.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:min(100%,350px);margin:16px auto}main[data-view=shift] #target-grid{max-width:250px}.pixel,.cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;min-width:0;font:20px Georgia,serif;border:1px solid #e0e4dc;background:#f4f5f2;color:#a2a79b;padding:0}.pixel.active,.cell.active{background:#dfebcf;color:#365222;border-color:#94af76}.pixel.current,.cell.current{border:3px solid #4f6b33;color:#26371c;font-weight:700}.cell.leak{background:#f8e6df;color:#8d402c;border-color:#c98670}.cell.padding{color:#8c9286;background:#f1f2ef}.cell sub{font-size:12px;margin-top:8px}.legend{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;font-size:12px;color:#68705f}.legend span{display:flex;gap:6px;align-items:center}.swatch{width:13px;height:13px;background:#dfebcf;border:1px solid #94af76}.swatch.leak{background:#f8e6df;border-color:#c98670}.swatch.current{background:white;border:2px solid #4f6b33}.stats{display:flex;justify-content:space-between;gap:12px;border-top:1px solid #e2e7dd;padding-top:12px;margin-top:16px;font-size:13px}.stats strong{font-weight:500;color:#365222}.kernel{font-size:12px;line-height:1.7;color:#68705f;margin:12px 0 18px}.kernel code,.path{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.shift-panels{display:grid;grid-template-columns:1fr 1fr;gap:22px}.shift-panels section{min-width:0}.shift-panels .grid{gap:4px;margin:12px auto}.shift-panels .cell{font-size:17px}.shift-panels .map .cell{font-size:16px}.path{font-size:13px;overflow-wrap:anywhere;line-height:1.8;min-height:44px;color:#55614a}.status{font-size:13px;border-top:1px solid #e2e7dd;padding-top:10px;margin-bottom:0}.status strong{color:#365222}.status.unsafe strong{color:#8d402c}.final{border-top:1px solid #dce3d5;margin-top:16px;padding-top:12px;font-size:13px;color:#55614a}[hidden]{display:none!important}@media(max-width:520px){h1{font-size:19px}.shift-panels{grid-template-columns:1fr;gap:26px}.shift-panels section+section{border-top:1px solid #e2e7dd;padding-top:20px}.modes{gap:4px}.modes button{padding:6px;font-size:12px}.toolbar button{font-size:13px}.cell sub{font-size:13px}.shift-panels .cell{font-size:19px}.shift-panels .map .cell{font-size:19px}}
+</style>
+</head>
+<body>
+<main>
+<h1>Two-Stack &amp; Shift Explorer</h1>
+<div class="toolbar" role="group" aria-label="View"><button id="context-tab" aria-pressed="true">Context</button><button id="shift-tab" aria-pressed="false">Shift Down</button><button id="reset">Reset</button></div>
+<p class="selection">Target <strong id="target"></strong> · Raster scan</p>
+<div id="context-view">
+  <p class="label">Theoretical context · full allowed region</p>
+  <div class="modes" role="group" aria-label="Context mode"><button data-mode="vertical" aria-pressed="false">Vertical</button><button data-mode="horizontal" aria-pressed="false">Horizontal</button><button data-mode="combined" aria-pressed="true">Combined</button></div>
+</div>
+<div id="target-grid" class="grid" role="group" aria-label="Select target pixel"></div>
+<div id="context-details">
+  <div class="legend"><span><i class="swatch"></i>Selected context</span><span><i class="swatch current"></i>Target</span></div>
+  <div class="stats" aria-live="polite"><span>Vertical <strong id="vertical-count"></strong></span><span>Horizontal <strong id="horizontal-count"></strong></span><span>Combined <strong id="combined-count"></strong></span></div>
+</div>
+<div id="shift-view" hidden>
+  <div class="kernel">V kernel <code>2 × 3</code> · rows <code>r−1, r</code> · columns <code>c−1, c, c+1</code><br>H kernel <code>1 × 3</code> · strict-left raw input · zero padding</div>
+  <div class="shift-panels">
+    <section aria-label="Before shift"><h2>Before shift</h2><div id="before-map" class="grid map" role="img" aria-label="Vertical feature map before shift"></div><p class="label">Raw inputs of V<sub>r,c</sub></p><div id="before-inputs" class="grid" role="img" aria-label="Raw inputs before shift"></div><p id="before-path" class="path"></p><p class="status unsafe">Current / future inputs <strong id="before-leaks"></strong></p></section>
+    <section aria-label="After shift"><h2>After shift ↓</h2><div id="after-map" class="grid map" role="img" aria-label="Vertical feature map shifted down one row"></div><p class="label">Raw inputs of Ṽ<sub>r,c</sub> = V<sub>r−1,c</sub></p><div id="after-inputs" class="grid" role="img" aria-label="Raw inputs after shift"></div><p id="after-path" class="path"></p><p class="status">Current / future inputs <strong id="after-leaks"></strong></p></section>
+  </div>
+  <div class="legend"><span><i class="swatch"></i>Past input</span><span><i class="swatch leak"></i>Current / future input</span><span><i class="swatch current"></i>Target</span></div>
+  <p class="final" aria-live="polite">Final input: shifted V + strict-left H · <strong id="final-count"></strong> past inputs · <strong id="final-leaks"></strong> current / future</p>
+</div>
+</main>
+<script type="module">
+import { allowedContext, shiftExample } from './gated-pixelcnn-kernel.mjs';
+const $ = id => document.getElementById(id);
+const name = i => String.fromCharCode(97 + i);
+let target = 12, mode = 'combined', view = 'context';
+const reportSize = () => parent.postMessage({type:'academic-notes:gated-pixelcnn-resize',height:Math.ceil(document.querySelector('main').getBoundingClientRect().height)},location.origin === 'null' ? '*' : location.origin);
+for (let i = 0; i < 25; i++) {
+  const button = document.createElement('button');
+  button.type = 'button'; button.textContent = name(i); button.dataset.pixel = i;
+  button.addEventListener('click', () => {target = i; render();});
+  $('target-grid').append(button);
+}
+function renderMap(id, shifted) {
+  $(id).replaceChildren(...Array.from({length:25}, (_, i) => {
+    const cell = document.createElement('span'), row = Math.floor(i / 5), col = i % 5;
+    cell.className = `cell ${i === target ? 'current' : ''} ${shifted && row === 0 ? 'padding' : 'active'}`;
+    if (shifted && row === 0) cell.textContent = '0';
+    else { cell.textContent = 'V'; const sub = document.createElement('sub'); sub.textContent = `${row + (shifted ? 0 : 1)},${col + 1}`; cell.append(sub); }
+    cell.setAttribute('aria-label', `Position (${row+1}, ${col+1}): ${cell.textContent}`);
+    return cell;
+  }));
+}
+function renderInputs(id, inputs) {
+  $(id).replaceChildren(...Array.from({length:25}, (_, i) => {
+    const cell = document.createElement('span');
+    cell.textContent = name(i);
+    cell.className = `cell ${inputs.includes(i) ? i >= target ? 'leak' : 'active' : ''} ${i === target ? 'current' : ''}`;
+    return cell;
+  }));
+}
+function render() {
+  const context = allowedContext(target), state = shiftExample(target);
+  const row = state.row + 1, col = state.col + 1;
+  document.querySelector('main').dataset.view = view;
+  $('target').textContent = `${name(target)} · (${row}, ${col})`;
+  $('context-tab').setAttribute('aria-pressed', String(view === 'context'));
+  $('shift-tab').setAttribute('aria-pressed', String(view === 'shift'));
+  $('context-view').hidden = $('context-details').hidden = view !== 'context';
+  $('shift-view').hidden = view !== 'shift';
+  document.querySelectorAll('[data-mode]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.mode === mode)));
+  $('target-grid').querySelectorAll('button').forEach((button, i) => {
+    const active = view === 'context' && context[mode].includes(i);
+    button.className = `pixel ${active ? 'active' : ''} ${i === target ? 'current' : ''}`;
+    button.setAttribute('aria-pressed', String(i === target));
+    button.setAttribute('aria-label', `Pixel ${name(i)}, row ${Math.floor(i/5)+1}, column ${i%5+1}${i === target ? ': Target' : ''}`);
+  });
+  for (const key of ['vertical','horizontal','combined']) $(`${key}-count`).textContent = context[key].length;
+  if (view === 'shift') {
+    renderMap('before-map', false); renderMap('after-map', true);
+    renderInputs('before-inputs', state.before); renderInputs('after-inputs', state.after);
+    const unsafe = state.beforeLeaks.find(i => i > target) ?? target;
+    $('before-path').textContent = `x(${Math.floor(unsafe/5)+1},${unsafe%5+1}) → V(${row},${col}) → h(${row},${col})`;
+    $('after-path').textContent = row === 1 ? `0 → Ṽ(1,${col}) → h(1,${col})` : `x(${row-1},${Math.min(5,col+1)}) → V(${row-1},${col}) → Ṽ(${row},${col}) → h(${row},${col})`;
+    $('before-leaks').textContent = state.beforeLeaks.length;
+    $('after-leaks').textContent = state.after.filter(i => i >= target).length;
+    $('final-count').textContent = state.finalInputs.length;
+    $('final-leaks').textContent = state.afterLeaks.length;
+  }
+  requestAnimationFrame(reportSize);
+}
+document.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => {mode = button.dataset.mode; render();}));
+$('context-tab').addEventListener('click', () => {view = 'context'; render();});
+$('shift-tab').addEventListener('click', () => {view = 'shift'; render();});
+$('reset').addEventListener('click', () => {target = 12; mode = 'combined'; view = 'context'; render();});
+new ResizeObserver(reportSize).observe(document.querySelector('main'));
+render();
+</script>
+</body>
+</html>
