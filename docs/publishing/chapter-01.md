@@ -16,7 +16,7 @@
 | 1.4 | 2, lower half | Density evaluation, sampling, Gaussian pushforward | Published; author review pending |
 | 1.5 | 3 | MLE, empirical NLL, Gaussian example and degenerate case | Published; author review pending |
 | 1.6 | 4 | Forward KL and population/empirical likelihood | Published; author review pending |
-| 1.7 | 5–6 | Reverse KL, mode covering/seeking, support example | Written; author review pending |
+| 1.7 | 5–6 | Reverse KL, mode covering/seeking, support example | Published; author review pending |
 | 1.8 | 7–8 | Data-space score, Fisher divergence, Gaussian/mixture examples | Next |
 | 1.9 | 9–10 | f-divergence, JS, total variation, Wasserstein comparison | Planned |
 | 1.10 | 11 | Explicit/implicit models and density existence | Planned |
@@ -141,3 +141,5 @@ Start §1.5 on PDF p. 3: maximum likelihood, empirical negative log-likelihood, 
 - Figures and interactive components: none. The original diagram's comparison is explained in words alongside its unchanged distribution; no stock illustration or new simulator was added.
 - Validation: `npm run check` passes all 40 tests and builds 9 notes. Desktop at 1280 px and mobile at 390 × 844 render 49 MathJax expressions (7 display formulas), with zero math error nodes or page overflow. All mobile display formulas fit their 350 px containers. No browser JavaScript errors observed. Existing content, CMS, images, demo files, design and deployment code remain unchanged.
 - Next: §1.8, source PDF pp. 7–8. Check the recorded positivity/domain assumptions for the data-space score before drafting; do not extend §1.7 into that material.
+- Publication: [PR #17](https://github.com/songofluna/academic-notes/pull/17), merged as `6cea562e14a74aa1cf417b9fbcc2042fa2da389a`. The [PR check](https://github.com/songofluna/academic-notes/actions/runs/41680544197) and [Pages deployment](https://github.com/songofluna/academic-notes/actions/runs/41680696290) succeeded. A concurrent Pages CMS update to §1.5 (`23c245d`) was preserved when merging; this task did not edit that note.
+- Public verification on 2026-11-04 KST: correct title, 49 MathJax expressions including 7 display formulas, zero math errors and no horizontal page overflow at 1280 px and 390 × 844. All mobile display formulas fit the 350 px body. The mobile ToC scrolls to Example 1.7.4, and the public §1.6 Next note link opens §1.7. No browser JavaScript errors observed. Desktop/mobile screenshots saved; author review remains pending.
