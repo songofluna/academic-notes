@@ -61,5 +61,12 @@ test('portable preview preserves JavaScript/LaTeX dollars and embeds a working M
   const gatedModule=gated.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
   const gatedCheck=spawnSync(process.execPath,['--check','--input-type=module'],{input:gatedModule,encoding:'utf8'});
   assert.equal(gatedCheck.status,0,gatedCheck.stderr);
+  const wavenet=context.window.WAVENET_DEMO_SRCDOC;
+  assert.match(wavenet,/function dilatedGraph/);
+  assert.doesNotMatch(wavenet,/import .* from '\.\/wavenet-kernel\.mjs'/);
+  const wavenetModule=wavenet.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
+  const wavenetCheck=spawnSync(process.execPath,['--check','--input-type=module'],{input:wavenetModule,encoding:'utf8'});
+  assert.equal(wavenetCheck.status,0,wavenetCheck.stderr);
+
 
 });
