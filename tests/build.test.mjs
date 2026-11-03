@@ -67,6 +67,21 @@ test('build preserves published Markdown and omits draft contents', async t => {
   assert.equal(await readFile(join(dir, 'content/notes/draft.md'), 'utf8'), draft);
 });
 
+test('note-local images are published without rewriting Markdown or image bytes', async t => {
+  const dir = await fixture(t);
+  await mkdir(join(dir, 'content/notes/images'), { recursive: true });
+  const body = '![Figure](images/diagram.png)\n\n$\\alpha$';
+  const source = `---\nslug: illustrated\ntitle: Illustrated note\n---\n${body}\n`;
+  const bytes = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0, 0xff]);
+  await writeFile(join(dir, 'content/notes/illustrated.md'), source);
+  await writeFile(join(dir, 'content/notes/images/diagram.png'), bytes);
+  const result = build(dir);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal((await payload(dir)).notes[0].body, body);
+  assert.deepEqual(await readFile(join(dir, 'dist/images/diagram.png')), bytes);
+  assert.equal(await readFile(join(dir, 'content/notes/illustrated.md'), 'utf8'), source);
+});
+
 test('unexpected filesystem errors still fail the build', async t => {
   const dir = await fixture(t);
   await mkdir(join(dir, 'content'));
