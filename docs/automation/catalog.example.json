@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "sources": {
+    "chapter-05-handwritten": {
+      "kind": "handwritten",
+      "title": "사용자가 제공한 Chapter 5 필기",
+      "path": "chapter-05-handwritten.pdf"
+    },
+    "chapter-05-lecture": {
+      "kind": "lecture",
+      "title": "사용자가 제공한 Chapter 5 강의안",
+      "path": "chapter-05-lecture.pdf"
+    }
+  },
+  "sections": {
+    "5.10": {
+      "title": "원본에서 확인한 Section 제목으로 교체",
+      "chapter": "Chapter 05. Autoregressive Models",
+      "course": "generative-models",
+      "category": "generative",
+      "slug": "gm-ch05-510",
+      "order": 10,
+      "summary": "원본에서 확인한 내용으로 교체",
+      "tags": "Generative Models",
+      "sources": [
+        {"id": "chapter-05-handwritten", "pages": []},
+        {"id": "chapter-05-lecture", "pages": []}
+      ]
+    }
+  }
+}

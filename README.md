@@ -1,5 +1,7 @@
 # Academic Notes Studio — 운영 가능한 개인 학술 사이트 초안
 
+원본 필기 PDF와 강의안으로 Section별 노트를 작성하려면 [학습 노트 자동화](docs/automation/README.md)를 사용하세요. 저장소를 연 AI에게 “5.10절 작성”처럼 요청하면 출처 확인·집필·시각화·검수·별도 브랜치 PR 절차를 따릅니다. 처음에는 두 PDF와 Section의 페이지 범위를 등록해야 합니다. 기존 글을 교체하거나 main에 직접 게시하지 않습니다.
+
 흰색 배경, 왼쪽 작성자 정보, 오른쪽 글 목록과 본문으로 구성된 개인 학술 블로그입니다. **Notes / Articles / Projects / About / Writing Studio**를 지원합니다. 실제 게시글 제목과 본문은 한국어, 메뉴·분야명·섹션명은 영어입니다.
 
 **현재 상태:** [GitHub Pages 사이트](https://songofluna.github.io/academic-notes/)가 공개되어 있습니다. 상단 **Write ↗**는 이 저장소의 [Pages CMS 글쓰기 화면](https://app.pagescms.org/songofluna/academic-notes/main/collection/notes)을 새 탭으로 엽니다. GitHub 로그인과 저장소 접근 권한이 필요합니다. 별도의 로컬 스튜디오에서 사용하는 Publish locally 버튼은 내 브라우저에서 보이게 하는 기능이며 **인터넷에 글을 발행하지 않습니다.**
