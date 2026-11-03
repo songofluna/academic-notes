@@ -17,7 +17,7 @@
 | 1.5 | 3 | MLE, empirical NLL, Gaussian example and degenerate case | Published; author review pending |
 | 1.6 | 4 | Forward KL and population/empirical likelihood | Published; author review pending |
 | 1.7 | 5–6 | Reverse KL, mode covering/seeking, support example | Published; author review pending |
-| 1.8 | 7–8 | Data-space score, Fisher divergence, Gaussian/mixture examples | Author-supplied manuscript; publication prepared |
+| 1.8 | 7–8 | Data-space score, Fisher divergence, Gaussian/mixture examples | Published author-supplied manuscript; review notice retained |
 | 1.9 | 9–10 | f-divergence, JS, total variation, Wasserstein comparison | Planned |
 | 1.10 | 11 | Explicit/implicit models and density existence | Planned |
 | 1.11 | 12–13 | Latent variables, changes of variables, Jacobian examples | Planned |
@@ -156,3 +156,5 @@ Start §1.5 on PDF p. 3: maximum likelihood, empirical negative log-likelihood, 
 - `ch01-18-mixture-score.jpg` SHA-256: `1867307dfb89fbfe4a539987424fb4bf24d6eccaf0baf8b7215f9d906680a809`.
 - Validation: `npm run check` passes all 40 tests and builds 10 notes. Desktop 1280 × 900 and mobile 390 × 844 render 89 MathJax expressions, including 36 display formulas, without math errors or page-level horizontal overflow. Both local images load at their original dimensions; no browser JavaScript errors observed.
 - Existing notes, images, CMS configuration, demos, design and deployment code are unchanged. No interactive component is added. §§1.9–1.12 remain unstarted pending the author's next instruction.
+- Publication: [PR #18](https://github.com/songofluna/academic-notes/pull/18), merged as `8fa8bcf94ed4b29c2817ea61a97219b35e504d4c`. The [PR check](https://github.com/songofluna/academic-notes/actions/runs/41693556852) and [GitHub Pages deployment](https://github.com/songofluna/academic-notes/actions/runs/41693752501) completed successfully. The uploaded branch tree was compared against the tested local tree and matched exactly, including both binary images.
+- Public verification on 2026-11-04 KST: the note renders all 89 formulas (36 display) without math errors at 1280 px and 390 px. Both attached figures load from the site's `/academic-notes/images/` paths at natural widths 1514 and 1550 px and fit the 350 px mobile body; no page overflow. The mobile ToC opens Definition 1.8.6. Desktop and mobile screenshots were saved. Publication does not change the author's retained review notice.
