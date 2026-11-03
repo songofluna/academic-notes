@@ -85,6 +85,10 @@ await rm(out,{recursive:true,force:true});
 await mkdir(out,{recursive:true});
 for(const name of ['index.html','styles.css','app.js']) await cp(join(root,name),join(out,name));
 await cp(join(root,'assets'),join(out,'assets'),{recursive:true});
+// Keep images/ links valid both beside the source Markdown and under the Pages base path.
+await cp(join(root,'content/notes/images'),join(out,'images'),{recursive:true}).catch(error=>{
+  if(error.code!=='ENOENT') throw error;
+});
 await cp(join(root,'demos'),join(out,'demos'),{recursive:true});
 // Draft contents must not be embedded in the public site's JavaScript payload.
 const payload = JSON.stringify({site,projects,notes:publishedNotes,articles:publishedArticles});
