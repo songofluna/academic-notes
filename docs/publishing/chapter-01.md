@@ -14,7 +14,7 @@
 | 1.1–1.2 | 1 | Introduction, data/model distributions, notation | Existing published note; unchanged |
 | 1.3 | 2, upper half | Finite samples, empirical distribution, resampling | Published; author review pending |
 | 1.4 | 2, lower half | Density evaluation, sampling, Gaussian pushforward | Published; author review pending |
-| 1.5 | 3 | MLE, empirical NLL, Gaussian example and degenerate case | Written; author review pending |
+| 1.5 | 3 | MLE, empirical NLL, Gaussian example and degenerate case | Published; author review pending |
 | 1.6 | 4 | Forward KL and population/empirical likelihood | Next |
 | 1.7 | 5–6 | Reverse KL, mode covering/seeking, support example | Planned |
 | 1.8 | 7–8 | Data-space score, Fisher divergence, Gaussian/mixture examples | Planned |
@@ -109,3 +109,5 @@ Start §1.5 on PDF p. 3: maximum likelihood, empirical negative log-likelihood, 
 - Validation: `npm run check` passes all 40 tests and builds 7 notes. Desktop at 1280 px and mobile at 390 × 844 display 35 MathJax expressions (12 display formulas), with no math errors or page overflow; all mobile display formulas fit their 350 px containers. ToC navigation works and no browser JavaScript errors were observed. Long Gaussian NLL and variance arithmetic use explicit aligned line breaks.
 - Existing notes, images, demos, CMS settings, site design and deployment code are unchanged. The new note follows §1.4 in reading order.
 - Next: §1.6, PDF p. 4. Resolve the recorded population/empirical NLL notation issue when drafting that section; do not expand it into §1.5.
+- Publication: [PR #15](https://github.com/songofluna/academic-notes/pull/15), merged as `c901fe84563f1c953440cbf3f7db96e407482d6e`. The [PR check](https://github.com/songofluna/academic-notes/actions/runs/41673868369) and [Pages deployment](https://github.com/songofluna/academic-notes/actions/runs/41674076402) completed successfully.
+- Public verification on 2026-11-04 KST: the new note URL renders its correct title and all 35 math expressions (12 display formulas), with no MathJax errors. At 390 px all display formulas fit their 350 px containers and the page has no horizontal overflow. The mobile ToC scrolls to Example 1.5.2, and the public §1.4 next-note link opens §1.5. Desktop/mobile screenshots were saved. No image or interactive embed was added.
