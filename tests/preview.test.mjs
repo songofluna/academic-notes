@@ -74,6 +74,12 @@ test('portable preview preserves JavaScript/LaTeX dollars and embeds a working M
   const mcseModule=mcse.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
   const mcseCheck=spawnSync(process.execPath,['--check','--input-type=module'],{input:mcseModule,encoding:'utf8'});
   assert.equal(mcseCheck.status,0,mcseCheck.stderr);
+  const rejection=context.window.CHAPTER4_DEMO_SRCDOC['rejection-sampling'];
+  assert.match(rejection,/function createRejectionSampler/);
+  assert.doesNotMatch(rejection,/^import /m);
+  const rejectionModule=rejection.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
+  const rejectionCheck=spawnSync(process.execPath,['--check','--input-type=module'],{input:rejectionModule,encoding:'utf8'});
+  assert.equal(rejectionCheck.status,0,rejectionCheck.stderr);
 
 
 });
