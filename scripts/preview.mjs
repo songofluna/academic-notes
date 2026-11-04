@@ -60,6 +60,9 @@ data += '\nwindow.CHAPTER3_DEMO_SRCDOC = ' + JSON.stringify(chapter3Demos).repla
 const chapter4Demos = {};
 for (const name of ['monte-carlo-se', 'markov-chain', 'gibbs-gaussian', 'mcmc-mixing', 'langevin-bias']) chapter4Demos[name] = await packDemo(name);
 data += '\nwindow.CHAPTER4_DEMO_SRCDOC = ' + JSON.stringify(chapter4Demos).replace(/</g, '\\u003c') + ';\n';
+const dlChapter1Demos = {};
+for (const name of ['dl-activations', 'dl-xor', 'dl-forward']) dlChapter1Demos[name] = await packDemo(name);
+data += '\nwindow.DL_CHAPTER1_DEMO_SRCDOC = ' + JSON.stringify(dlChapter1Demos).replace(/</g, '\\u003c') + ';\n';
 const img=await readFile(join(root,'assets','hero-photo.webp'));
 const inlineImage='data:image/webp;base64,'+img.toString('base64');
 // site config references to /assets work in the packed HTML without companion files.
