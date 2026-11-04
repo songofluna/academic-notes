@@ -128,6 +128,10 @@
   function samplingDemoHtml(name) {
     return `<div class="mh-embed-wrap"><iframe class="mh-embed" data-sampling-demo="${name}" data-src="demos/${name}.html" loading="lazy" title="${samplingDemoTitles[name]}" referrerpolicy="same-origin" scrolling="no"></iframe></div>`;
   }
+  const dlDemoTitles = {'dl-activations':'Activation values and local slopes', 'dl-xor':'XOR input and hidden features', 'dl-forward':'Neural network forward propagation'};
+  function dlDemoHtml(name) {
+    return `<div class="mh-embed-wrap"><iframe class="mh-embed" data-dl-demo="${name}" data-src="demos/${name}.html" loading="lazy" title="${dlDemoTitles[name]}" referrerpolicy="same-origin" scrolling="no"></iframe></div>`;
+  }
   function experimentHtml(id='home') {
     const pre=id.replace(/[^a-z0-9-]/gi,'');
     return `<div class="demo" data-normal-demo="${pre}" aria-label="Compare two normal distributions">
@@ -142,9 +146,9 @@
       <div class="demo-footer"><button class="reset" type="button" data-reset-plot>Reset ↺</button></div></div>`;
   }
   function setupExperiments(scope=app) {
-    scope.querySelectorAll('[data-mh-demo][data-src], [data-empirical-demo][data-src], [data-made-demo][data-src], [data-pixelcnn-demo][data-src], [data-gated-pixelcnn-demo][data-src], [data-wavenet-demo][data-src], [data-vi-demo][data-src], [data-sampling-demo][data-src]').forEach(frame=>{
+    scope.querySelectorAll('[data-mh-demo][data-src], [data-empirical-demo][data-src], [data-made-demo][data-src], [data-pixelcnn-demo][data-src], [data-gated-pixelcnn-demo][data-src], [data-wavenet-demo][data-src], [data-vi-demo][data-src], [data-sampling-demo][data-src], [data-dl-demo][data-src]').forEach(frame=>{
       const load=()=>{
-        const packed=frame.hasAttribute('data-sampling-demo')?window.CHAPTER4_DEMO_SRCDOC?.[frame.dataset.samplingDemo]:frame.hasAttribute('data-vi-demo')?window.CHAPTER3_DEMO_SRCDOC?.[frame.dataset.viDemo]:frame.hasAttribute('data-wavenet-demo')?window.WAVENET_DEMO_SRCDOC:frame.hasAttribute('data-gated-pixelcnn-demo')?window.GATED_PIXELCNN_DEMO_SRCDOC:frame.hasAttribute('data-mh-demo')?window.MH_DEMO_SRCDOC:frame.hasAttribute('data-made-demo')?window.MADE_DEMO_SRCDOC:frame.hasAttribute('data-pixelcnn-demo')?window.PIXELCNN_DEMO_SRCDOC:window.EMPIRICAL_DEMO_SRCDOC;
+        const packed=frame.hasAttribute('data-dl-demo')?window.DL_CHAPTER1_DEMO_SRCDOC?.[frame.dataset.dlDemo]:frame.hasAttribute('data-sampling-demo')?window.CHAPTER4_DEMO_SRCDOC?.[frame.dataset.samplingDemo]:frame.hasAttribute('data-vi-demo')?window.CHAPTER3_DEMO_SRCDOC?.[frame.dataset.viDemo]:frame.hasAttribute('data-wavenet-demo')?window.WAVENET_DEMO_SRCDOC:frame.hasAttribute('data-gated-pixelcnn-demo')?window.GATED_PIXELCNN_DEMO_SRCDOC:frame.hasAttribute('data-mh-demo')?window.MH_DEMO_SRCDOC:frame.hasAttribute('data-made-demo')?window.MADE_DEMO_SRCDOC:frame.hasAttribute('data-pixelcnn-demo')?window.PIXELCNN_DEMO_SRCDOC:window.EMPIRICAL_DEMO_SRCDOC;
         if(packed)frame.srcdoc=packed;
         else frame.src=frame.dataset.src;
         frame.removeAttribute('data-src');
@@ -283,6 +287,8 @@
       if(viDemo){flushPara();flushList();html+=viDemoHtml(viDemo[1].toLowerCase());continue;}
       const samplingDemo=s.match(/^\[demo:(monte-carlo-se|markov-chain|gibbs-gaussian|mcmc-mixing|langevin-bias)\]$/i);
       if(samplingDemo){flushPara();flushList();html+=samplingDemoHtml(samplingDemo[1].toLowerCase());continue;}
+      const dlDemo=s.match(/^\[demo:(dl-activations|dl-xor|dl-forward)\]$/i);
+      if(dlDemo){flushPara();flushList();html+=dlDemoHtml(dlDemo[1].toLowerCase());continue;}
       const ul=s.match(/^[-*]\s+(.+)$/),ol=s.match(/^\d+\.\s+(.+)$/);
       if(ul||ol){flushPara();const type=ul?'ul':'ol';if(list.length&&type!==listType)flushList();listType=type;list.push((ul||ol)[1]);continue;}
       if(s.startsWith('>')){flushPara();flushList();const quote=[];while(i<lines.length&&lines[i].trim().startsWith('>')){quote.push(lines[i].trim().replace(/^>\s?/,''));i++;}i--;html+=`<blockquote><p>${inlineMd(quote.join(' '))}</p></blockquote>`;continue;}
@@ -445,7 +451,7 @@
   async function readFileAsText(file){return await file.text();}
   window.addEventListener('message',event=>{
     if(event.origin!==window.location.origin)return;
-    const selectors={'academic-notes:sampling-resize':'iframe[data-sampling-demo]','academic-notes:vi-resize':'iframe[data-vi-demo]','academic-notes:wavenet-resize':'iframe[data-wavenet-demo]','academic-notes:gated-pixelcnn-resize':'iframe[data-gated-pixelcnn-demo]','academic-notes:mh-resize':'iframe[data-mh-demo]','academic-notes:empirical-resize':'iframe[data-empirical-demo]','academic-notes:made-resize':'iframe[data-made-demo]','academic-notes:pixelcnn-resize':'iframe[data-pixelcnn-demo]'};
+    const selectors={'academic-notes:dl-resize':'iframe[data-dl-demo]','academic-notes:sampling-resize':'iframe[data-sampling-demo]','academic-notes:vi-resize':'iframe[data-vi-demo]','academic-notes:wavenet-resize':'iframe[data-wavenet-demo]','academic-notes:gated-pixelcnn-resize':'iframe[data-gated-pixelcnn-demo]','academic-notes:mh-resize':'iframe[data-mh-demo]','academic-notes:empirical-resize':'iframe[data-empirical-demo]','academic-notes:made-resize':'iframe[data-made-demo]','academic-notes:pixelcnn-resize':'iframe[data-pixelcnn-demo]'};
     const selector=selectors[event.data?.type];
     if(!selector)return;
     const frame=Array.from(document.querySelectorAll(selector)).find(el=>el.contentWindow===event.source);
