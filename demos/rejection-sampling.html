@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rejection Sampling Explorer</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#fff;color:#303338;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{padding:12px 2px}h1{font-size:23px;font-weight:600;letter-spacing:-.025em;margin:0 0 8px}h2{font-size:15px;font-weight:500;margin:0 0 8px}
+.model{color:#626a5d;font-size:13px;margin:0 0 14px}.controls,.buttons,.speed,.legend,.seed{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.controls{border-top:1px solid #e4e7e1;padding-top:12px;justify-content:space-between}
+button,select{font:inherit;color:inherit;background:#fff;border:1px solid #cfd6c8;border-radius:0;min-height:44px;padding:7px 10px}
+button{cursor:pointer}button:hover{background:#f3f6ef}button:disabled{opacity:.45;cursor:default}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #73924f;outline-offset:3px}
+.speed{font-size:13px;gap:7px}.parameter{display:grid;grid-template-columns:24px 1fr 34px;align-items:center;gap:12px;margin:10px 0 14px}
+input[type=range]{width:100%;min-height:44px;accent-color:#70944d;margin:0}.parameter output{text-align:right;font-variant-numeric:tabular-nums}
+.legend{gap:8px 18px;font-size:12px;color:#5b6159;margin-bottom:14px}.legend span{display:flex;align-items:center;gap:6px}.legend i{display:inline-block;width:20px;height:0;border-top:3px solid #78946a}.legend .envelope{border-top:2px dashed #747c70}.legend .dot{width:8px;height:8px;border:0;border-radius:50%;background:#78946a}.legend .rejected{background:#d9b58e}
+.plots{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}section{min-width:0}svg{display:block;width:100%;height:270px}
+.last{display:flex;gap:7px 16px;flex-wrap:wrap;align-items:center;font-size:13px;border-top:1px solid #e4e7e1;margin:12px 0 0;padding-top:12px;font-variant-numeric:tabular-nums;min-height:38px}.last .accepted{color:#567a42}.last .rejected{color:#88623c}.last output{font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 12px;border-top:1px solid #e4e7e1;margin:12px 0 0;padding:12px 0 0}.stats dt{font-size:12px;color:#6b7265}.stats dd{font-variant-numeric:tabular-nums;font-size:20px;margin:4px 0 0}
+.seed{font-size:12px;color:#6b7265;margin-top:14px}.seed button{font-size:13px}
+@media(min-width:700px){.plots{grid-template-columns:repeat(2,minmax(0,1fr))}.stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:420px){h1{font-size:21px}.buttons{gap:7px}.stats dd{font-size:18px}}
+</style>
+</head>
+<body><main>
+<h1>Rejection Sampling Explorer</h1>
+<p class="model">본문과 다른 단순 예제 · p(z) = 1 − |z|, q(z) = 1/2 (−1 ≤ z ≤ 1)</p>
+<div class="controls"><div class="buttons"><button id="step" type="button">Step</button><button id="play" type="button">Play</button><button id="reset" type="button">Reset</button></div><label class="speed" for="speed">Speed <select id="speed"><option value="5">5 /s</option><option value="50" selected>50 /s</option><option value="500">500 /s</option></select></label></div>
+<label class="parameter" for="k"><span>k</span><input id="k" type="range" min="2" max="5" step="0.1" value="2"><output id="k-value" for="k">2.0</output></label>
+<div class="legend"><span><i></i>p(z)</span><span><i class="envelope"></i>kq(z)</span><span><i class="dot"></i>Accepted</span><span><i class="dot rejected"></i>Rejected</span></div>
+<div class="plots"><section><h2>Recent proposals</h2><svg id="envelope" viewBox="0 0 400 270" role="img" aria-label="목표밀도와 Envelope 아래의 후보점"></svg></section><section><h2>Accepted samples</h2><svg id="histogram" viewBox="0 0 400 270" role="img" aria-label="수용된 샘플 전체의 밀도 히스토그램과 목표밀도"></svg></section></div>
+<div class="last"><output id="result">—</output><span>Z <span id="z">—</span></span><span>U <span id="u">—</span></span><span>H <span id="h">—</span></span><span>p(Z) <span id="p">—</span></span></div>
+<dl class="stats"><div><dt>Proposals</dt><dd id="total">0</dd></div><div><dt>Accepted</dt><dd id="accepted">0</dd></div><div><dt>Acceptance rate</dt><dd id="rate">—</dd></div><div><dt>Theory · 1/k</dt><dd id="theory">50.00%</dd></div></dl>
+<div class="seed"><button id="new-seed" type="button">New seed</button><span>Seed <output id="seed">404</output></span></div>
+<noscript>이 시연은 JavaScript가 필요합니다.</noscript>
+</main>
+<script type="module">
+import { createRejectionSampler } from './rejection-kernel.mjs';
+import { samplingSize } from './sampling-plot.mjs';
+const $ = id => document.getElementById(id);
+let k = 2, seed = 404, sampler = createRejectionSampler({k, seed});
+let playing = false, frame = 0, lastTime = null, remainder = 0, lastPaint = 0, dirty = false;
+function plotAxes(svg, ymax) {
+  const width = Math.max(260, svg.clientWidth), height = 270;
+  const left = 42, right = width - 14, top = 20, bottom = height - 38;
+  const x = z => left + (z + 1) / 2 * (right - left);
+  const y = h => bottom - h / ymax * (bottom - top);
+  const marks = [0,ymax/2,ymax].map(n=>`<line x1="${left}" x2="${right}" y1="${y(n)}" y2="${y(n)}" stroke="#e9ede4"/><text x="${left-7}" y="${y(n)+4}" text-anchor="end">${n.toFixed(2)}</text>`).join('')
+    + [-1,0,1].map(z=>`<text x="${x(z)}" y="${bottom+20}" text-anchor="middle">${z}</text>`).join('')
+    + `<text x="${(left+right)/2}" y="${height-1}" text-anchor="middle">z</text>`;
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  return {x,y,left,right,top,bottom,marks};
+}
+function render() {
+  const s = sampler.snapshot(), last = s.recent.at(-1);
+  $('k-value').textContent = k.toFixed(1); $('seed').textContent = seed;
+  $('total').textContent = s.proposals.toLocaleString('en-US'); $('accepted').textContent = s.accepted.toLocaleString('en-US');
+  $('rate').textContent = s.rate === null ? '—' : (100*s.rate).toFixed(2)+'%'; $('theory').textContent = (100*s.theoreticalRate).toFixed(2)+'%';
+  $('result').textContent = last ? (last.accepted ? 'Accepted' : 'Rejected') : '—';
+  $('result').className = last ? (last.accepted ? 'accepted' : 'rejected') : '';
+  for (const name of ['z','u','h']) $(name).textContent = last ? last[name].toFixed(4) : '—';
+  $('p').textContent = last ? last.density.toFixed(4) : '—';
+  const e = plotAxes($('envelope'), k/2*1.12), {x,y} = e;
+  const triangle = `M${x(-1)},${y(0)}L${x(0)},${y(1)}L${x(1)},${y(0)}`;
+  const dots = s.recent.map(point=>`<circle cx="${x(point.z)}" cy="${y(point.h)}" r="${point.index===s.proposals?4.5:2.5}" fill="${point.accepted?'#78946a':'#d9b58e'}" opacity="${point.index===s.proposals?1:.65}"${point.index===s.proposals?' stroke="#4c5447" stroke-width="1"':''}/>`).join('');
+  const candidate = last ? `<path d="M${x(last.z)},${y(0)}V${y(last.h)}" stroke="#aab2a4" stroke-dasharray="3 3"/>` : '';
+  $('envelope').innerHTML = `<g font-family="sans-serif" font-size="12" fill="#60665c">${e.marks}<text x="${e.left}" y="12">Height</text><path d="${triangle}Z" fill="#eef3e8"/><path d="M${e.left},${y(k/2)}H${e.right}" stroke="#747c70" stroke-width="1.5" stroke-dasharray="6 4"/>${candidate}<path d="${triangle}" fill="none" stroke="#78946a" stroke-width="2.5"/>${dots}</g>`;
+  const h = plotAxes($('histogram'), Math.max(1.2, ...s.density.map(v=>v*1.12)));
+  const bars = s.density.map((density,i)=>`<rect x="${h.x(-1+i*s.binWidth)+.5}" y="${h.y(density)}" width="${Math.max(0,(h.right-h.left)/s.counts.length-1)}" height="${h.y(0)-h.y(density)}" fill="#d5e3c8"/>`).join('');
+  $('histogram').innerHTML = `<g font-family="sans-serif" font-size="12" fill="#60665c">${h.marks}${bars}<path d="M${h.x(-1)},${h.y(0)}L${h.x(0)},${h.y(1)}L${h.x(1)},${h.y(0)}" fill="none" stroke="#78946a" stroke-width="2.5"/><text x="${h.left}" y="12">Density</text></g>`;
+  dirty = false;
+}
+function stop() {
+  playing = false; cancelAnimationFrame(frame); lastTime = null; remainder = 0;
+  $('play').textContent = 'Play'; $('step').disabled = false;
+}
+function reset() { stop(); sampler = createRejectionSampler({k, seed}); render(); }
+function tick(time) {
+  if (!playing) return;
+  if (lastTime !== null) {
+    remainder += Math.max(0, Math.min(250,time-lastTime)) * Number($('speed').value) / 1000;
+    const amount = Math.floor(remainder); remainder -= amount;
+    if (amount) { sampler.advance(amount); dirty = true; }
+  }
+  lastTime = time;
+  if (dirty && time-lastPaint >= 1000/30) { render(); lastPaint = time; }
+  frame = requestAnimationFrame(tick);
+}
+$('step').addEventListener('click',()=>{sampler.advance();render();});
+$('play').addEventListener('click',()=>{
+  if (playing) {stop();render();return;}
+  playing = true; lastTime = null; remainder = 0; lastPaint = 0;
+  $('play').textContent = 'Pause'; $('step').disabled = true; frame = requestAnimationFrame(tick);
+});
+$('reset').addEventListener('click',reset);
+$('k').addEventListener('input',event=>{k=Number(event.target.value);reset();});
+$('speed').addEventListener('change',()=>{lastTime=null;remainder=0;});
+$('new-seed').addEventListener('click',()=>{const next=crypto.getRandomValues(new Uint32Array(1))[0];seed=next===seed?(seed+1)>>>0:next;reset();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&playing){stop();render();}});
+window.addEventListener('pagehide',stop);
+let layoutWidth = 0;
+new ResizeObserver(()=>{const width=$('envelope').clientWidth;if(width!==layoutWidth){layoutWidth=width;render();}samplingSize();}).observe(document.querySelector('main'));
+render();
+</script>
+</body></html>
