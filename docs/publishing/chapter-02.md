@@ -2,7 +2,7 @@
 
 ## Scope and sources
 
-After the published 2.1 trial, the author authorized the same workflow for the entire handwritten Chapter 02, sections 2.1–2.11: manuscripts in the existing ChatGPT writing conversation, useful figures generated through the specified ChatGPT image conversation, then site publication. This explicit instruction supersedes the general one-or-two-section task limit. Section 2.1 remains published; all ten remaining manuscripts and seven new PNGs are now integrated locally and have passed source, mathematical, build and browser review. Their publication and public-page verification remain pending.
+After the published 2.1 trial, the author authorized the same workflow for the entire handwritten Chapter 02, sections 2.1–2.11: manuscripts in the existing ChatGPT writing conversation, useful figures generated through the specified ChatGPT image conversation, then site publication. This explicit instruction supersedes the general one-or-two-section task limit. Section 2.1 remains published; all ten remaining manuscripts and seven new PNGs are now integrated locally and have passed source, mathematical, build and browser review. They were merged in PR #32, deployed successfully, and verified on the actual public site. All eleven Chapter 02 sections are published; author review remains pending.
 
 - Handwritten source: `Ch2.pdf`, 9 physical pages (8 with content). SHA-256: `9eaa657e07ebce8945dc06fa7a450ddfa9e7782bfb312712ae4576daee29bc7a`.
 - Primary lecture: Kyungwoo Song, Yonsei University, `week2_1_pgm.pdf`. SHA-256: `283969e0b214cf77ecf2d3c514147547979dc14f2cc7631438da9b2276cb5c4d`.
@@ -16,16 +16,16 @@ Page numbers below are physical PDF pages, not a new outline. The complete handw
 | Section | Handwritten heading | Handwritten pages | Lecture pages | Status |
 | --- | --- | --- | --- | --- |
 | 2.1 | Why graphical models? | 1 | 2, 4 | Published and public-page verified; author review pending |
-| 2.2 | Joint, Marginal and Conditional distribution | 1 (“skip”) | 4, 9 as limited support | Manuscript imported; no figure; local QA passed; publication pending |
-| 2.3 | DAG (Directed Acyclic Graphs) | 1–2 | 5–6 | Manuscript and PNG imported; local QA passed; publication pending |
-| 2.4 | Factorization of a Directed Graphical Model | 3 | 7–8, 10 | Manuscript imported; no new figure; local QA passed; publication pending |
-| 2.5 | Conditional inference | 4 | 9 | Manuscript imported with discrete-scope clarification; no figure; local QA passed; publication pending |
-| 2.6 | The three fundamental structures | 4–5 | 11–19 | Manuscript and PNG imported; local QA passed; publication pending |
-| 2.7 | d-separation | 5–6 | 24–34 | Manuscript and corrected PNG imported; local QA passed; publication pending |
-| 2.8 | Bayes-Ball Reasoning | 6 | 20–23, 35–36 | Manuscript and both PNGs imported; local QA passed; publication pending |
-| 2.9 | Local and Global Markov interpretations | 7 | 10, 34, 49–51 | Manuscript and PNG imported; local QA passed; publication pending |
-| 2.10 | Observed and Latent Variables | 7 | 52; compare 54 | Manuscript and PNG imported with one notation/count correction; local QA passed; publication pending |
-| 2.11 | Mixture models as latent Variable | 8 | 3, 53–54 | Manuscript imported; no figure; local QA passed; publication pending |
+| 2.2 | Joint, Marginal and Conditional distribution | 1 (“skip”) | 4, 9 as limited support | Published and public-page verified; author review pending |
+| 2.3 | DAG (Directed Acyclic Graphs) | 1–2 | 5–6 | Published and public-page verified; author review pending |
+| 2.4 | Factorization of a Directed Graphical Model | 3 | 7–8, 10 | Published and public-page verified; author review pending |
+| 2.5 | Conditional inference | 4 | 9 | Published and public-page verified; author review pending |
+| 2.6 | The three fundamental structures | 4–5 | 11–19 | Published and public-page verified; author review pending |
+| 2.7 | d-separation | 5–6 | 24–34 | Published and public-page verified; author review pending |
+| 2.8 | Bayes-Ball Reasoning | 6 | 20–23, 35–36 | Published and public-page verified; author review pending |
+| 2.9 | Local and Global Markov interpretations | 7 | 10, 34, 49–51 | Published and public-page verified; author review pending |
+| 2.10 | Observed and Latent Variables | 7 | 52; compare 54 | Published and public-page verified; author review pending |
+| 2.11 | Mixture models as latent Variable | 8 | 3, 53–54 | Published and public-page verified; author review pending |
 
 Page 9 is blank. The full chapter was visually inspected to identify these boundaries. No unreadable or contradictory material was found in section 2.1.
 
@@ -66,7 +66,7 @@ No interactive component is needed for this short introductory section. Later to
 - On 2026-11-04, the actual public post was inspected at desktop width and loaded in a 390 px browser iframe. The full text, review notice, eight rendered math containers and PNG were present. At mobile width, document and scroll width were both 390 px, the image rendered at 350 px, and MathJax reported no errors. The published PNG was downloaded and its SHA-256 matched the original above.
 - The merged source contains exactly the intended note, PNG and publishing record; uploaded files matched the locally verified versions byte-for-byte.
 
-These results apply to the published 2.1 version, not to the unfinished chapter continuation. The author's own review remains pending.
+These results cover the earlier 2.1 publication. Completed whole-chapter verification is recorded below; the author's own review remains pending.
 
 ## Chapter continuation: imported manuscripts and assets
 
@@ -166,4 +166,12 @@ Independent source/math review passed for Categorical generation, Gaussian densi
 
 ## Chapter continuation: publication status
 
-Publication of sections 2.2–2.11, deployment verification and actual public-page review are pending. The successful earlier 2.1 publication is recorded separately above. All new notes retain `작성자 검토 전`; automated checks and publication do not establish the author's own review.
+- [PR #32](https://github.com/songofluna/academic-notes/pull/32) was squash-merged as [`36e90a0b52a225d9dd68d251351c6fcf91cefd9d`](https://github.com/songofluna/academic-notes/commit/36e90a0b52a225d9dd68d251351c6fcf91cefd9d).
+- Its [Check website run](https://github.com/songofluna/academic-notes/actions/runs/41745341295) passed.
+- Before the PR, remote upload head `395baf930ea78a2edebfb869fcbacbb4a59b0ab7` was fetched and all 18 blobs were compared byte-for-byte with the locally reviewed files. The exact diff was ten notes, seven PNGs and one record, based on unchanged main `7291824c300b7012bdc8908747f26d17c8ef6a20`, with no extra files.
+- The [Deploy website run](https://github.com/songofluna/academic-notes/actions/runs/41745423429) completed successfully.
+- On 2026-11-04 (Asia/Seoul), all eleven actual public Chapter 02 pages were loaded in browser iframes at 1280 px and 390 px. Each retained the review notice and rendered its expected mathematics: 519 math containers per viewport across the chapter, zero MathJax errors, and zero page-width overflow. The mobile checks found zero display equations wider than their text area. Evidence is saved in the task workspace as `work/chatgpt-source/public-desktop-qa.json` and `public-mobile-qa.json`.
+- All eight image URLs observed on those public pages returned HTTP 200 and were downloaded using ordinary HTTPS with certificate verification. Every public image SHA-256 matches its repository asset and the per-image hashes recorded above. The downloads and verification manifest are retained in `work/public-assets/`, including `sha256-verification.json`.
+- The actual public course listing contains all eleven Chapter 02 links in order, 2.1 through 2.11, within the 35-note site. The task-workspace screenshot `outputs/chapter-02-published.jpg` records that listing. Verification used fresh public browser contexts; no application code or cache policy was changed.
+
+The successful earlier 2.1 publication is recorded separately above. All new notes retain `작성자 검토 전`; automated checks and publication do not establish the author's own review.
