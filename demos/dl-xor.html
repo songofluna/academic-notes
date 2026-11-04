@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>XOR · input and hidden features</title></head><body><main>
+<h1>XOR · input and hidden features</h1>
+<p class="model" id="formula">h₁ = ReLU(x₁ + x₂), h₂ = ReLU(x₁ + x₂ − 1)<br>점수 s = h₁ − 2h₂ · 분류 ŷ = 1[s ≥ 0.5]</p>
+<div class="controls"><label for="view">공간</label><select id="view"><option value="input">입력 (x₁, x₂)</option><option value="hidden">Hidden feature (h₁, h₂)</option></select><label class="check-label"><input id="relu" type="checkbox" checked>ReLU 적용</label></div>
+<div class="legend" style="margin-top:12px"><span><i></i>정답 y = 0</span><span><i class="orange"></i>정답 y = 1</span><span><i class="gray"></i>s = 0.5</span></div>
+<svg id="plot" viewBox="0 0 480 330" role="img" aria-label="XOR 네 입력과 고정 신경망의 분류 경계"></svg>
+<div class="choice-row" aria-label="입력 선택"><button data-point="0" aria-pressed="true">(0, 0)</button><button data-point="1" aria-pressed="false">(1, 0)</button><button data-point="2" aria-pressed="false">(0, 1)</button><button data-point="3" aria-pressed="false">(1, 1)</button></div>
+<dl class="stats four" aria-live="polite"><div><dt>Hidden feature (h₁, h₂)</dt><dd id="hidden-value"></dd></div><div><dt>점수 s</dt><dd id="score"></dd></div><div><dt>선택 입력의 ŷ / 정답 y</dt><dd id="prediction"></dd></div><div><dt>네 입력 중 올바른 분류</dt><dd id="correct"></dd></div></dl>
+<p class="small" id="overlap">점은 정답, 배경은 예측 클래스 · 고정 가중치 예시</p>
+<noscript>이 도구는 JavaScript가 필요합니다.</noscript>
+</main><script type="module">
+import { dlXor, dlXorPoints } from './dl-neural-kernel.mjs';
+import { dlSetup, dlResize, dlNumber, dlAxes } from './dl-demo-ui.mjs';
+const $ = id => document.getElementById(id);
+let selected = 0;
+dlSetup();
+function render() {
+  const nonlinear = $('relu').checked, hidden = $('view').value === 'hidden', results = dlXorPoints.map(([x1,x2])=>dlXor([x1,x2],nonlinear)), current = results[selected];
+  $('formula').innerHTML = nonlinear ? 'h₁ = ReLU(x₁ + x₂), h₂ = ReLU(x₁ + x₂ − 1)<br>점수 s = h₁ − 2h₂ · 분류 ŷ = 1[s ≥ 0.5]' : 'h₁ = x₁ + x₂, h₂ = x₁ + x₂ − 1<br>같은 가중치 · s = 2 − x₁ − x₂ · ŷ = 1[s ≥ 0.5]';
+  $('hidden-value').textContent = `(${current.h.join(', ')})`; $('score').textContent = dlNumber(current.score,1); $('prediction').textContent = `${current.prediction} / ${dlXorPoints[selected][2]}`; $('correct').textContent = `${results.filter((r,i)=>r.prediction===dlXorPoints[i][2]).length} / 4`;
+  $('overlap').textContent = hidden ? '점은 정답, 배경은 예측 클래스. (1, 0)과 (0, 1)은 같은 feature (1, 0)에 겹친다. 고정 가중치이며 학습은 하지 않는다.' : '점은 정답, 배경은 예측 클래스. 고정된 가중치의 계산 예시이며 학습은 하지 않는다.';
+  document.querySelectorAll('[data-point]').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.point)===selected)));
+  const axes = dlAxes(hidden ? {xmin:-.25,xmax:2.25,ymin:-1.3,ymax:1.3,xTicks:[0,1,2],yTicks:[-1,0,1],xLabel:'h₁',yLabel:'h₂',height:330} : {xmin:-.2,xmax:1.2,ymin:-.2,ymax:1.2,xTicks:[0,.5,1],yTicks:[0,.5,1],xLabel:'x₁',yLabel:'x₂',height:330});
+  const {sx,sy,left,right,top,bottom} = axes, polygon = points=>points.map(([x,y])=>`${sx(x)},${sy(y)}`).join(' ');
+  let region = '', boundary = '';
+  if (hidden) {
+    region = `<rect x="${left}" y="${top}" width="${right-left}" height="${bottom-top}" fill="#eff3e9"/><polygon points="${polygon([[-.25,-1.3],[2.25,-1.3],[2.25,.875],[-.25,-.375]])}" fill="#f8f0e6"/>`;
+    boundary = `<path d="M${sx(-.25)},${sy(-.375)}L${sx(2.25)},${sy(.875)}"/>`;
+  } else {
+    region = `<polygon points="${polygon([[0,0],[1,0],[1,1],[0,1]])}" fill="#f8f0e6"/><polygon points="${polygon([[1,1],[.5,1],[1,.5]])}" fill="#eff3e9"/>`;
+    boundary = `<path d="M${sx(.5)},${sy(1)}L${sx(1)},${sy(.5)}"/>`;
+    if (nonlinear) {region += `<polygon points="${polygon([[0,0],[.5,0],[0,.5]])}" fill="#eff3e9"/>`; boundary += `<path d="M${sx(.5)},${sy(0)}L${sx(0)},${sy(.5)}"/>`;}
+  }
+  const groups = new Map();
+  results.forEach((result,i)=>{const coordinates = hidden ? result.h : result.input, key=coordinates.join(',');if(!groups.has(key))groups.set(key,{coordinates,indices:[]});groups.get(key).indices.push(i);});
+  let dots = '';
+  for (const {coordinates:[x,y],indices} of groups.values()) {
+    const px=sx(x),py=sy(y),color=dlXorPoints[indices[0]][2]?'#a77643':'#70944d',isSelected=indices.includes(selected),label=hidden?`h=(${x}, ${y})${indices.length>1?' · 2개':''}`:indices.map(i=>`(${dlXorPoints[i].slice(0,2).join(', ')})`).join(' / '),anchor=x>(hidden?1.5:.7)?'end':'start',offset=anchor==='end'?-10:10,dy=y>(hidden?.7:.7)?-12:25;
+    dots += `${isSelected?`<circle cx="${px}" cy="${py}" r="12" fill="none" stroke="#303338" stroke-width="1.5"/>`:''}<circle cx="${px}" cy="${py}" r="7" fill="${color}" stroke="#fff" stroke-width="2"/><text x="${px+offset}" y="${py+dy}" text-anchor="${anchor}" font-family="sans-serif" font-size="17" fill="#42483e">${label}</text>`;
+  }
+  $('plot').innerHTML = `${region}${axes.markup}<g stroke="#59625b" stroke-width="2" stroke-dasharray="7 5" fill="none">${boundary}</g>${dots}`;
+  $('plot').setAttribute('aria-label',hidden?'Hidden feature 공간: 두 양성 입력이 (1,0)에 겹치고 경계는 h1−2h2=0.5':'입력 공간: 네 XOR 입력과 현재 고정 신경망의 분류 경계');
+  requestAnimationFrame(dlResize);
+}
+for (const id of ['view','relu']) $(id).addEventListener('change',render);
+document.querySelectorAll('[data-point]').forEach(button=>button.addEventListener('click',()=>{selected=Number(button.dataset.point);render();}));
+render();
+</script></body></html>
