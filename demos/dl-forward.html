@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Forward propagation · one layer at a time</title></head><body><main>
+<h1>Forward propagation</h1>
+<p class="model">고정 network 2 → 3 → 1 · 모수 13개 · 입력만 변경</p>
+<div class="controls"><div class="slider"><label for="x1">x₁</label><input id="x1" type="range" min="-3" max="3" step="0.5" value="2"><output id="x1-value" for="x1"></output></div><div class="slider"><label for="x2">x₂</label><input id="x2" type="range" min="-3" max="3" step="0.5" value="-1"><output id="x2-value" for="x2"></output></div><button id="reset">원문 입력</button></div>
+<div class="step-buttons" aria-label="계산 단계"><button data-step="0" aria-pressed="true">1 · Affine</button><button data-step="1" aria-pressed="false">2 · ReLU</button><button data-step="2" aria-pressed="false">3 · Output</button><button data-step="3" aria-pressed="false">4 · Sigmoid</button></div>
+<section class="result-panel" aria-live="polite"><h2 id="stage-heading"></h2><div id="calculation"></div></section>
+<div class="step-actions"><button id="previous">← 이전 단계</button><button id="next">다음 단계 →</button></div>
+<dl class="stats three" aria-live="polite"><div><dt>Hidden activation a[1]</dt><dd id="hidden-value" style="font-size:18px"></dd></div><div><dt>Output logit z[2]</dt><dd id="logit"></dd></div><div><dt>예측 확률 σ(z[2])</dt><dd id="probability"></dd></div></dl>
+<noscript>이 도구는 JavaScript가 필요합니다.</noscript>
+</main><script type="module">
+import { dlForward } from './dl-neural-kernel.mjs';
+import { dlSetup, dlResize, dlNumber } from './dl-demo-ui.mjs';
+const $ = id => document.getElementById(id);
+let step = 0;
+dlSetup();
+function render() {
+  const result = dlForward([Number($('x1').value),Number($('x2').value)]), [x1,x2]=result.x;
+  $('x1-value').textContent=x1.toFixed(1);$('x2-value').textContent=x2.toFixed(1);
+  $('hidden-value').textContent=`(${result.a1.map(x=>dlNumber(x,2)).join(', ')})`;$('logit').textContent=dlNumber(result.z2);$('probability').textContent=dlNumber(result.probability,4);
+  $('previous').disabled=step===0;$('next').disabled=step===3;document.querySelectorAll('[data-step]').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.step)===step)));
+  const pair = value => value<0?`(${value.toFixed(1)})`:value.toFixed(1);
+  if(step===0){
+    $('stage-heading').textContent='z[1] = W[1]x + b[1]';
+    const terms=[`1 × ${pair(x1)} − 1 × ${pair(x2)} + 0`,`0.5 × ${pair(x1)} + 2 × ${pair(x2)} + 1`,`−1 × ${pair(x1)} + 1 × ${pair(x2)} + 0.5`];
+    $('calculation').innerHTML=terms.map((term,i)=>`<div class="calculation"><span>z${['₁','₂','₃'][i]}</span><span>${term}</span><strong>${dlNumber(result.z1[i],2)}</strong></div>`).join('');
+  }else if(step===1){
+    $('stage-heading').textContent='a[1] = ReLU(z[1])';
+    $('calculation').innerHTML=result.z1.map((z,i)=>`<div class="calculation"><span>a${['₁','₂','₃'][i]}</span><span>max(0, ${dlNumber(z,2)})</span><strong>${dlNumber(result.a1[i],2)}</strong></div>`).join('');
+  }else if(step===2){
+    $('stage-heading').textContent='z[2] = W[2]a[1] + b[2]';
+    $('calculation').innerHTML=`<p class="equation">0.8 × ${dlNumber(result.a1[0],2)}<br>− 0.4 × ${dlNumber(result.a1[1],2)}<br>+ 0.2 × ${dlNumber(result.a1[2],2)} − 1</p><p class="large">= ${dlNumber(result.z2)}</p>`;
+  }else{
+    $('stage-heading').textContent='ŷ = σ(z[2])';
+    $('calculation').innerHTML=`<p class="equation">1 / (1 + exp(−(${dlNumber(result.z2)})))</p><p class="large">= ${dlNumber(result.probability,4)}</p><div class="probability-bar" role="img" aria-label="예측 확률 ${dlNumber(result.probability,4)}"><span style="width:${100*result.probability}%"></span></div><p class="small">0 ≤ ŷ ≤ 1 · 이진 분류의 예측 확률</p>`;
+  }
+  requestAnimationFrame(dlResize);
+}
+for(const id of ['x1','x2'])$(id).addEventListener('input',render);
+document.querySelectorAll('[data-step]').forEach(button=>button.addEventListener('click',()=>{step=Number(button.dataset.step);render();}));
+$('previous').addEventListener('click',()=>{step=Math.max(0,step-1);render();});$('next').addEventListener('click',()=>{step=Math.min(3,step+1);render();});
+$('reset').addEventListener('click',()=>{$('x1').value='2';$('x2').value='-1';step=0;render();});
+render();
+</script></body></html>
