@@ -2,33 +2,33 @@
 
 ## Scope and source provenance
 
-The author authorized the entire handwritten Chapter 03 and then requested useful interactive components, roughly one per important article. The twelve original sections remain the outline. Manuscripts are drafted in the author's continuing ChatGPT writing conversation; completed responses are retained unchanged, with approved publication adaptations in separate working copies. The established `작성자 검토 전` notice remains on every imported note. All twelve manuscripts, the selected PNG and four interactive components are now integrated and have passed source, mathematical, local build and desktop/mobile review. Author review remains pending. Publication and public-page verification are separate pending steps.
+The author authorized the entire handwritten Chapter 03 and then requested useful interactive components, roughly one per important article. The twelve original sections remain the outline. Manuscripts are drafted in the author's continuing ChatGPT writing conversation; completed responses are retained unchanged, with approved publication adaptations in separate working copies. The established `작성자 검토 전` notice remains on every imported note. All twelve manuscripts, the selected PNG and four interactive components passed source, mathematical, local build and desktop/mobile review, were merged in PR #33, and were deployed successfully. All twelve articles and four components have now been verified on the actual public site. Author review remains pending.
 
 - Handwritten source: `Ch3.pdf`, 16 physical pages; SHA-256 `e990bd67437233c739f49239908aac4190039000f41527e7d1e45037f1db6fd1`. Pages 1 and 16 are blank; p15 recaps existing material and is not a new section.
 - Primary lecture: Kyungwoo Song, Yonsei University, `week2_1_vi.pdf`, 80 physical pages; SHA-256 `4f891803f571d38296635b8643de9b892fe5596c6914d8783b132b3241af527a`. Additional lecture EM examples outside the handwritten outline are excluded.
 - Internal source map: `work/ch03-source-map.md`; handwritten pp11–13 form the mathematical supplement within 3.10. Both handwritten formulas and corresponding rendered lecture pages were reviewed; source errors are corrected in the manuscript, not treated as instructions.
 - [Writing conversation](https://chatgpt.com/c/6aea6c67-c6b8-83ee-b53e-0b29c2add537), continued from the author's [shared writing context](https://chatgpt.com/share/6aea6a9a-1f04-83ec-917e-de7dba704b78).
-- Any selected static figures must be generated in the [designated ChatGPT image conversation](https://chatgpt.com/c/6aea6e49-e86c-83ee-bb10-5ef0f1a282c0), continuing the [shared image context](https://chatgpt.com/share/6aea6dc0-ee6c-83ee-8037-06ddd1e95476). Original downloaded bytes, prompts and hashes will be recorded when imported. The single selected shared-encoder image has now been imported unchanged and independently reviewed.
+- Any selected static figures must be generated in the [designated ChatGPT image conversation](https://chatgpt.com/c/6aea6e49-e86c-83ee-bb10-5ef0f1a282c0), continuing the [shared image context](https://chatgpt.com/share/6aea6dc0-ee6c-83ee-8037-06ddd1e95476). Original downloaded bytes, prompts and hashes are recorded below. The single selected shared-encoder image has now been imported unchanged and independently reviewed.
 - Isolated implementation branch: `codex/ch03-chatgpt-20261104`, based on main `83cbc2dbe12f62e601489fcbb21535a7c5148ed4`. Existing chapters and unrelated worktrees are preserved.
 
 ## Section status
 
-All page numbers are physical PDF pages. Source review is complete for the outline; each completed manuscript receives a separate source/math review before import.
+All page numbers are physical PDF pages. Source and mathematical reviews are complete for all twelve manuscripts; publication and actual public-page verification are also complete.
 
 | Section | Handwritten heading | Handwritten pages | Supporting lecture pages | Current state |
 | --- | --- | --- | --- | --- |
-| 3.1 | Why Does Inference Become Intractable? | 2 upper | 3–5, 8 | Imported; source/math and desktop/mobile reviewed; publication pending |
-| 3.2 | Latent marginal likelihood | 2 middle | 3–5 | Imported; source/math and desktop/mobile reviewed; publication pending |
-| 3.3 | Approximate Posterior q(z) | 2 lower | 8, 18–20, 23–27 | Imported; source/math and desktop/mobile reviewed; publication pending |
-| 3.4 | Convexity, Concavity, Jensen’s inequality | 3 upper | 9–15 | Imported; source/math and desktop/mobile reviewed; publication pending |
-| 3.5 | Deriving the Evidence Lower Bound | 3 lower | 15–17, 25–26, 30 | Imported; source/math and desktop/mobile reviewed; publication pending |
-| 3.6 | ELBO and the true Posterior | 4–5 | 18–24, 63–68 | Imported; source/math and desktop/mobile reviewed; publication pending |
-| 3.7 | The ELBO Gap as a KL Divergence | 6 | 21–24, 30–32; exact example handwritten | Imported; source/math and desktop/mobile reviewed; publication pending |
-| 3.8 | Variational Families | 7 | 26–27, 31–33 | Imported; source/math and desktop/mobile reviewed; publication pending |
-| 3.9 | Mean-Field Variational Inference (MFVI) | 8 upper | 28–34 | Imported; source/math and desktop/mobile reviewed; publication pending |
-| 3.10 | Coordinate Ascent Variational Inference (CAVI) | 8 lower–13 | 33–51 | Imported; source/math and desktop/mobile reviewed; publication pending |
-| 3.11 | Amortized Variational Inference | 14 upper | 26–27; encoder detail handwritten | Imported; source/math and desktop/mobile reviewed; publication pending |
-| 3.12 | Monte Carlo Estimation of the ELBO | 14 lower | 7, 26, 29; detailed estimator handwritten | Imported; source/math and desktop/mobile reviewed; publication pending |
+| 3.1 | Why Does Inference Become Intractable? | 2 upper | 3–5, 8 | Published and public-page verified; author review pending |
+| 3.2 | Latent marginal likelihood | 2 middle | 3–5 | Published and public-page verified; author review pending |
+| 3.3 | Approximate Posterior q(z) | 2 lower | 8, 18–20, 23–27 | Published and public-page verified; author review pending |
+| 3.4 | Convexity, Concavity, Jensen’s inequality | 3 upper | 9–15 | Published and public-page verified; author review pending |
+| 3.5 | Deriving the Evidence Lower Bound | 3 lower | 15–17, 25–26, 30 | Published and public-page verified; author review pending |
+| 3.6 | ELBO and the true Posterior | 4–5 | 18–24, 63–68 | Published and public-page verified; author review pending |
+| 3.7 | The ELBO Gap as a KL Divergence | 6 | 21–24, 30–32; exact example handwritten | Published and public-page verified; author review pending |
+| 3.8 | Variational Families | 7 | 26–27, 31–33 | Published and public-page verified; author review pending |
+| 3.9 | Mean-Field Variational Inference (MFVI) | 8 upper | 28–34 | Published and public-page verified; author review pending |
+| 3.10 | Coordinate Ascent Variational Inference (CAVI) | 8 lower–13 | 33–51 | Published and public-page verified; author review pending |
+| 3.11 | Amortized Variational Inference | 14 upper | 26–27; encoder detail handwritten | Published and public-page verified; author review pending |
+| 3.12 | Monte Carlo Estimation of the ELBO | 14 lower | 7, 26, 29; detailed estimator handwritten | Published and public-page verified; author review pending |
 
 ## Manuscript adaptations and integrity
 
@@ -37,12 +37,12 @@ Raw completed ChatGPT responses reside in `work/ch03-chatgpt-source/ch03-3N-orig
 - 3.1: clarify the opening phrase “데이터를 생성하는 확률은 쉽게 계산할 수 있어도” as “관측값과 잠재변수 값이 함께 주어졌을 때 결합분포의 값은 쉽게 계산할 수 있어도”, distinguishing evaluation of the joint density from marginalization. The authoring agent approved this mathematically necessary clarification; the original response is unchanged.
 - 3.2–3.5: source/math review passed without prose changes. Section 3.4 retains its single `[demo:jensen-log]` marker.
 - 3.5: a render-only adaptation splits the three terms inside the expectation brackets across two aligned rows. Its original 392.55 px width exceeded the 350 px mobile text area; every term and later equality is preserved.
-- 3.7–3.8: source/math review passed without prose changes; no figures or demos are added. In 3.7 only, render-only aligned rows separate the mean/covariance definitions and the left side of the final optimum-KL substitution (initial 375.08 and385.45 px widths against 350 px available). All mathematical content is preserved.
+- 3.7–3.8: source/math review passed without prose changes; no figures or demos are added. In 3.7 only, render-only aligned rows separate the mean/covariance definitions and the left side of the final optimum-KL substitution (initial 375.08 and 385.45 px widths against 350 px available). All mathematical content is preserved.
 - 3.6: remove “첫 번째 등식이 아니라” from the sentence about the final equality in the EM likelihood chain; its first relation is an inequality. Formulas and all other prose remain unchanged, and the raw response is retained.
 
 - 3.9: replace the description of diagonal Gaussian contours as “parallel to the coordinate axes” with the precise statement that this example’s optimal diagonal Gaussian has equal variances and circular contours. This is the distribution actually shown by the demo; raw text is retained.
 
-- 3.10: both source reviewers passed the entire CAVI derivation, Gaussian example and p11–13 functional/Euler–Lagrange supplement without corrections. Its length follows the source’s six-page section rather than expanding the outline. One CAVI demo is retained; no static figure is needed. Three later render-only aligned line breaks separate left and right sides in the KL substitution, Gaussian log density and first variation (initial 357.375,355.352,401.398 px against 350 px available); all terms and signs remain unchanged.
+- 3.10: both source reviewers passed the entire CAVI derivation, Gaussian example and p11–13 functional/Euler–Lagrange supplement without corrections. Its length follows the source’s six-page section rather than expanding the outline. One CAVI demo is retained; no static figure is needed. Three later render-only aligned line breaks separate left and right sides in the KL substitution, Gaussian log density and first variation (initial 357.375, 355.352, 401.398 px against 350 px available); all terms and signs remain unchanged.
 
 - 3.11: source/math review passed without prose changes. A figure link replaces the marker in a working copy for local math QA, retaining the original caption. The actual shared-encoder PNG was then imported unchanged and passed both visual reviewers and desktop/mobile rendered-page checks.
 
@@ -82,12 +82,21 @@ The author's explicit interactive request authorizes these code components; it d
 
 The Gaussian and Jensen kernels are dependency-free. The new demos use the existing lazy iframe, resize message and portable-preview architecture; existing demos remain registered. Static site build copies the modules and HTML without a new dependency.
 
-## Local verification and publication state
+## Local verification
 
 - The repository's full check command passed all **64 tests**, including five new mathematical-kernel tests, and built **47 notes**. Exact output is retained in `work/ch03-chatgpt-source/full-check.log`. The 35 existing notes are preserved.
 - All twelve Chapter 03 articles passed at **1280 px desktop and 390 px mobile**: 586 math containers at each width, zero MathJax errors, zero overwide display equations and zero page overflow. Every article retains its author-review notice. Evidence: `desktop-qa.json`, `early-mobile-qa.json`, `middle-mobile-qa.json`, `cavi-mobile-qa.json`, `last-mobile-qa.json` in the task's `work/ch03-chatgpt-source/` directory, with final rechecks superseding earlier width findings.
 - All four interactive controls passed. Jensen endpoint weights give zero gap. The family selector changes between mean-field variance 0.36 / KL 0.5108 and full covariance variance 1 / KL 0 at ρ=0.8. Sequential CAVI gives means (0.8,1), then (0.8,0.64), with KL decreasing and the residual family gap preserved. MC seed 312 gives −0.3379 at L=30, −0.5105 at L=10000 with SE=0.0080; returning to L=30 reproduces the same prefix, and seed 313 changes the sequence.
 - Embedded mobile frames fit 350 px without internal overflow. Desktop frames are 782 px wide with plots capped at 480 px: Jensen height 562 px, Gaussian family and CAVI 696 px, MC 609 px. The image is 1672 × 941 px and renders at 782 px desktop and 350 × 197 px mobile; shared-φ label, row labels, arrows and caption were visually legible.
-- An independent source reviewer passed the Gaussian/Jensen kernels, CAVI/MC interpretation and app/portable-preview integration (`work/ch03-source/interactive-math-review.md`). Shortcodes load lazily and remain literal in code fences. All four packed modules parse without unresolved imports. The final portable preview also passed actual browser checks at 390 px viewport/350 px frames: all four srcdoc demos rendered with correct headings/default statistics, no internal overflow, and the MC sample-size control updated correctly (`portable-browser-qa.json`).
+- An independent source reviewer passed the Gaussian/Jensen kernels, CAVI/MC interpretation and app/portable-preview integration (`work/ch03-source/interactive-math-review.md`). Shortcodes load lazily and remain literal in code fences. All four packed modules parse without unresolved imports. The final portable preview also passed actual browser checks at 390 px viewport/350 px frames: all four srcdoc demos rendered with correct headings/default statistics, no internal overflow, and all four controls changed their outputs correctly (`portable-browser-qa.json`, `portable-controls-qa.json`).
 - Final independent content-integrity review passed for all twelve raw/note hash pairs and direct diffs: only three approved wording clarifications, formula wraps in three sections and the single PNG binding differ. Four demo markers, one image and no unresolved figure markers are present; PNG bytes match the download (`work/ch03-source/final-content-integrity-review.md`).
-- Ten implementation files (app, preview script, kernel test and seven demo files) were uploaded to review branch head `7096f03b81b17401851ba8f0e972758e501b88ec`; all ten remote blobs matched local bytes (`remote-code-check.json`). The final 24-file source comparison, PR/merge, deployment and public-page checks remain pending. Branch uploads are not public deployment evidence; author review will remain pending after technical publication.
+## Publication and public verification
+
+- The final review branch head `25f7a380415b9a24a004cba7f91257e08180a335` contained exactly the intended **24 changed files**: twelve notes, one PNG, seven demo files, app integration, the portable-preview script, one kernel-test file and this record. Every uploaded blob matched the reviewed local bytes and manifest; no unrelated files were included (`work/ch03-chatgpt-source/remote-final-source-check.json`).
+- [PR #33](https://github.com/songofluna/academic-notes/pull/33) was merged on **2026-11-04 at 01:14:28 UTC** as [`764b593d9428e3d189fd2c09fb59ebba26b62d73`](https://github.com/songofluna/academic-notes/commit/764b593d9428e3d189fd2c09fb59ebba26b62d73). The [Check website run](https://github.com/songofluna/academic-notes/actions/runs/41752573080) and [publication Deploy website run](https://github.com/songofluna/academic-notes/actions/runs/41752671211) both completed successfully.
+- All twelve actual public articles passed at **1280 px desktop and 390 px mobile**, with **586 math containers at each width**, zero MathJax errors, zero overwide equations, zero page overflow and all author-review notices retained. The public course list contains sections 3.1–3.12 in the correct order. Evidence: `public-desktop-qa.json` and `public-mobile-qa.json` in `work/ch03-chatgpt-source/`.
+- All four public interactive frames were exercised at 350 px width with no internal overflow (`public-controls-qa.json`): Jensen endpoint gap 0; full-covariance Gaussian KL 0 and variance 1; two sequential CAVI updates gave means (0.8,0.64), KL 0.8308 and update count 2; MC at L=10000 gave −0.5105 with standard error 0.0080. These were interactions with the deployed components, separate from local or portable-preview checks.
+- Ten deployed files matched the reviewed build byte-for-byte: `site-data.js`, `app.js`, the PNG and all seven demo HTML/module files (`public-asset-check.json`). The public PNG SHA-256 is `d6bc6ac10cfb70982128fcb82d86368a5f41cb7aa18610fa0a4390f7cadb3bff`, identical to the original ChatGPT download. A separate visible public-page figure check confirmed natural width 1672 px and a 350 × 197 px mobile rendering, with the Shared φ label, three row mappings, arrows and caption legible. The earlier per-route math snapshots preceded this image-loading check.
+- [Public course](https://songofluna.github.io/academic-notes/#/courses/generative-models) and [published CAVI article](https://songofluna.github.io/academic-notes/#/notes/gm-ch03-310). A 1280 px screenshot of the actual public CAVI page is retained as `outputs/chapter-03-published.png`.
+
+Technical publication and public verification are complete. The author's own review remains pending, and the `작성자 검토 전` notice is preserved on every article.
