@@ -124,7 +124,7 @@
   function viDemoHtml(name) {
     return `<div class="mh-embed-wrap"><iframe class="mh-embed" data-vi-demo="${name}" data-src="demos/${name}.html" loading="lazy" title="${viDemoTitles[name]}" referrerpolicy="same-origin" scrolling="no"></iframe></div>`;
   }
-  const samplingDemoTitles = {'monte-carlo-se':'Monte Carlo standard error', 'markov-chain':'Markov stationary distributions', 'gibbs-gaussian':'Gaussian Gibbs conditional draws', 'mcmc-mixing':'Autocorrelation and effective sample size', 'langevin-bias':'Gaussian ULA stationary variance'};
+  const samplingDemoTitles = {'rejection-sampling':'Rejection Sampling Explorer', 'monte-carlo-se':'Monte Carlo standard error', 'markov-chain':'Markov stationary distributions', 'gibbs-gaussian':'Gaussian Gibbs conditional draws', 'mcmc-mixing':'Autocorrelation and effective sample size', 'langevin-bias':'Gaussian ULA stationary variance'};
   function samplingDemoHtml(name) {
     return `<div class="mh-embed-wrap"><iframe class="mh-embed" data-sampling-demo="${name}" data-src="demos/${name}.html" loading="lazy" title="${samplingDemoTitles[name]}" referrerpolicy="same-origin" scrolling="no"></iframe></div>`;
   }
@@ -281,7 +281,7 @@
       if(/^\[demo:wavenet-dilation\]$/i.test(s)){flushPara();flushList();html+=wavenetDemoHtml();continue;}
       const viDemo=s.match(/^\[demo:(jensen-log|variational-gaussian|cavi-gaussian|monte-carlo-elbo)\]$/i);
       if(viDemo){flushPara();flushList();html+=viDemoHtml(viDemo[1].toLowerCase());continue;}
-      const samplingDemo=s.match(/^\[demo:(monte-carlo-se|markov-chain|gibbs-gaussian|mcmc-mixing|langevin-bias)\]$/i);
+      const samplingDemo=s.match(/^\[demo:(rejection-sampling|monte-carlo-se|markov-chain|gibbs-gaussian|mcmc-mixing|langevin-bias)\]$/i);
       if(samplingDemo){flushPara();flushList();html+=samplingDemoHtml(samplingDemo[1].toLowerCase());continue;}
       const ul=s.match(/^[-*]\s+(.+)$/),ol=s.match(/^\d+\.\s+(.+)$/);
       if(ul||ol){flushPara();const type=ul?'ul':'ol';if(list.length&&type!==listType)flushList();listType=type;list.push((ul||ol)[1]);continue;}
