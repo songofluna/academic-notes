@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ULA · stationary variance bias</title><style>*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;background:#fff;color:#303338;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{padding:12px 1px}h1{font-size:23px;font-weight:600;letter-spacing:-.025em;margin:0 0 10px}.model{font-size:14px;color:#626a5d;margin:0 0 12px}.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:#5b6159}.legend span{display:flex;align-items:center;gap:6px}.legend i{width:23px;height:0;border-top:3px solid #70944d;display:inline-block}.legend .target{border-top:2px dashed #59625b}.legend .interval{border-color:#a77441}svg{display:block;width:100%;max-width:480px;height:auto;margin:8px auto 12px}.controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap;border-top:1px solid #e4e7e1;padding-top:14px}.slider{display:grid;grid-template-columns:44px minmax(90px,1fr) 44px;align-items:center;gap:10px;width:100%}input[type=range]{width:100%;accent-color:#70944d;min-height:36px;margin:0}output{font-variant-numeric:tabular-nums;text-align:right}button,select{font:inherit;color:inherit;background:#fff;border:1px solid #cfd6c8;padding:7px 10px;border-radius:0;min-height:40px;max-width:100%}button{cursor:pointer}button:hover{background:#f3f6ef}button:disabled{opacity:.5;cursor:default}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #73924f;outline-offset:3px}.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;border-top:1px solid #e4e7e1;margin:16px 0 0;padding:14px 0 0}.stats dt{color:#6b7265;font-size:12px}.stats dd{margin:4px 0 0;font-variant-numeric:tabular-nums;font-size:20px;overflow-wrap:anywhere}.seed{font-size:12px;color:#6b7265;margin-left:auto}.matrix-line{display:flex;align-items:center;justify-content:center;gap:10px;margin:10px 0;font-size:14px}.matrix{border-left:1px solid #919a8a;border-right:1px solid #919a8a;border-collapse:collapse;font-variant-numeric:tabular-nums}.matrix td{padding:1px 9px;text-align:right}.mini-heading{font-size:12px;color:#6b7265;margin:4px 0 0}.interval-value{font-size:17px!important}@media(min-width:600px){.controls .slider{flex:1 1 180px;width:auto}.stats.four{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:420px){h1{font-size:21px}.legend{gap:12px;font-size:12px}button,select{font-size:14px}.stats dd{font-size:18px}}</style></head><body><main>
+<h1>ULA · stationary variance bias</h1>
+<p class="model">Xₖ₊₁ = (1−η) Xₖ + √(2η) εₖ<br>εₖ iid~N(0, 1) · 0 &lt; η &lt; 2</p>
+<div class="legend"><span><i class="target"></i>목표 N(0, 1)</span><span><i></i>ULA의 정확한 정상분포</span></div>
+<svg id="plot" viewBox="0 0 480 290" role="img" aria-label="표준정규 목표밀도와 ULA의 이산화된 정상 Gaussian 밀도 비교"></svg>
+<div class="controls"><div class="slider"><label for="eta">η</label><input id="eta" type="range" min="0.02" max="1.9" step="0.02" value="0.5"><output id="eta-value" for="eta"></output></div></div>
+<dl class="stats" aria-live="polite"><div><dt>목표 분산</dt><dd>1.0000</dd></div><div><dt>ULA 분산 · 1/(1−η/2)</dt><dd id="variance"></dd></div></dl>
+<noscript>이 시연은 JavaScript가 필요합니다.</noscript>
+</main><script type="module">
+import { ulaStationary } from './sampling-kernel.mjs';
+import { samplingSize, samplingNumber, samplingPlot } from './sampling-plot.mjs';
+const $=id=>document.getElementById(id);
+function render(){
+ const s=ulaStationary(Number($('eta').value));$('eta-value').textContent=s.eta.toFixed(2);$('variance').textContent=samplingNumber(s.variance);
+ const bound=Math.max(4,Math.ceil(3.5*s.sd)),density=(x,v)=>Math.exp(-x*x/(2*v))/Math.sqrt(2*Math.PI*v),curve=v=>Array.from({length:401},(_,i)=>{const x=-bound+2*bound*i/400;return[x,density(x,v)];});
+ samplingPlot($('plot'),{xmin:-bound,xmax:bound,ymin:0,ymax:.42,xTicks:[-bound,-bound/2,0,bound/2,bound],yTicks:[0,.1,.2,.3,.4],series:[{values:curve(s.variance)},{values:curve(1),color:'#59625b',dashed:true,width:2}],xLabel:'x'});requestAnimationFrame(samplingSize);
+}
+$('eta').addEventListener('input',render);
+new ResizeObserver(samplingSize).observe(document.querySelector('main'));
+render();
+</script></body></html>
