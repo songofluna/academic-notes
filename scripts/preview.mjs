@@ -36,9 +36,8 @@ const wavenetKernel=(await readFile(join(root,'demos/wavenet-kernel.mjs'),'utf8'
 const wavenetDemo=(await readFile(join(root,'demos/wavenet-dilation.html'),'utf8'))
   .replace("import { dilatedGraph } from './wavenet-kernel.mjs';",()=>wavenetKernel);
 data+='\nwindow.WAVENET_DEMO_SRCDOC = '+JSON.stringify(wavenetDemo).replace(/</g,'\\u003c')+';\n';
-const chapter3Demos = {};
-for (const name of ['jensen-log', 'variational-gaussian', 'cavi-gaussian', 'monte-carlo-elbo']) {
-  let source = await readFile(join(root, `demos/${name}.html`), 'utf8');
+async function packDemo(name) {
+  const source = await readFile(join(root, `demos/${name}.html`), 'utf8');
   const inlined = new Set();
   const inlineModules = async text => {
     const imports = [...text.matchAll(/^import \{[^}]+\} from '(\.\/[^']+\.mjs)';$/gm)];
@@ -53,9 +52,14 @@ for (const name of ['jensen-log', 'variational-gaussian', 'cavi-gaussian', 'mont
     }
     return text;
   };
-  chapter3Demos[name] = await inlineModules(source);
+  return inlineModules(source);
 }
+const chapter3Demos = {};
+for (const name of ['jensen-log', 'variational-gaussian', 'cavi-gaussian', 'monte-carlo-elbo']) chapter3Demos[name] = await packDemo(name);
 data += '\nwindow.CHAPTER3_DEMO_SRCDOC = ' + JSON.stringify(chapter3Demos).replace(/</g, '\\u003c') + ';\n';
+const chapter4Demos = {};
+for (const name of ['monte-carlo-se', 'markov-chain', 'gibbs-gaussian', 'mcmc-mixing', 'langevin-bias']) chapter4Demos[name] = await packDemo(name);
+data += '\nwindow.CHAPTER4_DEMO_SRCDOC = ' + JSON.stringify(chapter4Demos).replace(/</g, '\\u003c') + ';\n';
 const img=await readFile(join(root,'assets','hero-photo.webp'));
 const inlineImage='data:image/webp;base64,'+img.toString('base64');
 // site config references to /assets work in the packed HTML without companion files.
