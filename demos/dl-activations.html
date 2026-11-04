@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Activation · value and local slope</title></head><body><main>
+<h1>Activation · value and local slope</h1>
+<p class="model" id="formula"></p>
+<div class="legend"><span><i></i>g(z)</span><span><i class="orange"></i>선택한 입력</span><span><i class="gray"></i>접선</span></div>
+<svg id="plot" viewBox="0 0 480 320" role="img" aria-label="선택한 활성함수 곡선, 입력의 함수값과 접선"></svg>
+<div class="controls"><label for="activation">함수</label><select id="activation"><option value="sigmoid">Sigmoid</option><option value="tanh">Tanh</option><option value="relu">ReLU</option><option value="leaky-relu">Leaky ReLU</option><option value="identity">Identity</option><option value="step">Unit step</option></select><button id="zero">z = 0</button><div class="slider"><label for="input">z</label><input id="input" type="range" min="-5" max="5" step="0.1" value="1"><output id="input-value" for="input"></output></div><div class="slider" id="alpha-control" hidden><label for="alpha">α</label><input id="alpha" type="range" min="0.01" max="0.3" step="0.01" value="0.01"><output id="alpha-value" for="alpha"></output></div></div>
+<dl class="stats" aria-live="polite"><div><dt>출력 g(z)</dt><dd id="value"></dd></div><div><dt>수학적 기울기 g′(z)</dt><dd id="derivative"></dd></div></dl>
+<p class="small" id="kink" hidden>z = 0에서는 좌·우 기울기가 달라 미분할 수 없다.</p>
+<noscript>이 도구는 JavaScript가 필요합니다.</noscript>
+</main><script type="module">
+import { dlActivation } from './dl-neural-kernel.mjs';
+import { dlSetup, dlResize, dlNumber, dlAxes } from './dl-demo-ui.mjs';
+const $ = id => document.getElementById(id);
+dlSetup();
+function render() {
+  const name = $('activation').value, z = Number($('input').value), alpha = Number($('alpha').value), result = dlActivation(name, z, alpha);
+  $('input-value').textContent = z.toFixed(1); $('alpha-value').textContent = alpha.toFixed(2); $('alpha-control').hidden = name !== 'leaky-relu';
+  $('formula').textContent = ({identity: 'g(z) = z', step: 'g(z) = 1{z > 0} · g(0) = 0', sigmoid: 'g(z) = 1 / (1 + exp(−z))', tanh: 'g(z) = tanh(z)', relu: 'g(z) = max(0, z)', 'leaky-relu': `g(z) = max(${alpha.toFixed(2)}z, z)`})[name];
+  $('value').textContent = dlNumber(result.value); $('derivative').textContent = result.derivative === null ? '정의되지 않음' : dlNumber(result.derivative,4); $('kink').hidden = result.derivative !== null;
+  $('kink').textContent = name === 'step' ? 'z = 0에서는 불연속이므로 미분할 수 없다. g(0) = 0으로 정의한다.' : 'z = 0에서는 좌·우 기울기가 달라 미분할 수 없다.';
+  const bounds = name === 'sigmoid' || name === 'step' ? [-.12,1.12,[0,.5,1]] : name === 'tanh' ? [-1.2,1.2,[-1,0,1]] : name === 'identity' ? [-5.5,5.5,[-5,0,5]] : [-1.8,5.5,[-1,0,2,4]];
+  const axes = dlAxes({xmin:-5,xmax:5,ymin:bounds[0],ymax:bounds[1],xTicks:[-5,0,5],yTicks:bounds[2],xLabel:'z',yLabel:'g(z)'}), {sx,sy,left,right,top,bottom} = axes;
+  const curve = name === 'step' ? `M${sx(-5)},${sy(0)}H${sx(0)}M${sx(0)},${sy(1)}H${sx(5)}` : Array.from({length:301},(_,i)=>{const x = -5 + i/30; return `${i?'L':'M'}${sx(x)},${sy(dlActivation(name,x,alpha).value)}`;}).join(' ');
+  const endpoints = name === 'step' ? `<circle cx="${sx(0)}" cy="${sy(1)}" r="5" fill="#fff" stroke="#70944d" stroke-width="2"/><circle cx="${sx(0)}" cy="${sy(0)}" r="5" fill="#70944d"/>` : '';
+  const tangent = result.derivative === null ? '' : `<path d="M${sx(z-1.1)},${sy(result.value-1.1*result.derivative)}L${sx(z+1.1)},${sy(result.value+1.1*result.derivative)}" stroke="#59625b" stroke-width="2" stroke-dasharray="7 5"/>`;
+  $('plot').innerHTML = `<defs><clipPath id="clip"><rect x="${left}" y="${top}" width="${right-left}" height="${bottom-top}"/></clipPath></defs>${axes.markup}<g clip-path="url(#clip)"><path d="${curve}" fill="none" stroke="#70944d" stroke-width="3"/>${tangent}${endpoints}<path d="M${sx(z)},${sy(0)}L${sx(z)},${sy(result.value)}" stroke="#a77643" stroke-dasharray="4 4"/><circle cx="${sx(z)}" cy="${sy(result.value)}" r="6" fill="#a77643"/></g>`;
+  requestAnimationFrame(dlResize);
+}
+for (const id of ['activation','input','alpha']) $(id).addEventListener('input',render);
+$('zero').addEventListener('click',()=>{$('input').value='0';render();});
+render();
+</script></body></html>
