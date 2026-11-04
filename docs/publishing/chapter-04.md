@@ -1,0 +1,88 @@
+# Chapter 04 publishing record
+
+## Scope and source provenance
+
+The author authorized the entire handwritten Chapter 4 and requested active use of useful figures and interactive components, reuse of the existing MH simulator, and a brief HMC section. The original 14-section outline is preserved. These instructions override the general guide's one/two-section and default-zero-visual limits. Manuscripts and static-image prompts come from the actual continuing ChatGPT writing conversation; static figures come from the designated ChatGPT image conversation. No publication is claimed for unfinished items, and author review remains pending.
+
+- Handwritten source: `Ch4.pdf`, 20 physical pages, no blank pages; SHA-256 `0474d37e9e3b170cd9aba815ee8471b28f8882748ceccddcc95d61370a7336bc`. Original chapter title: `Monte Carlo and Markov Chain Monte Carlo`.
+- Primary lecture: Kyungwoo Song, Yonsei University, `week3_1_mcmc.pdf`, 127 physical pages; SHA-256 `f63007daefd5cbeaa43c38c484f3c3382bb276e0f80c1c44ff085c87ce08cc7c`. The VI/GMM remainder and inverse-transform topic outside the handwritten outline are not expanded into new articles. The long lecture HMC portion is limited to the three handwritten questions in 4.14.
+- Complete page/section and mathematical correction map: `work/ch04-source-map.md`, with independent late-section review in `work/ch04-source/late-notes.md`. Source PDFs remain outside the published repository.
+- [Writing conversation](https://chatgpt.com/c/6aea6c67-c6b8-83ee-b53e-0b29c2add537), continuing the author's [shared writing context](https://chatgpt.com/share/6aea6a9a-1f04-83ec-917e-de7dba704b78); [image conversation](https://chatgpt.com/c/6aea6e49-e86c-83ee-bb10-5ef0f1a282c0), continuing the [shared image context](https://chatgpt.com/share/6aea6dc0-ee6c-83ee-8037-06ddd1e95476).
+- Fresh independent checkout/branch: `codex/ch04-chatgpt-20261104`, based on main `a88063d33bdf88f0a17c607a0ce9288a3fff25a3`. Existing Chapter 3/source files and all unrelated checkouts are preserved. There were 47 published notes and no Chapter 4 notes/assets at preparation.
+
+## Section status
+
+All page numbers are physical PDF pages. A source-map review is distinct from completed-response review, rendering review and publication.
+
+| Section | Handwritten pages | Supporting lecture pages | Current state |
+| --- | --- | --- | --- |
+| 4.1 Expectations as integrals | p1 | p37; 배경 p34–36 | Imported; source/math, desktop/mobile PASS; publication pending |
+| 4.2 Monte Carlo Approximation | p2 상단, 4.3 제목 전 | p37–38, p40 기댓값 줄 | Imported; source/math, desktop/mobile PASS; publication pending |
+| 4.3 Law of Large Number and Monte Carlo error | p2 4.3 제목–p3 | p38–40; CLT/CI는 필기 직접 | Imported; source/math, desktop/mobile PASS; publication pending |
+| 4.4 Rejection Sampling | p4 | p47–55 | Imported; source/math, desktop/mobile PASS; publication pending |
+| 4.5 Importance Sampling | p5 | p56–64 | Imported; source/math, desktop/mobile PASS; publication pending |
+| 4.6 Why Direct Sampling Can be difficult | p6 | p50, p54–55, p65–67 | Imported; source/math, desktop/mobile PASS; publication pending |
+| 4.7 Markov Chain | p7–8 | p66–70; AR(1)은 필기 직접 | Imported; source/math, desktop/mobile PASS; publication pending |
+| 4.8 Transition kernels and stationary Distributions | p9–10 | p68–71, p74–77 | Imported; source/math, desktop/mobile PASS; publication pending |
+| 4.9 Detailed Balance | p11 | p72–73, p78 | Imported; source/math, desktop/mobile PASS; publication pending |
+| 4.10 Metropolis and Metropolis-Hastings | p12–13 | p79–87 | Imported; source/math, desktop/mobile PASS; publication pending |
+| 4.11 Gibbs Sampling | p14–15 | p88–101 | Imported; source/math, desktop/mobile PASS; publication pending |
+| 4.12 Mixing, Auto Correlation, and Effective Sample Size | p16–17 | 전용 슬라이드 없음 | Imported; source/math, desktop/mobile PASS; publication pending |
+| 4.13 Langevin Dynamics | p18–19 | 전용 슬라이드 없음 | Imported; source/math, desktop/mobile PASS; publication pending |
+| 4.14 Hamiltonian Monte Carlo | p20 | 배경 p102–127, 핵심 p104–111, p116, p118, p124 | Imported; source/math, desktop/mobile PASS; publication pending |
+
+## Manuscript integrity and publication adaptations
+
+Raw completed responses reside in `work/ch04-chatgpt-source/ch04-4N-original.md`; approved working copies use `-ready.md`. Metadata uses the full handwritten chapter title, source section number/order and the existing `작성자 검토 전` notice. No independent prose rewriting is performed during import.
+
+- Imported 4.1–4.4 source/math reviews passed without prose correction. The completed ChatGPT manuscripts already incorporate the reviewed source corrections, including the MCSE square-root denominator and the appropriate conditions.
+- Figure markers are replaced in working copies only, retaining the original ChatGPT captions. For mobile readability, each selected PNG is wrapped in a Markdown link to the same original asset. The existing renderer opens the full-resolution PNG in a new tab; no image bytes or new viewing interface are introduced. This supports small mathematical labels on mobile, first observed in 4.1.
+- In 4.5, the self-normalized weight expectation now explicitly assumes q positive wherever the unnormalized target is positive. In 4.6, the normalized coordinate proposals explicitly cover each target support before asserting E[w_j]=1. These source-review clarifications were approved before import; raw responses are preserved.
+- In 4.7, the covariance expansion was split before its first equality after actual 350px article QA found a 364px formula. This is a render-only line break; the mathematical terms, signs and raw response are unchanged. The 390px recheck passed with 44 math expressions, no errors and no overwide formulas (`ch47-mobile-recheck.json`).
+- In 4.9, the continuous-state integral is qualified by the existence of a transition density. In 4.10, the proposal may depend on the current state, but dependence is not required. Both approved clarifications preserve all formulas and raw responses. The 4.9 matrix condition 0<a<1 was later moved to a second aligned line after mobile QA measured 381px against 350px; matrix entries and the condition are unchanged. Its mobile recheck passed (`ch49-mobile-recheck.json`).
+- All 14 completed manuscripts have passed source/mathematical review and are imported. Further measured formula wraps will be recorded as they occur; local verification does not establish publication.
+
+- **4.1** — raw `df8b15de2411b869148f86d50a91a9488ad59fcaa68cfc05544f21cb33b07fa3`; working `c789c7610bbda7cacc36a01bc5b372e4890fca8c4c7ef9fbfd1504ee3b4ce5ae`; note `2c611f11b93a5e30a888888325305f20ba04ab57edbbbed5bcea08b5f95429be`.
+- **4.2** — raw `2761aed11adfb8ebb6c145eed40af2b0c8990a05c968843183794a040d5e218b`; working `2761aed11adfb8ebb6c145eed40af2b0c8990a05c968843183794a040d5e218b`; note `67aa40d8060cc6515e137217a3cb5f09a680c5d8cdd74d8a82ce26d5e6833b03`.
+- **4.3** — raw `79f00c47ee278b4769293d16df74a31c85c9720da08f4c05ca1163b5d163d5ba`; working `79f00c47ee278b4769293d16df74a31c85c9720da08f4c05ca1163b5d163d5ba`; note `39bfedca55c16ea7fe3689d32e66510e833fd16a3ca8107855f7b6ab3f277c97`.
+- **4.4** — raw `1c3dd8bb320621661dcdba96faee6943e458607c7f8fd5f94f5de2c2fd8fbe74`; working `4d926c587ab98d85efa001330797ae621346c03fb93ef7fa9c8196282269dc73`; note `11b6f06baf9a3bd737e6c86103efd41e48853496d46df6dc3d51289e7667e188`.
+- **4.5** — raw `9e6e4e30a8a6ee11a9fb48f4ec19ff4a99c9b803a6cb56769014bb64ff99bde8`; working `ac9bbfa4feb0cfd303bfddd1a9e6417788f2b3e74db88ea4a2426e7ba138aa90`; note `e77cea092a9e7b6224d19cd5c91ce03c638c99215bb89de988fbd3e67bb21358`.
+- **4.6** — raw `32fcd6c5f6510ff8e505823932892706b30b68cf182c2fbfe6c77fe3dc316b37`; working `fa221b0ea11b0d820e6187910a81505e18fd0d6e7b0f7e4ee611d28f9b15c4da`; note `c6e0362ff664700e5722c1b5d5a4b2b8fd277cfe22eba6f3a0ca8afdd7df3a68`.
+- **4.7** — raw `cb9baa9aed21f178fb6f73f951605b653451433e2b0255a36f1fcc51bd72fcdb`; working `2669280cd201f923b2eb35afd5ea3e5df985e4e70417d899a92ec3994f90807f`; note `6921588cd0cbaabfc9848108e1ab54f72bf8eeac6547fde7b7410379acc5b3bf`.
+- **4.8** — raw `e8416ef806788c01a8fb565f6b7894f02b30b75b3eacbe6f19c4cbc2a24495ec`; working `e8416ef806788c01a8fb565f6b7894f02b30b75b3eacbe6f19c4cbc2a24495ec`; note `8ca63eb8b730c97f5fcf6cc0907aec184dd830a5ced9ad3dc22c8e07f17fc3c1`.
+- **4.9** — raw `6663d66051d6c2117486a4e31ccfb215b009555752dca6562de310300b34d783`; working `50e5883db3786c7bd7cd67a5abe8871a4f1d8bfeb6313b8a5907a0d9ea45dd49`; note `74dd78c347ef2142c98632c18adff5393a1e892e64fdd50385555ee0e5f4068c`.
+- **4.10** — raw `dbda8266ed50ecdf0869515fd77055ccc03b2fa430b0b3625ef039058f67d81e`; working `f5b979408d094fc7c0198cc87e3405237ea75765db47d4712c55958af3f31898`; note `6df226c739079f2d96f4b6d1e4c534ddaeff224a09824cbd7b7d6a077712581f`.
+- **4.11** — raw `6b8cbf7f04a5c9499d1d00189d1733792aec8e261edb83f62ed93516b624a969`; working `12a47b0c9aa6a8d408fce25ff92b7a38b6ac4cf905a730c8637971af30e99e84`; note `3efc704db6361131524a8cd52c8824025a7809390ce7ed0c4516a15b88c8a8d5`.
+- **4.12** — raw `e320ac2e7372e9b5bdb14369f35c5df745c27c5118855c422e507d7242e75d52`; working `e320ac2e7372e9b5bdb14369f35c5df745c27c5118855c422e507d7242e75d52`; note `75c54f150a8cfdf552d5e343dc0c3bac1d3c81c93803349c4036abca3d70ea3f`.
+- **4.13** — raw `9f3fb4175158dac09749417d9052d3f0950d5881553958e8ceffdd041c1b2069`; working `9f3fb4175158dac09749417d9052d3f0950d5881553958e8ceffdd041c1b2069`; note `ecd48b77028e1dd2c6bd26eba68ce896115b36f1b9e17ec64416e9d68a9fd16d`.
+- **4.14** — raw `1b583717c35f6d3d0163ea20efcf560083cb7c7446c4db3ac599e045ed94d88b`; working `1b583717c35f6d3d0163ea20efcf560083cb7c7446c4db3ac599e045ed94d88b`; note `bf7f2717d1807574c0b3f2ee110d21ba310b3652804c4ce05a16019e2522c529`.
+
+## Static figures
+
+Five source-bounded figures are imported:4.1 posterior predictive, 4.4 rejection envelope, 4.5 importance weighting, 4.9 detailed-balance flow/cycle, 4.11 Poisson change-point structure. Each actual downloaded image passed root and independent visual review and is retained byte-for-byte. HMC remains a brief three-question article without a new simulator.
+
+- **4.1**: `사후예측 분포 개념도.png` → `content/notes/images/ch04-41-posterior-predictive.png`, 1536 × 1024 px, 1,227,997 bytes. Original/download/repository SHA-256 `00b39b13a59cf4d0aa05510725a5c9b23758092d3bb0171adbc4f6931771726f`; writing-chat prompt `work/ch04-chatgpt-source/figure-41-prompt.txt`, SHA-256 `0245a879d99ee8117a5b68ab30800a7339a2df45f821f21cbdc986fcee74b27b`. Root and independent visual reviews passed; section-specific evidence is retained in the task source-review record.
+- **4.4**: `거부 샘플링 개념도 그래프.png` → `content/notes/images/ch04-44-rejection-envelope.png`, 1672 × 941 px, 1,185,210 bytes. Original/download/repository SHA-256 `7638fdbc2ec84d74cedf0b3bb51749e95a0d48cdf9cdfed7a8e46aa093d985d4`; writing-chat prompt `work/ch04-chatgpt-source/figure-44-prompt.txt`, SHA-256 `aeaf391e32fa162600cb656e431dec892e92b3b6e897004496ccb0ca41ac4a73`. Root and independent visual reviews passed; section-specific evidence is retained in the task source-review record.
+- **4.5**: `중요도 샘플링 도식_ 밀도 곡선과 가중치.png` → `content/notes/images/ch04-45-importance-weights.png`, 1671 × 941 px, 1,186,094 bytes. Original/download/repository SHA-256 `6a0fd8e01578cf4b9c9cbfb54c6201344480a88d56a16bd5f8fd07327e462cd7`; writing-chat prompt `work/ch04-chatgpt-source/figure-45-prompt.txt`, SHA-256 `dc3de60a18d64dab9179de98dbae32bd8e926b6613609df208927b4d7873c351`. Root and independent visual reviews passed; section-specific evidence is retained in the task source-review record.
+- **4.9**: `마르코프 체인 순환과 전이 행렬.png` → `content/notes/images/ch04-49-cyclic-balance.png`, 1672 × 941 px, 1,219,434 bytes. Original/download/repository SHA-256 `f294a56506d36bfe2f12ca6b4b9855fef706e38d139eaa1bd440aeec0da757e5`; writing-chat prompt `work/ch04-chatgpt-source/figure-49-prompt.txt`, SHA-256 `e82ef8399853778330475f481a9ae164608c21a0ec398779e6287b0eb25a1566`. Root and independent visual reviews passed; section-specific evidence is retained in the task source-review record.
+- **4.11**: `포아송 변화점 모델 도식.png` → `content/notes/images/ch04-411-poisson-change-point.png`, 1672 × 941 px, 1,146,141 bytes. Original/download/repository SHA-256 `7484e74f2cfaa20d9bc80b4681e1e9f9f4f834dbdbfcb57527904d6baf3adf7e`; writing-chat prompt `work/ch04-chatgpt-source/figure-411-prompt.txt`, SHA-256 `8cab459887201332a18773611bdd9febc3695897ac0abba62f8827ecef516238`. Root and independent visual reviews passed; section-specific evidence is retained in the task source-review record.
+
+## Interactive decisions
+
+Five new compact components and the existing MH simulator have distinct purposes. Static visual assets continue through ChatGPT; native interactive plots are code components explicitly requested by the author. Interpretation belongs in surrounding prose, with concise keyboard-accessible controls, responsive 350px embedded layouts and bounded desktop plots.
+
+- **4.3 `[demo:monte-carlo-se]`**: explicitly calculable supplementary model `Z~N(0,1)`, `f(z)=z²`. Exact mean 1, integrand variance 2 and theoretical SE `sqrt(2/S)` are compared with the sample mean, estimated MCSE `s_f/sqrt(S)` and an approximate 95% interval. Seeded nested prefixes preserve comparisons; intervals are not clipped and realized errors need not decrease monotonically.
+- **4.8 `[demo:markov-chain]`**: row-vector propagation under the source matrix `[[.9,.1],[.3,.7]]`, stationary distribution (.75,.25), adjustable initial distribution and discrete steps. Source identity and alternating counterexamples are included: every distribution is stationary under identity; alternating has a uniform stationary distribution but nonstationary initial distributions oscillate. The identity state means nonuniqueness, not absence of stationary distributions.
+- **4.10 `[demo:metropolis-hastings]`**: reuse the existing 1D mixture/2D banana random-walk MH simulator and tested kernel unchanged. Rejections remain repeated chain states; symmetric Gaussian proposals justify cancellation of the proposal ratio. Existing standalone/legacy notes are preserved.
+- **4.11 `[demo:gibbs-gaussian]`**: reuse the earlier correlated Gaussian as a calculable illustration, separate from the source's Poisson model. Each click draws one coordinate from `N(rho*latest_other,1−rho²)` with standard deviation `sqrt(1−rho²)`; it does not merely update a variational mean. Default rho 0.8 and initial state (1,1); sequential state path and next conditional statistics are shown.
+- **4.12 `[demo:mcmc-mixing]`**: stationary AR(1), `f(z)=z`, default a=0.8/S=9000. A seeded trace, theoretical ACF `a^k`, IAT `(1+a)/(1−a)`, asymptotic ESS and exact finite-S mean SE distinguish dependence from marginal distribution and finite from asymptotic formulas. Negative correlation can yield ESS greater than S. There is no duplicate 4.7 AR(1) widget.
+- **4.13 `[demo:langevin-bias]`**: exact comparison of the target `N(0,1)` and Gaussian ULA stationary distribution with variance `1/(1−eta/2)`, restricted to 0<eta<2. This deterministic curve comparison contains no simulated transient or Monte Carlo variation and does not imply a universal stability bound for other targets.
+
+## Verification state
+
+- Final content-integrity review passed: all 14 imported bodies match their reviewed working/raw sources, all 42 recorded raw/working/note hashes match, the five PNGs are identical to their original downloads, and the six intended demo markers are present. The 4.11 image alt describes only the two observation segments actually shown. Evidence: `work/ch04-source/final-content-integrity-review.md`.
+- Fresh-base reuse check: all 10 existing MH tests passed, including independent target moments and acceptance/rejection behavior.
+- New shared numerical kernel: eight meaningful tests passed, covering MCSE and intervals, seeded prefixes, row-vector Markov evolution and counterexamples, sequential Gibbs draws and joint moments, exact finite-S AR(1) covariance sums versus asymptotic ESS, and the ULA variance recursion. Independent mathematical review also passed (`work/ch04-source/interactive-math-review.md`). Actual embedded width 350px mobile controls and screenshots passed for all five new components, including eta=1.9 giving ULA variance 20. The existing MH component also passed actual 1D/2D stepping, rejection-state retention and overflow checks in 4.10. Evidence: `work/ch04-chatgpt-source/controls-qa.json`. All 14 articles passed actual 390px and 1280px browser checks: 28 page/viewport combinations, 813 MathJax expressions per viewport, 0 MathJax errors, 0 overwide formulas and 0 page overflow (`work/ch04-chatgpt-source/final-local-qa.json`). All six portable components also passed actual UI control checks (`work/ch04-chatgpt-source/portable-qa.json`).
+- The ten new/changed code files were uploaded to the isolated review branch at `bd51d2866a381ee87bd00d207be1e22e893feaf7`; all ten remote files matched local bytes (`work/ch04-chatgpt-source/code-remote-comparison.json`). This is a partial review-branch upload, not publication.
+- The full package check passed: 72 tests, 0 failures, 61 built notes (`work/ch04-chatgpt-source/full-check.log` and `full-check.json`). The portable preview was generated, isolated and verified in the browser. A final image-alt clarification was followed by a successful 61-note build; code stayed unchanged.
+- Local/source verification is complete. Complete remote byte comparison, PR/merge, deployment and actual public-page verification remain pending. This record does not equate a review-branch upload with publication. Author review remains pending independently of technical checks.
