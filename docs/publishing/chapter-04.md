@@ -2,7 +2,7 @@
 
 ## Scope and source provenance
 
-The author authorized the entire handwritten Chapter 4 and requested active use of useful figures and interactive components, reuse of the existing MH simulator, and a brief HMC section. The original 14-section outline is preserved. These instructions override the general guide's one/two-section and default-zero-visual limits. Manuscripts and static-image prompts come from the actual continuing ChatGPT writing conversation; static figures come from the designated ChatGPT image conversation. No publication is claimed for unfinished items, and author review remains pending.
+The author authorized the entire handwritten Chapter 4 and requested active use of useful figures and interactive components, reuse of the existing MH simulator, and a brief HMC section. The original 14-section outline is preserved. These instructions override the general guide's one/two-section and default-zero-visual limits. Manuscripts and static-image prompts come from the actual continuing ChatGPT writing conversation; static figures come from the designated ChatGPT image conversation. All 14 sections are published and technically verified; author review remains pending.
 
 - Handwritten source: `Ch4.pdf`, 20 physical pages, no blank pages; SHA-256 `0474d37e9e3b170cd9aba815ee8471b28f8882748ceccddcc95d61370a7336bc`. Original chapter title: `Monte Carlo and Markov Chain Monte Carlo`.
 - Primary lecture: Kyungwoo Song, Yonsei University, `week3_1_mcmc.pdf`, 127 physical pages; SHA-256 `f63007daefd5cbeaa43c38c484f3c3382bb276e0f80c1c44ff085c87ce08cc7c`. The VI/GMM remainder and inverse-transform topic outside the handwritten outline are not expanded into new articles. The long lecture HMC portion is limited to the three handwritten questions in 4.14.
@@ -16,20 +16,20 @@ All page numbers are physical PDF pages. A source-map review is distinct from co
 
 | Section | Handwritten pages | Supporting lecture pages | Current state |
 | --- | --- | --- | --- |
-| 4.1 Expectations as integrals | p1 | p37; 배경 p34–36 | Imported; source/math, desktop/mobile PASS; publication pending |
-| 4.2 Monte Carlo Approximation | p2 상단, 4.3 제목 전 | p37–38, p40 기댓값 줄 | Imported; source/math, desktop/mobile PASS; publication pending |
-| 4.3 Law of Large Number and Monte Carlo error | p2 4.3 제목–p3 | p38–40; CLT/CI는 필기 직접 | Imported; source/math, desktop/mobile PASS; publication pending |
-| 4.4 Rejection Sampling | p4 | p47–55 | Imported; source/math, desktop/mobile PASS; publication pending |
-| 4.5 Importance Sampling | p5 | p56–64 | Imported; source/math, desktop/mobile PASS; publication pending |
-| 4.6 Why Direct Sampling Can be difficult | p6 | p50, p54–55, p65–67 | Imported; source/math, desktop/mobile PASS; publication pending |
-| 4.7 Markov Chain | p7–8 | p66–70; AR(1)은 필기 직접 | Imported; source/math, desktop/mobile PASS; publication pending |
-| 4.8 Transition kernels and stationary Distributions | p9–10 | p68–71, p74–77 | Imported; source/math, desktop/mobile PASS; publication pending |
-| 4.9 Detailed Balance | p11 | p72–73, p78 | Imported; source/math, desktop/mobile PASS; publication pending |
-| 4.10 Metropolis and Metropolis-Hastings | p12–13 | p79–87 | Imported; source/math, desktop/mobile PASS; publication pending |
-| 4.11 Gibbs Sampling | p14–15 | p88–101 | Imported; source/math, desktop/mobile PASS; publication pending |
-| 4.12 Mixing, Auto Correlation, and Effective Sample Size | p16–17 | 전용 슬라이드 없음 | Imported; source/math, desktop/mobile PASS; publication pending |
-| 4.13 Langevin Dynamics | p18–19 | 전용 슬라이드 없음 | Imported; source/math, desktop/mobile PASS; publication pending |
-| 4.14 Hamiltonian Monte Carlo | p20 | 배경 p102–127, 핵심 p104–111, p116, p118, p124 | Imported; source/math, desktop/mobile PASS; publication pending |
+| 4.1 Expectations as integrals | p1 | p37; 배경 p34–36 | Published; source/math and public technical checks PASS; author review pending |
+| 4.2 Monte Carlo Approximation | p2 상단, 4.3 제목 전 | p37–38, p40 기댓값 줄 | Published; source/math and public technical checks PASS; author review pending |
+| 4.3 Law of Large Number and Monte Carlo error | p2 4.3 제목–p3 | p38–40; CLT/CI는 필기 직접 | Published; source/math and public technical checks PASS; author review pending |
+| 4.4 Rejection Sampling | p4 | p47–55 | Published; source/math and public technical checks PASS; author review pending |
+| 4.5 Importance Sampling | p5 | p56–64 | Published; source/math and public technical checks PASS; author review pending |
+| 4.6 Why Direct Sampling Can be difficult | p6 | p50, p54–55, p65–67 | Published; source/math and public technical checks PASS; author review pending |
+| 4.7 Markov Chain | p7–8 | p66–70; AR(1)은 필기 직접 | Published; source/math and public technical checks PASS; author review pending |
+| 4.8 Transition kernels and stationary Distributions | p9–10 | p68–71, p74–77 | Published; source/math and public technical checks PASS; author review pending |
+| 4.9 Detailed Balance | p11 | p72–73, p78 | Published; source/math and public technical checks PASS; author review pending |
+| 4.10 Metropolis and Metropolis-Hastings | p12–13 | p79–87 | Published; source/math and public technical checks PASS; author review pending |
+| 4.11 Gibbs Sampling | p14–15 | p88–101 | Published; source/math and public technical checks PASS; author review pending |
+| 4.12 Mixing, Auto Correlation, and Effective Sample Size | p16–17 | 전용 슬라이드 없음 | Published; source/math and public technical checks PASS; author review pending |
+| 4.13 Langevin Dynamics | p18–19 | 전용 슬라이드 없음 | Published; source/math and public technical checks PASS; author review pending |
+| 4.14 Hamiltonian Monte Carlo | p20 | 배경 p102–127, 핵심 p104–111, p116, p118, p124 | Published; source/math and public technical checks PASS; author review pending |
 
 ## Manuscript integrity and publication adaptations
 
@@ -83,6 +83,15 @@ Five new compact components and the existing MH simulator have distinct purposes
 - Final content-integrity review passed: all 14 imported bodies match their reviewed working/raw sources, all 42 recorded raw/working/note hashes match, the five PNGs are identical to their original downloads, and the six intended demo markers are present. The 4.11 image alt describes only the two observation segments actually shown. Evidence: `work/ch04-source/final-content-integrity-review.md`.
 - Fresh-base reuse check: all 10 existing MH tests passed, including independent target moments and acceptance/rejection behavior.
 - New shared numerical kernel: eight meaningful tests passed, covering MCSE and intervals, seeded prefixes, row-vector Markov evolution and counterexamples, sequential Gibbs draws and joint moments, exact finite-S AR(1) covariance sums versus asymptotic ESS, and the ULA variance recursion. Independent mathematical review also passed (`work/ch04-source/interactive-math-review.md`). Actual embedded width 350px mobile controls and screenshots passed for all five new components, including eta=1.9 giving ULA variance 20. The existing MH component also passed actual 1D/2D stepping, rejection-state retention and overflow checks in 4.10. Evidence: `work/ch04-chatgpt-source/controls-qa.json`. All 14 articles passed actual 390px and 1280px browser checks: 28 page/viewport combinations, 813 MathJax expressions per viewport, 0 MathJax errors, 0 overwide formulas and 0 page overflow (`work/ch04-chatgpt-source/final-local-qa.json`). All six portable components also passed actual UI control checks (`work/ch04-chatgpt-source/portable-qa.json`).
-- The ten new/changed code files were uploaded to the isolated review branch at `bd51d2866a381ee87bd00d207be1e22e893feaf7`; all ten remote files matched local bytes (`work/ch04-chatgpt-source/code-remote-comparison.json`). This is a partial review-branch upload, not publication.
+- All 30 final source files matched local bytes and the upload manifest at review head `8ff53285c47ba34782bba17ab6bd77d9d5806b7b`. The merged main `80f1a68f9267adffb7e2fd6fdb27a5d1cecc016f` also matched all 30 files, with exactly the intended scope: 14 notes, 5 PNGs, 10 code/test files and this record. Evidence: `remote-final-source-check.json` and `merged-source-check.json` in `work/ch04-chatgpt-source/`.
 - The full package check passed: 72 tests, 0 failures, 61 built notes (`work/ch04-chatgpt-source/full-check.log` and `full-check.json`). The portable preview was generated, isolated and verified in the browser. A final image-alt clarification was followed by a successful 61-note build; code stayed unchanged.
-- Local/source verification is complete. Complete remote byte comparison, PR/merge, deployment and actual public-page verification remain pending. This record does not equate a review-branch upload with publication. Author review remains pending independently of technical checks.
+
+## Publication and public verification
+
+- [PR 34](https://github.com/songofluna/academic-notes/pull/34) merged as `80f1a68f9267adffb7e2fd6fdb27a5d1cecc016f`. The [website check](https://github.com/songofluna/academic-notes/actions/runs/41759192062) passed on the exact review head; the [publication deployment](https://github.com/songofluna/academic-notes/actions/runs/41759299175) succeeded on the merge commit.
+- Actual [public site](https://songofluna.github.io/academic-notes/) verification covered all 14 articles at 390px and 1280px: 28 page/viewport combinations, 813 MathJax expressions per viewport, 0 errors, 0 overwide formulas and 0 page overflow. All articles retain `작성자 검토 전`. Evidence: `work/ch04-chatgpt-source/public-page-qa.json`.
+- All five public PNGs loaded at their expected natural dimensions and 350px mobile display width. All six public components passed actual control interaction at 350px without internal overflow. Evidence: `public-image-qa.json` and `public-controls-qa.json` in the same evidence directory.
+- The public course index contains exactly 14 Chapter 04 links, naturally ordered 4.1–4.14 (`public-course-order.json`). Independent HTTPS GET verification with TLS certificate checking returned 200 for all 20 checked deployed files; every file exactly matched the local build, including the five PNGs retained from their original downloads (`public-assets-byte-comparison.json`).
+- A final screenshot of the actual public Gibbs article is retained as `outputs/chapter-4-published-gibbs.png`.
+- Publication and technical verification are complete. Author review remains pending and is represented by the public notice; these checks do not claim author approval.
+
