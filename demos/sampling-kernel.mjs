@@ -28,13 +28,16 @@ export function createMonteCarloSeSampler(seed = 403) {
   const draw = seededNormal(seed), values = [], means = [], sumsOfSquares = [];
   let mean = 0, m2 = 0;
   return {at(count) {
-    validCount(count, 2);
+    validCount(count);
     while (values.length < count) {
       const z = draw(), value = z * z, n = values.length + 1, delta = value - mean;
       mean += delta / n; m2 += delta * (value - mean);
       values.push(value); means.push(mean); sumsOfSquares.push(m2);
     }
-    return {...summaryFromMoments(count, means[count - 1], sumsOfSquares[count - 1]), exact: 1, integrandVariance: 2, theoreticalSe: Math.sqrt(2 / count), seed, values: values.slice(0, count), means: means.slice(0, count)};
+    const summary = count === 1
+      ? {count, mean: means[0], variance: null, mcse: null, interval: null}
+      : summaryFromMoments(count, means[count - 1], sumsOfSquares[count - 1]);
+    return {...summary, exact: 1, integrandVariance: 2, theoreticalSe: Math.sqrt(2 / count), seed, values: values.slice(0, count), means: means.slice(0, count)};
   }};
 }
 export const MARKOV_PRESETS = {

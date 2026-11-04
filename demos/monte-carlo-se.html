@@ -1,23 +1,185 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Monte Carlo standard error</title><style>*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;background:#fff;color:#303338;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{padding:12px 1px}h1{font-size:23px;font-weight:600;letter-spacing:-.025em;margin:0 0 10px}.model{font-size:14px;color:#626a5d;margin:0 0 12px}.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:#5b6159}.legend span{display:flex;align-items:center;gap:6px}.legend i{width:23px;height:0;border-top:3px solid #70944d;display:inline-block}.legend .target{border-top:2px dashed #59625b}.legend .interval{border-color:#a77441}svg{display:block;width:100%;max-width:480px;height:auto;margin:8px auto 12px}.controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap;border-top:1px solid #e4e7e1;padding-top:14px}.slider{display:grid;grid-template-columns:44px minmax(90px,1fr) 44px;align-items:center;gap:10px;width:100%}input[type=range]{width:100%;accent-color:#70944d;min-height:36px;margin:0}output{font-variant-numeric:tabular-nums;text-align:right}button,select{font:inherit;color:inherit;background:#fff;border:1px solid #cfd6c8;padding:7px 10px;border-radius:0;min-height:40px;max-width:100%}button{cursor:pointer}button:hover{background:#f3f6ef}button:disabled{opacity:.5;cursor:default}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #73924f;outline-offset:3px}.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;border-top:1px solid #e4e7e1;margin:16px 0 0;padding:14px 0 0}.stats dt{color:#6b7265;font-size:12px}.stats dd{margin:4px 0 0;font-variant-numeric:tabular-nums;font-size:20px;overflow-wrap:anywhere}.seed{font-size:12px;color:#6b7265;margin-left:auto}.matrix-line{display:flex;align-items:center;justify-content:center;gap:10px;margin:10px 0;font-size:14px}.matrix{border-left:1px solid #919a8a;border-right:1px solid #919a8a;border-collapse:collapse;font-variant-numeric:tabular-nums}.matrix td{padding:1px 9px;text-align:right}.mini-heading{font-size:12px;color:#6b7265;margin:4px 0 0}.interval-value{font-size:17px!important}@media(min-width:600px){.controls .slider{flex:1 1 180px;width:auto}.stats.four{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:420px){h1{font-size:21px}.legend{gap:12px;font-size:12px}button,select{font-size:14px}.stats dd{font-size:18px}}</style></head><body><main>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monte Carlo standard error</title>
+<style>
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:#fff;color:#303338;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{padding:12px 2px}h1{font-size:23px;font-weight:600;letter-spacing:-.025em;margin:0 0 8px}
+.model{font-size:14px;color:#626a5d;margin:0 0 14px}
+.controls,.playback,.speed,.legend{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.controls{justify-content:space-between;border-top:1px solid #e4e7e1;padding-top:12px}
+button,select,input[type=number]{font:inherit;color:inherit;background:#fff;border:1px solid #cfd6c8;border-radius:0;min-height:44px;padding:7px 10px}
+button{cursor:pointer}button:hover{background:#f3f6ef}button:disabled{opacity:.45;cursor:default}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #73924f;outline-offset:3px}
+.speed{font-size:13px;gap:7px}.count-control{display:grid;grid-template-columns:auto 1fr 92px;align-items:center;gap:12px;margin:12px 0 16px}
+input[type=range]{min-width:0;width:100%;min-height:44px;margin:0;accent-color:#70944d}
+input[type=number]{width:92px;font-variant-numeric:tabular-nums}
+.legend{font-size:12px;color:#5b6159;gap:8px 18px}.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:21px;height:0;border-top:3px solid #70944d;display:inline-block}
+.legend .target{border-top:2px dashed #59625b}.legend .interval{border-color:#a77441}
+.legend .band{height:10px;background:#e9f1df;border:0}
+svg{display:block;width:100%;height:300px;margin:4px 0 0}
+.note{font-size:12px;line-height:1.6;color:#6b7265;margin:6px 0 0}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px;border-top:1px solid #e4e7e1;margin:14px 0 0;padding:14px 0 0}
+.stats dt{color:#6b7265;font-size:12px}.stats dd{margin:4px 0 0;font-variant-numeric:tabular-nums;font-size:20px;overflow-wrap:anywhere}
+.interval-value{font-size:16px!important}.seed{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:12px;color:#6b7265}.seed button{font-size:13px}
+@media(min-width:700px){.stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:420px){h1{font-size:21px}.count-control{grid-template-columns:1fr 92px;gap:2px 12px}.count-control label{grid-column:1/-1}.controls{align-items:flex-start}.playback{gap:8px}.stats dd{font-size:18px}}
+</style>
+</head>
+<body><main>
 <h1>Monte Carlo standard error</h1>
-<p class="model">계산 가능한 예시 · Z ~ N(0, 1), f(z) = z² · E[f(Z)] = 1</p>
-<div class="legend"><span><i></i>표본평균</span><span><i class="target"></i>정확한 값 1</span><span><i class="interval"></i>현재 근사 95% 구간</span></div>
-<svg id="plot" viewBox="0 0 480 300" role="img" aria-label="표본 수에 따른 제곱값 평균과 현재의 근사 신뢰구간"></svg>
-<div class="controls"><label for="count">표본 수 S</label><select id="count"><option>10</option><option>30</option><option selected>100</option><option>300</option><option>1000</option><option>3000</option><option>10000</option></select><button id="new-seed" type="button">다시 추출</button><button id="reset" type="button">초기화</button><span class="seed">Seed <output id="seed"></output></span></div>
-<dl class="stats four" aria-live="polite"><div><dt>표본평균</dt><dd id="mean"></dd></div><div><dt>추정 MCSE · s_f / √S</dt><dd id="mcse"></dd></div><div><dt>이론 SE · √(2/S)</dt><dd id="theory"></dd></div><div><dt>근사 95% 구간</dt><dd id="interval" class="interval-value"></dd></div></dl>
+<p class="model">Z ~ N(0, 1) · f(Z) = Z² · μ = 1 · Var(Z²) = 2</p>
+<div class="controls">
+  <div class="playback"><button id="play" type="button">Play</button><button id="pause" type="button" disabled>Pause</button><button id="restart" type="button">Restart</button></div>
+  <label class="speed" for="speed">Speed <select id="speed"><option value="10">10 /s</option><option value="50">50 /s</option><option value="250" selected>250 /s</option><option value="1000">1,000 /s</option><option value="5000">5,000 /s</option></select></label>
+</div>
+<div class="count-control"><label for="count">Samples · S</label><input id="count" type="range" min="1" max="10000" step="1" value="1"><input id="count-value" type="number" min="1" max="10000" step="1" value="1" inputmode="numeric" aria-label="Set sample count"></div>
+<div class="legend"><span><i></i>Prefix mean</span><span><i class="target"></i>μ = 1</span><span><i class="interval"></i>Current 95% CI</span><span><i class="band"></i>μ ± 1.96√(2/S)</span></div>
+<svg id="plot" viewBox="0 0 480 300" role="img" aria-label="같은 샘플열의 누적 표본평균, 실제 기댓값 1, 현재 S의 근사 95% 신뢰구간">
+  <defs><clipPath id="plot-clip"><rect id="clip-rect"/></clipPath></defs>
+  <g id="axes" font-family="sans-serif" font-size="12" fill="#60665c"></g>
+  <g clip-path="url(#plot-clip)">
+    <path id="band" fill="#e9f1df"/>
+    <path id="target" fill="none" stroke="#59625b" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <path id="trace" fill="none" stroke="#70944d" stroke-width="2" stroke-linejoin="round"/>
+    <path id="ci" fill="none" stroke="#a77441" stroke-width="2"/>
+    <circle id="current" r="4" fill="#70944d"/>
+  </g>
+</svg>
+<dl class="stats">
+  <div><dt>Sample mean</dt><dd id="mean"></dd></div>
+  <div><dt>Estimated MCSE · s<sub>f</sub>/√S</dt><dd id="mcse"></dd></div>
+  <div><dt>Theoretical MCSE · √(2/S)</dt><dd id="theory"></dd></div>
+  <div><dt>Approx. 95% CI</dt><dd id="interval" class="interval-value"></dd></div>
+</dl>
+<p class="note" id="single-sample">S=1에서는 표본분산·추정 MCSE·신뢰구간이 정의되지 않습니다.</p>
+<div class="seed"><button id="new-seed" type="button">New seed</button><span>Seed <output id="seed"></output></span></div>
 <noscript>이 시연은 JavaScript가 필요합니다.</noscript>
-</main><script type="module">
+</main>
+<script type="module">
 import { createMonteCarloSeSampler } from './sampling-kernel.mjs';
-import { samplingSize, samplingNumber, samplingIndices, samplingPlot } from './sampling-plot.mjs';
-const $=id=>document.getElementById(id);let seed=403,sampler=createMonteCarloSeSampler(seed);
-function render(){
- const s=sampler.at(Number($('count').value));$('seed').textContent=seed;$('mean').textContent=samplingNumber(s.mean);$('mcse').textContent=samplingNumber(s.mcse);$('theory').textContent=samplingNumber(s.theoreticalSe);$('interval').textContent=`[${s.interval.map(x=>x.toFixed(3)).join(', ')}]`;
- const low=Math.min(1,s.interval[0],...s.means),high=Math.max(1,s.interval[1],...s.means),pad=Math.max(.15,(high-low)*.12),ymin=low-pad,ymax=high+pad;
- samplingPlot($('plot'),{xmin:1,xmax:s.count,ymin,ymax,logX:true,xTicks:[1,10,100,1000,10000].filter(n=>n<=s.count),yTicks:Array.from({length:4},(_,i)=>ymin+(ymax-ymin)*i/3),series:[{values:samplingIndices(s.count,400,true).map(n=>[n,s.means[n-1]])}],references:[{value:1}],points:[[s.count,s.mean]],interval:{x:s.count,lower:s.interval[0],upper:s.interval[1]},xLabel:'S · 로그 눈금'});
- requestAnimationFrame(samplingSize);
+import { samplingSize, samplingNumber } from './sampling-plot.mjs';
+const $ = id => document.getElementById(id);
+const maximum = 10000;
+let seed = 403, sampler = createMonteCarloSeSampler(seed), count = 1;
+let playing = false, frame = 0, previousTime = null, remainder = 0, lastPaint = 0;
+let lastRenderedCount = 0, plotScale = '';
+
+// Keep extrema in each screen column; all statistics still use every sample.
+function prefixIndices(means, columns) {
+  const result = [];
+  for (let start = 0; start < means.length;) {
+    const column = Math.floor(Math.log10(start + 1) / 4 * columns);
+    let end = start + 1, low = start, high = start;
+    while (end < means.length && Math.floor(Math.log10(end + 1) / 4 * columns) === column) {
+      if (means[end] < means[low]) low = end;
+      if (means[end] > means[high]) high = end;
+      end++;
+    }
+    result.push(...[...new Set([start, low, high, end - 1])].sort((a, b) => a - b));
+    start = end;
+  }
+  return result;
 }
-$('count').addEventListener('change',render);$('new-seed').addEventListener('click',()=>{seed=(seed+1)>>>0;sampler=createMonteCarloSeSampler(seed);render();});$('reset').addEventListener('click',()=>{seed=403;sampler=createMonteCarloSeSampler(seed);$('count').value='100';render();});
-new ResizeObserver(samplingSize).observe(document.querySelector('main'));
+
+function renderPlot(s) {
+  const width = Math.max(280, $('plot').clientWidth), height = 300;
+  const left = 45, right = width - 20, top = 16, bottom = height - 42;
+  const x = n => left + Math.log10(n) / 4 * (right - left);
+  let low = 1 - 1.96 * Math.sqrt(2), high = 1 + 1.96 * Math.sqrt(2);
+  for (const mean of s.means) { low = Math.min(low, mean); high = Math.max(high, mean); }
+  if (s.interval) { low = Math.min(low, s.interval[0]); high = Math.max(high, s.interval[1]); }
+  const pad = (high - low) * .06, ymin = low - pad, ymax = high + pad;
+  const y = value => bottom - (value - ymin) / (ymax - ymin) * (bottom - top);
+  const scale = `${width}:${ymin}:${ymax}`;
+  if (scale !== plotScale) {
+    plotScale = scale;
+    $('plot').setAttribute('viewBox', `0 0 ${width} ${height}`);
+    for (const [key, value] of Object.entries({x:left-6, y:top, width:right-left+12, height:bottom-top})) $('clip-rect').setAttribute(key, value);
+    const ticks = [ymin, ymin+(ymax-ymin)/4, 1, ymin+3*(ymax-ymin)/4, ymax].sort((a,b)=>a-b);
+    $('axes').innerHTML = ticks.map(value => `<line x1="${left}" x2="${right}" y1="${y(value)}" y2="${y(value)}" stroke="#edf0e9"/><text x="${left-7}" y="${y(value)+4}" text-anchor="end">${value.toFixed(1)}</text>`).join('')
+      + [1,10,100,1000,10000].map(n=>`<text x="${x(n)}" y="${bottom+21}" text-anchor="middle">${n>=1000?n/1000+'k':n}</text>`).join('')
+      + `<text x="${(left+right)/2}" y="${height-3}" text-anchor="middle">S · log scale</text>`;
+    const bandCounts = Array.from({length:121}, (_,i)=>10**(4*i/120));
+    const upper = bandCounts.map(n=>`${x(n)},${y(1+1.96*Math.sqrt(2/n))}`);
+    const lower = bandCounts.map(n=>`${x(n)},${y(1-1.96*Math.sqrt(2/n))}`).reverse();
+    $('band').setAttribute('d', 'M'+upper.concat(lower).join('L')+'Z');
+    $('target').setAttribute('d', `M${left},${y(1)}H${right}`);
+  }
+  $('trace').setAttribute('d', prefixIndices(s.means, right-left).map((i,j)=>`${j?'L':'M'}${x(i+1).toFixed(2)},${y(s.means[i]).toFixed(2)}`).join(''));
+  $('ci').setAttribute('d', s.interval ? `M${x(count)},${y(s.interval[0])}V${y(s.interval[1])}M${x(count)-5},${y(s.interval[0])}h10M${x(count)-5},${y(s.interval[1])}h10` : '');
+  $('current').setAttribute('cx', x(count)); $('current').setAttribute('cy', y(s.mean));
+}
+
+function updateButtons() {
+  $('play').disabled = playing || count === maximum;
+  $('pause').disabled = !playing;
+}
+function render() {
+  const s = sampler.at(count);
+  lastRenderedCount = count;
+  $('count').value = count; $('count-value').value = count;
+  $('seed').textContent = seed;
+  $('mean').textContent = samplingNumber(s.mean);
+  $('mcse').textContent = s.mcse === null ? '—' : samplingNumber(s.mcse);
+  $('theory').textContent = samplingNumber(s.theoreticalSe);
+  $('interval').textContent = s.interval ? `[${s.interval.map(n=>n.toFixed(4)).join(', ')}]` : '—';
+  $('single-sample').hidden = count !== 1;
+  updateButtons(); renderPlot(s);
+}
+function stop() {
+  playing = false; cancelAnimationFrame(frame);
+  previousTime = null; remainder = 0; updateButtons();
+}
+function tick(time) {
+  if (!playing) return;
+  if (previousTime !== null) {
+    remainder += Math.max(0, time - previousTime) * Number($('speed').value) / 1000;
+    const added = Math.floor(remainder);
+    count = Math.min(maximum, count + added); remainder -= added;
+  }
+  previousTime = time;
+  if ((count !== lastRenderedCount && time - lastPaint >= 1000/30) || count === maximum) { render(); lastPaint = time; }
+  if (count === maximum) stop();
+  else frame = requestAnimationFrame(tick);
+}
+$('play').addEventListener('click', () => {
+  if (playing || count === maximum) return;
+  playing = true; previousTime = null; lastPaint = 0; remainder = 0; updateButtons();
+  frame = requestAnimationFrame(tick);
+});
+$('pause').addEventListener('click', () => { stop(); render(); });
+$('restart').addEventListener('click', () => { stop(); count = 1; render(); });
+function seek(value) {
+  stop();
+  const next = Number(value);
+  if (value !== '' && Number.isFinite(next)) count = Math.max(1, Math.min(maximum, Math.round(next)));
+  render();
+}
+$('count').addEventListener('input', event => seek(event.target.value));
+$('count-value').addEventListener('input', event => {
+  if (event.target.value !== '' && event.target.validity.valid) seek(event.target.value);
+});
+$('count-value').addEventListener('change', event => seek(event.target.value));
+$('speed').addEventListener('change', () => { previousTime = null; remainder = 0; });
+$('new-seed').addEventListener('click', () => {
+  stop();
+  const candidate = crypto.getRandomValues(new Uint32Array(1))[0];
+  seed = candidate === seed ? (seed + 1) >>> 0 : candidate;
+  sampler = createMonteCarloSeSampler(seed); count = 1; render();
+});
+document.addEventListener('visibilitychange', () => { if (document.hidden && playing) { stop(); render(); } });
+window.addEventListener('pagehide', stop);
+let layoutWidth = 0;
+new ResizeObserver(() => {
+  const width = $('plot').clientWidth;
+  if (width !== layoutWidth) { layoutWidth = width; render(); }
+  samplingSize();
+}).observe(document.querySelector('main'));
 render();
-</script></body></html>
+</script>
+</body></html>

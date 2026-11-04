@@ -68,5 +68,12 @@ test('portable preview preserves JavaScript/LaTeX dollars and embeds a working M
   const wavenetCheck=spawnSync(process.execPath,['--check','--input-type=module'],{input:wavenetModule,encoding:'utf8'});
   assert.equal(wavenetCheck.status,0,wavenetCheck.stderr);
 
+  const mcse=context.window.CHAPTER4_DEMO_SRCDOC['monte-carlo-se'];
+  assert.match(mcse,/function createMonteCarloSeSampler/);
+  assert.doesNotMatch(mcse,/^import /m);
+  const mcseModule=mcse.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
+  const mcseCheck=spawnSync(process.execPath,['--check','--input-type=module'],{input:mcseModule,encoding:'utf8'});
+  assert.equal(mcseCheck.status,0,mcseCheck.stderr);
+
 
 });
