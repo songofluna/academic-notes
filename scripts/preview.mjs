@@ -36,6 +36,26 @@ const wavenetKernel=(await readFile(join(root,'demos/wavenet-kernel.mjs'),'utf8'
 const wavenetDemo=(await readFile(join(root,'demos/wavenet-dilation.html'),'utf8'))
   .replace("import { dilatedGraph } from './wavenet-kernel.mjs';",()=>wavenetKernel);
 data+='\nwindow.WAVENET_DEMO_SRCDOC = '+JSON.stringify(wavenetDemo).replace(/</g,'\\u003c')+';\n';
+const chapter3Demos = {};
+for (const name of ['jensen-log', 'variational-gaussian', 'cavi-gaussian', 'monte-carlo-elbo']) {
+  let source = await readFile(join(root, `demos/${name}.html`), 'utf8');
+  const inlined = new Set();
+  const inlineModules = async text => {
+    const imports = [...text.matchAll(/^import \{[^}]+\} from '(\.\/[^']+\.mjs)';$/gm)];
+    for (const match of imports) {
+      const modulePath = match[1];
+      let body = '';
+      if (!inlined.has(modulePath)) {
+        inlined.add(modulePath);
+        body = await inlineModules((await readFile(join(root, 'demos', modulePath), 'utf8')).replace(/^export /gm, ''));
+      }
+      text = text.replace(match[0], () => body);
+    }
+    return text;
+  };
+  chapter3Demos[name] = await inlineModules(source);
+}
+data += '\nwindow.CHAPTER3_DEMO_SRCDOC = ' + JSON.stringify(chapter3Demos).replace(/</g, '\\u003c') + ';\n';
 const img=await readFile(join(root,'assets','hero-photo.webp'));
 const inlineImage='data:image/webp;base64,'+img.toString('base64');
 // site config references to /assets work in the packed HTML without companion files.
