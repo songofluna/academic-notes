@@ -58,7 +58,7 @@ const chapter3Demos = {};
 for (const name of ['jensen-log', 'variational-gaussian', 'cavi-gaussian', 'monte-carlo-elbo']) chapter3Demos[name] = await packDemo(name);
 data += '\nwindow.CHAPTER3_DEMO_SRCDOC = ' + JSON.stringify(chapter3Demos).replace(/</g, '\\u003c') + ';\n';
 const chapter4Demos = {};
-for (const name of ['monte-carlo-se', 'markov-chain', 'gibbs-gaussian', 'mcmc-mixing', 'langevin-bias']) chapter4Demos[name] = await packDemo(name);
+for (const name of ['rejection-sampling', 'monte-carlo-se', 'markov-chain', 'gibbs-gaussian', 'mcmc-mixing', 'langevin-bias']) chapter4Demos[name] = await packDemo(name);
 data += '\nwindow.CHAPTER4_DEMO_SRCDOC = ' + JSON.stringify(chapter4Demos).replace(/</g, '\\u003c') + ';\n';
 const img=await readFile(join(root,'assets','hero-photo.webp'));
 const inlineImage='data:image/webp;base64,'+img.toString('base64');
