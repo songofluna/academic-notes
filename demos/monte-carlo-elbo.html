@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Monte Carlo · relative ELBO</title><style>*{box-sizing:border-box}body{margin:0;background:#fff;color:#303338;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{padding:12px 1px}h1{font-size:23px;font-weight:600;letter-spacing:-.025em;margin:0 0 10px}.model{font-size:14px;color:#626a5d;margin:0 0 12px}.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:#5b6159}.legend span{display:flex;align-items:center;gap:6px}.legend i{width:23px;height:0;border-top:3px solid #70944d;display:inline-block}.legend .target{border-top:2px dashed #59625b}.legend .path{border-color:#a77441}.legend .ref{border-color:#9a9f97}svg{display:block;width:100%;max-width:480px;height:auto;margin:8px auto 12px}.controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap;border-top:1px solid #e4e7e1;padding-top:14px}.slider{display:grid;grid-template-columns:30px minmax(90px,1fr) 44px;align-items:center;gap:10px;width:100%}input[type=range]{width:100%;accent-color:#70944d;min-height:36px;margin:0}output{font-variant-numeric:tabular-nums;text-align:right}button,select{font:inherit;color:inherit;background:#fff;border:1px solid #cfd6c8;padding:7px 10px;border-radius:0;min-height:40px;max-width:100%}button{cursor:pointer}button:hover{background:#f3f6ef}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #73924f;outline-offset:3px}.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;border-top:1px solid #e4e7e1;margin:16px 0 0;padding:14px 0 0}.stats dt{color:#6b7265;font-size:12px}.stats dd{margin:4px 0 0;font-variant-numeric:tabular-nums;font-size:20px;overflow-wrap:anywhere}.detail{font-size:13px;color:#6b7265;margin:12px 0 0}.seed{font-size:12px;color:#6b7265;margin-left:auto}@media(min-width:600px){.controls .slider{flex:1 1 180px;width:auto}.stats.four{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:420px){h1{font-size:21px}.legend{gap:12px;font-size:12px}button,select{font-size:14px}.stats dd{font-size:18px}}</style></head><body><main>
+<h1>Monte Carlo · relative ELBO</h1>
+<p class="model">ρ = 0.8 · q* = N(0, 0.36 I) · 계산 가능한 Gaussian 예제</p>
+<div class="legend"><span><i></i>MC 추정값</span><span><i class="target"></i>정확한 상대 ELBO</span><span><i class="ref"></i>log p(x) 기준 0</span></div>
+<svg id="plot" viewBox="0 0 480 330" role="img" aria-label="표본 수에 따른 상대 ELBO의 Monte Carlo 추정과 정확한 값"></svg>
+<div class="controls"><label for="count">표본 수 L</label><select id="count"><option>10</option><option selected>30</option><option>100</option><option>300</option><option>1000</option><option>3000</option><option>10000</option></select><button type="button" id="new-seed">다시 추출</button><button type="button" id="reset">초기화</button><span class="seed">Seed <output id="seed"></output></span></div>
+<dl class="stats four" aria-live="polite"><div><dt>MC 추정값</dt><dd id="estimate"></dd></div><div><dt>정확한 상대 ELBO</dt><dd id="exact"></dd></div><div><dt>표준오차 0.8 / √L</dt><dd id="se"></dd></div><div><dt>log p(x) 기준</dt><dd>0</dd></div></dl>
+<noscript>이 시연은 JavaScript가 필요합니다.</noscript>
+</main><script type="module">
+import { createRelativeElboSampler } from './vi-gaussian-kernel.mjs';
+const $=id=>document.getElementById(id);let seed=312,sampler=createRelativeElboSampler({seed});
+const reportViSize=()=>parent.postMessage({type:'academic-notes:vi-resize',height:Math.ceil(document.body.getBoundingClientRect().height)},location.origin==='null'?'*':location.origin);
+function render(){
+  const s=sampler.at(Number($('count').value));$('seed').textContent=seed;
+  $('estimate').textContent=s.estimate.toFixed(4);$('exact').textContent=s.exact.toFixed(4);$('se').textContent=s.standardError.toFixed(4);
+  const low=Math.min(s.exact,0,...s.means),high=Math.max(0,...s.means),pad=Math.max(.15,(high-low)*.12),ymin=low-pad,ymax=high+pad;
+  const sx=n=>62+Math.log10(n)*366/Math.log10(s.count),sy=y=>254-(y-ymin)*225/(ymax-ymin);
+  let marks=Array.from({length:4},(_,i)=>{const y=ymin+(ymax-ymin)*i/3;return `<line x1="62" x2="428" y1="${sy(y)}" y2="${sy(y)}" stroke="#edf0e9"/><text x="51" y="${sy(y)+6}" text-anchor="end">${y.toFixed(1)}</text>`;}).join('');
+  marks+=[1,10,100,1000,10000].filter(n=>n<=s.count).map(n=>`<text x="${sx(n)}" y="284" text-anchor="middle">${n>=1000?n/1000+'k':n}</text>`).join('');
+  marks+=`<line x1="62" x2="428" y1="${sy(0)}" y2="${sy(0)}" stroke="#9a9f97" stroke-width="2"/><line x1="62" x2="428" y1="${sy(s.exact)}" y2="${sy(s.exact)}" stroke="#59625b" stroke-dasharray="7 5" stroke-width="2"/>`;
+  const indices=[...new Set(Array.from({length:500},(_,i)=>Math.round(Math.exp(Math.log(s.count)*i/499))))];
+  marks+=`<path d="${indices.map((n,i)=>`${i?'L':'M'}${sx(n)},${sy(s.means[n-1])}`).join(' ')}" fill="none" stroke="#70944d" stroke-width="2.5"/><circle cx="${sx(s.count)}" cy="${sy(s.estimate)}" r="4" fill="#70944d"/><text x="245" y="319" text-anchor="middle">L · 로그 눈금</text>`;
+  $('plot').innerHTML=`<g font-family="sans-serif" font-size="17" fill="#60665c">${marks}</g>`;
+  $('plot').setAttribute('aria-label',`${s.count}개 표본의 상대 ELBO 추정 ${s.estimate.toFixed(4)}, 정확한 값 ${s.exact.toFixed(4)}, 표준오차 ${s.standardError.toFixed(4)}. 가로축은 로그 눈금.`);
+  requestAnimationFrame(reportViSize);
+}
+$('count').addEventListener('change',render);
+$('new-seed').addEventListener('click',()=>{seed=(seed+1)>>>0;sampler=createRelativeElboSampler({seed});render();});
+$('reset').addEventListener('click',()=>{seed=312;sampler=createRelativeElboSampler({seed});$('count').value='30';render();});
+new ResizeObserver(reportViSize).observe(document.querySelector('main'));
+render();
+</script></body></html>

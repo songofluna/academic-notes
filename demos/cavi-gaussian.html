@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>CAVI · one coordinate at a time</title><style>*{box-sizing:border-box}body{margin:0;background:#fff;color:#303338;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{padding:12px 1px}h1{font-size:23px;font-weight:600;letter-spacing:-.025em;margin:0 0 10px}.model{font-size:14px;color:#626a5d;margin:0 0 12px}.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:#5b6159}.legend span{display:flex;align-items:center;gap:6px}.legend i{width:23px;height:0;border-top:3px solid #70944d;display:inline-block}.legend .target{border-top:2px dashed #59625b}.legend .path{border-color:#a77441}.legend .ref{border-color:#9a9f97}svg{display:block;width:100%;max-width:480px;height:auto;margin:8px auto 12px}.controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap;border-top:1px solid #e4e7e1;padding-top:14px}.slider{display:grid;grid-template-columns:30px minmax(90px,1fr) 44px;align-items:center;gap:10px;width:100%}input[type=range]{width:100%;accent-color:#70944d;min-height:36px;margin:0}output{font-variant-numeric:tabular-nums;text-align:right}button,select{font:inherit;color:inherit;background:#fff;border:1px solid #cfd6c8;padding:7px 10px;border-radius:0;min-height:40px;max-width:100%}button{cursor:pointer}button:hover{background:#f3f6ef}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #73924f;outline-offset:3px}.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;border-top:1px solid #e4e7e1;margin:16px 0 0;padding:14px 0 0}.stats dt{color:#6b7265;font-size:12px}.stats dd{margin:4px 0 0;font-variant-numeric:tabular-nums;font-size:20px;overflow-wrap:anywhere}.detail{font-size:13px;color:#6b7265;margin:12px 0 0}.seed{font-size:12px;color:#6b7265;margin-left:auto}@media(min-width:600px){.controls .slider{flex:1 1 180px;width:auto}.stats.four{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:420px){h1{font-size:21px}.legend{gap:12px;font-size:12px}button,select{font-size:14px}.stats dd{font-size:18px}}</style></head><body><main>
+<h1>CAVI · one coordinate at a time</h1>
+<p class="model">ρ = <span id="model-rho">0.80</span> · 각 qᵢ의 분산 고정: 1−ρ² · 초기 평균 (1, 1)</p>
+<div class="legend"><span><i class="target"></i>목표 p</span><span><i></i>현재 q</span><span><i class="path"></i>평균의 이동</span></div>
+<svg id="plot" viewBox="0 0 480 385" role="img" aria-label="CAVI 좌표 갱신에 따른 평균의 이동과 Gaussian 등밀도선"></svg>
+<div class="controls"><div class="slider"><label for="rho">ρ</label><input id="rho" type="range" min="-0.95" max="0.95" step="0.05" value="0.8"><output id="rho-value" for="rho"></output></div><button type="button" id="step">q₁ 갱신</button><button type="button" id="sweep">두 좌표 갱신</button><button type="button" id="reset">초기화</button></div>
+<dl class="stats four" aria-live="polite"><div><dt>평균 (m₁, m₂)</dt><dd id="mean"></dd></div><div><dt>KL(q ∥ p)</dt><dd id="kl"></dd></div><div><dt>갱신 횟수</dt><dd id="count"></dd></div><div><dt>Mean-field 최소 KL</dt><dd id="minimum"></dd></div></dl><p class="detail" id="step-state"></p>
+<noscript>이 시연은 JavaScript가 필요합니다.</noscript>
+</main><script type="module">
+import { createCaviState, caviStep, familyOptimum } from './vi-gaussian-kernel.mjs';
+import { plotGaussian, reportViSize, viFormat } from './vi-plot.mjs';
+const $=id=>document.getElementById(id);let state=createCaviState();
+function render(){
+  $('rho-value').textContent=$('model-rho').textContent=state.rho.toFixed(2);
+  $('mean').textContent=`(${state.mean.map(viFormat).join(', ')})`;$('kl').textContent=viFormat(state.kl);$('minimum').textContent=viFormat(familyOptimum(state.rho).kl);$('count').textContent=state.updates;
+  $('step').textContent=state.next===0?'q₁ 갱신':'q₂ 갱신';
+  $('step-state').textContent=state.next===0?'다음: m₁ ← ρ m₂':'다음: m₂ ← ρ m₁ (최신 m₁)';
+  plotGaussian($('plot'),{rho:state.rho,covariance:[[state.variance,0],[0,state.variance]],mean:state.mean,path:state.path});requestAnimationFrame(reportViSize);
+}
+$('rho').addEventListener('input',()=>{state=createCaviState(Number($('rho').value));render();});
+$('step').addEventListener('click',()=>{state=caviStep(state);render();});
+$('sweep').addEventListener('click',()=>{state=caviStep(caviStep(state));render();});
+$('reset').addEventListener('click',()=>{state=createCaviState(Number($('rho').value));render();});
+new ResizeObserver(reportViSize).observe(document.querySelector('main'));
+render();
+</script></body></html>

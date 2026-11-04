@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Jensen gap</title><style>*{box-sizing:border-box}body{margin:0;background:#fff;color:#303338;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{padding:12px 1px}h1{font-size:23px;font-weight:600;letter-spacing:-.025em;margin:0 0 10px}.model{font-size:14px;color:#626a5d;margin:0 0 12px}.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:#5b6159}.legend span{display:flex;align-items:center;gap:6px}.legend i{width:23px;height:0;border-top:3px solid #70944d;display:inline-block}.legend .target{border-top:2px dashed #59625b}.legend .path{border-color:#a77441}.legend .ref{border-color:#9a9f97}svg{display:block;width:100%;max-width:480px;height:auto;margin:8px auto 12px}.controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap;border-top:1px solid #e4e7e1;padding-top:14px}.slider{display:grid;grid-template-columns:30px minmax(90px,1fr) 44px;align-items:center;gap:10px;width:100%}input[type=range]{width:100%;accent-color:#70944d;min-height:36px;margin:0}output{font-variant-numeric:tabular-nums;text-align:right}button,select{font:inherit;color:inherit;background:#fff;border:1px solid #cfd6c8;padding:7px 10px;border-radius:0;min-height:40px;max-width:100%}button{cursor:pointer}button:hover{background:#f3f6ef}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #73924f;outline-offset:3px}.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;border-top:1px solid #e4e7e1;margin:16px 0 0;padding:14px 0 0}.stats dt{color:#6b7265;font-size:12px}.stats dd{margin:4px 0 0;font-variant-numeric:tabular-nums;font-size:20px;overflow-wrap:anywhere}.detail{font-size:13px;color:#6b7265;margin:12px 0 0}.seed{font-size:12px;color:#6b7265;margin-left:auto}@media(min-width:600px){.controls .slider{flex:1 1 180px;width:auto}.stats.four{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:420px){h1{font-size:21px}.legend{gap:12px;font-size:12px}button,select{font-size:14px}.stats dd{font-size:18px}}</style></head><body><main>
+<h1>Jensen gap</h1>
+<div class="legend"><span><i></i>log y</span><span><i class="target"></i>두 점을 잇는 현</span></div>
+<svg id="plot" viewBox="0 0 480 320" role="img" aria-label="log 곡선과 현 사이 Jensen 간격"></svg>
+<div class="controls">
+<div class="slider"><label for="y1">y₁</label><input id="y1" type="range" min="0.2" max="5" step="0.1" value="1"><output id="y1-value" for="y1"></output></div>
+<div class="slider"><label for="y2">y₂</label><input id="y2" type="range" min="0.2" max="5" step="0.1" value="4"><output id="y2-value" for="y2"></output></div>
+<div class="slider"><label for="weight">t</label><input id="weight" type="range" min="0" max="1" step="0.01" value="0.5"><output id="t-value" for="weight"></output></div>
+</div>
+<dl class="stats four" aria-live="polite"><div><dt>log E[Y]</dt><dd id="upper"></dd></div><div><dt>E[log Y]</dt><dd id="lower"></dd></div><div><dt>E[Y] = t y₁ + (1−t)y₂</dt><dd id="mean"></dd></div><div><dt>Jensen gap</dt><dd id="gap"></dd></div></dl>
+<noscript>이 시연은 JavaScript가 필요합니다.</noscript>
+</main><script type="module">
+import { jensenLog } from './jensen-kernel.mjs';
+const $ = id => document.getElementById(id);
+const reportViSize = () => parent.postMessage({type:'academic-notes:vi-resize',height:Math.ceil(document.body.getBoundingClientRect().height)}, location.origin === 'null' ? '*' : location.origin);
+function render() {
+  const s = jensenLog(Number($('y1').value), Number($('y2').value), Number($('weight').value));
+  $('y1-value').textContent=s.y1.toFixed(1);$('y2-value').textContent=s.y2.toFixed(1);$('t-value').textContent=s.t.toFixed(2);
+  for (const [id,key] of [['upper','logMean'],['lower','meanLog'],['mean','mean'],['gap','gap']]) $(id).textContent=s[key].toFixed(4);
+  const sx = x => 54 + (x-.2)*390/4.8, sy = y => 264 - (y+1.7)*230/3.4;
+  let marks = [-1,0,1].map(y=>`<line x1="54" x2="444" y1="${sy(y)}" y2="${sy(y)}" stroke="#e4e7e1"/><text x="43" y="${sy(y)+6}" text-anchor="end">${y}</text>`).join('');
+  marks += [1,2,3,4,5].map(x=>`<text x="${sx(x)}" y="296" text-anchor="middle">${x}</text>`).join('');
+  const curve = Array.from({length:201},(_,i)=>{const x=.2+4.8*i/200;return `${i?'L':'M'}${sx(x)},${sy(Math.log(x))}`;}).join(' ');
+  marks += `<path d="${curve}" fill="none" stroke="#70944d" stroke-width="3"/><line x1="${sx(s.y1)}" y1="${sy(Math.log(s.y1))}" x2="${sx(s.y2)}" y2="${sy(Math.log(s.y2))}" stroke="#59625b" stroke-width="2" stroke-dasharray="7 5"/>`;
+  marks += [s.y1,s.y2].map(x=>`<circle cx="${sx(x)}" cy="${sy(Math.log(x))}" r="4" fill="#59625b"/>`).join('');
+  marks += `<line x1="${sx(s.mean)}" x2="${sx(s.mean)}" y1="${sy(s.logMean)}" y2="${sy(s.meanLog)}" stroke="#a77441" stroke-width="4"/><circle cx="${sx(s.mean)}" cy="${sy(s.logMean)}" r="5" fill="#70944d"/><circle cx="${sx(s.mean)}" cy="${sy(s.meanLog)}" r="4" fill="#a77441"/><text x="455" y="296">y</text>`;
+  $('plot').innerHTML=`<g font-family="sans-serif" font-size="18" fill="#60665c">${marks}</g>`;
+  $('plot').setAttribute('aria-label',`log E[Y] ${s.logMean.toFixed(4)}, E[log Y] ${s.meanLog.toFixed(4)}, gap ${s.gap.toFixed(4)}`);
+  requestAnimationFrame(reportViSize);
+}
+['y1','y2','weight'].forEach(id=>$(id).addEventListener('input',render));
+new ResizeObserver(reportViSize).observe(document.querySelector('main'));
+render();
+</script></body></html>
